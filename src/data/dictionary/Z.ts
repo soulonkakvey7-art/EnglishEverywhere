@@ -1,0 +1,91 @@
+import { DictionaryLetterSet } from "../../types";
+export const Z_DATA: DictionaryLetterSet = {
+  letter: "Z",
+  words: [
+    {
+      word: "zebra",
+      ipa: "/ˈzeb.rə/",
+      partOfSpeech: "noun",
+      definition:
+        "an African animal like a horse with black and white lines on its body",
+      example: "a herd of zebras",
+    },
+    {
+      word: "zero",
+      ipa: "/ˈzɪə.rəʊ/",
+      partOfSpeech: "noun",
+      definition: "the number 0",
+      example: "zero degrees",
+    },
+    {
+      word: "zinc",
+      ipa: "/zɪŋk/",
+      partOfSpeech: "noun",
+      definition: "a blue-white metal",
+      example: "zinc roofing",
+    },
+    {
+      word: "zone",
+      ipa: "/zəʊn/",
+      partOfSpeech: "noun",
+      definition: "an area that is different from other areas",
+      example: "no-smoking zone",
+    },
+    {
+      word: "zoo",
+      ipa: "/zuː/",
+      partOfSpeech: "noun",
+      definition: "a place where wild animals are kept for people to look at",
+      example: "London Zoo",
+    },
+    {
+      word: "zoology",
+      ipa: "/zuˈɒl.ə.dʒi/",
+      partOfSpeech: "noun",
+      definition: "the scientific study of animals",
+      example: "a zoology professor",
+    },
+    {
+      word: "zip",
+      ipa: "/zɪp/",
+      partOfSpeech: "noun/verb",
+      definition: "something that you use to close bags or clothes",
+      example: "unzip the jacket",
+    },
+    {
+      word: "zigzag",
+      ipa: "/ˈzɪɡ.zæɡ/",
+      partOfSpeech: "noun/adj/adv/verb",
+      definition: "a line that turns sharply from side to side",
+      example: "zigzag path",
+    },
+    {
+      word: "zest",
+      ipa: "/zest/",
+      partOfSpeech: "noun",
+      definition: "great enthusiasm and energy",
+      example: "zest for life",
+    },
+    {
+      word: "zodiac",
+      ipa: "/ˈzəʊ.di.æk/",
+      partOfSpeech: "noun",
+      definition: "the symbols used in astrology",
+      example: "signs of the zodiac",
+    },
+    {
+      word: "zoom",
+      ipa: "/zuːm/",
+      partOfSpeech: "verb/noun",
+      definition: "to move very quickly",
+      example: "zoom past",
+    },
+    {
+      word: "zillion",
+      ipa: "/ˈzɪl.jən/",
+      partOfSpeech: "noun/adj",
+      definition: "an extremely large number",
+      example: "a zillion things",
+    },
+  ],
+};
