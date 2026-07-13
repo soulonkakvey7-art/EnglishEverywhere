@@ -89,6 +89,7 @@ import {
   translateTextDeep,
   analyzeQuizPerformance
 } from './services/geminiService';
+import { getCachedLesson, saveCachedLesson } from './services/firebase';
 
 const LEVELS: CEFRLevel[] = ['A1', 'A2', 'B1', 'B2', 'C1', 'C2'];
 const PARTS_OF_SPEECH = ['Noun', 'Pronoun', 'Verb', 'Adjective', 'Adverb', 'Preposition', 'Conjunction', 'Interjection'];
@@ -734,7 +735,22 @@ export default function App() {
     }
     setIsLoading(true);
     try {
-      const res = category === 'Tenses' ? await generateTenseLesson(topic) : await generateGrammarLesson(topic, level);
+      let res = null;
+      if (!forceRefresh) {
+        res = await getCachedLesson(cacheKey);
+      }
+      if (res) {
+        console.log(`Loaded lesson from shared Firestore cache: ${cacheKey}`);
+      } else {
+        res = category === 'Tenses' ? await generateTenseLesson(topic) : await generateGrammarLesson(topic, level);
+        await saveCachedLesson(cacheKey, {
+          type: category === 'Tenses' ? 'tense' : 'grammar',
+          topic,
+          level,
+          category,
+          content: res
+        });
+      }
       setContentCache(prev => ({ ...prev, [cacheKey]: res }));
       setContent(res);
       setView({ type: 'grammar_lesson', topic, category, level });
@@ -759,7 +775,20 @@ export default function App() {
     }
     setIsLoading(true);
     try {
-      const res = await generateVocabularyLesson(topic);
+      let res = null;
+      if (!forceRefresh) {
+        res = await getCachedLesson(cacheKey);
+      }
+      if (res) {
+        console.log(`Loaded vocabulary lesson from shared Firestore cache: ${cacheKey}`);
+      } else {
+        res = await generateVocabularyLesson(topic);
+        await saveCachedLesson(cacheKey, {
+          type: 'vocabulary',
+          topic,
+          content: res
+        });
+      }
       setContentCache(prev => ({ ...prev, [cacheKey]: res }));
       setContent(res);
       setView({ type: 'vocabulary_lesson', topic });
@@ -783,7 +812,17 @@ export default function App() {
     }
     setIsLoading(true);
     try {
-      const res = await generateIdiomTopics(category);
+      let res = await getCachedLesson(cacheKey);
+      if (res) {
+        console.log(`Loaded idiom topics from shared Firestore cache: ${cacheKey}`);
+      } else {
+        res = await generateIdiomTopics(category);
+        await saveCachedLesson(cacheKey, {
+          type: 'idiom_topics',
+          topic: category,
+          content: res
+        });
+      }
       setContentCache(prev => ({ ...prev, [cacheKey]: res }));
       setContent(res);
       setView({ type: 'idiom_topics', category });
@@ -807,7 +846,21 @@ export default function App() {
     }
     setIsLoading(true);
     try {
-      const res = await generateIdiomLesson(topic);
+      let res = null;
+      if (!forceRefresh) {
+        res = await getCachedLesson(cacheKey);
+      }
+      if (res) {
+        console.log(`Loaded idiom lesson from shared Firestore cache: ${cacheKey}`);
+      } else {
+        res = await generateIdiomLesson(topic);
+        await saveCachedLesson(cacheKey, {
+          type: 'idiom',
+          topic,
+          category,
+          content: res
+        });
+      }
       setContentCache(prev => ({ ...prev, [cacheKey]: res }));
       setContent(res);
       setView({ type: 'vocabulary_lesson', topic: topic + ' (Idioms)', category } as any);
@@ -833,16 +886,10 @@ export default function App() {
   const loadQuiz = async (topic: string, type: 'grammar' | 'vocabulary', category?: GrammarCategory, level?: CEFRLevel, isOverall?: boolean, forceRefresh = true) => {
     closeMenu();
     setError(null);
-    const cacheKey = `quiz_${type}_${topic}_${isOverall ? 'overall' : 'specific'}_${level || ''}`;
-    if (!forceRefresh && contentCache[cacheKey]) {
-      setContent(contentCache[cacheKey]);
-      setView({ type: type === 'grammar' ? 'grammar_test' : 'vocabulary_test', topic, category: category!, level, isOverall } as any);
-      return;
-    }
     setIsLoading(true);
     try {
+      // Always generate fresh, unique quiz questions from the AI to avoid repeating identical questions.
       const res = await generateQuiz(topic, type, level, isOverall);
-      setContentCache(prev => ({ ...prev, [cacheKey]: res }));
       setContent(res);
       setView({ type: type === 'grammar' ? 'grammar_test' : 'vocabulary_test', topic, category: category!, level, isOverall } as any);
     } catch (err) { 
@@ -853,19 +900,13 @@ export default function App() {
     }
   };
 
-  const loadDrills = async (topic: string, category: GrammarCategory, level?: CEFRLevel) => {
+  const loadDrills = async (topic: string, category: GrammarCategory, level?: CEFRLevel, forceRefresh = true) => {
     closeMenu();
     setError(null);
-    const cacheKey = `drills_${topic}_${level || ''}`;
-    if (contentCache[cacheKey]) {
-      setContent(contentCache[cacheKey]);
-      setView({ type: 'grammar_drills', topic, category, level });
-      return;
-    }
     setIsLoading(true);
     try {
+      // Always generate fresh, randomized practice drills from the AI to ensure continuous learning.
       const res = await generateGrammarDrills(topic, level);
-      setContentCache(prev => ({ ...prev, [cacheKey]: res }));
       setContent(res);
       setView({ type: 'grammar_drills', topic, category, level });
     } catch (err) { 
