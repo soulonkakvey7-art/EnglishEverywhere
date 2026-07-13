@@ -40,7 +40,7 @@ const NETWORK_NODES: NetworkNode[] = [
     type: 'grammar',
     level: 'A1',
     category: 'Levels',
-    x: 90,
+    x: 80,
     y: 110,
     description: 'Learn the core verb used to introduce yourself, state your age, and describe your surroundings.',
     connections: ['greetings', 'present_simple']
@@ -51,8 +51,8 @@ const NETWORK_NODES: NetworkNode[] = [
     type: 'vocabulary',
     level: 'A1',
     category: 'Levels', // vocabulary isn't grammar but we can map category appropriately
-    x: 90,
-    y: 290,
+    x: 80,
+    y: 310,
     description: 'Essential everyday phrases for starting casual conversations, polite check-ins, and standard introductions.',
     connections: ['to_be', 'present_simple']
   },
@@ -62,21 +62,43 @@ const NETWORK_NODES: NetworkNode[] = [
     type: 'grammar',
     level: 'A1',
     category: 'Levels',
-    x: 210,
-    y: 190,
+    x: 160,
+    y: 210,
     description: 'Master talking about your daily habits, permanent situations, facts, and generalized routines.',
-    connections: ['to_be', 'greetings', 'daily_routines']
+    connections: ['to_be', 'greetings', 'daily_routines', 'asking_directions']
   },
-
+ 
   // A2 Nodes
+  {
+    id: 'asking_directions',
+    label: 'Asking for Directions',
+    type: 'vocabulary',
+    level: 'A2',
+    category: 'Levels',
+    x: 240,
+    y: 80,
+    description: 'Navigate unfamiliar neighborhoods with confidence by mastering critical spatial questions and answers.',
+    connections: ['present_simple', 'modal_requests']
+  },
+  {
+    id: 'modal_requests',
+    label: 'Modal Verbs for Requests',
+    type: 'grammar',
+    level: 'A2',
+    category: 'Levels',
+    x: 300,
+    y: 140,
+    description: 'Polish your interpersonal etiquette using polite forms like "could," "would," and "may" for requests.',
+    connections: ['asking_directions', 'dining_out']
+  },
   {
     id: 'daily_routines',
     label: 'Housework & Daily Routines',
     type: 'vocabulary',
     level: 'A2',
     category: 'Levels',
-    x: 230,
-    y: 330,
+    x: 240,
+    y: 350,
     description: 'Enrich your daily conversation with descriptive vocabulary for household chores and standard activities.',
     connections: ['present_simple', 'past_simple']
   },
@@ -86,54 +108,32 @@ const NETWORK_NODES: NetworkNode[] = [
     type: 'grammar',
     level: 'A2',
     category: 'Levels',
-    x: 350,
-    y: 250,
+    x: 310,
+    y: 270,
     description: 'Express actions, events, and narratives that occurred and concluded at a definite point in the past.',
-    connections: ['daily_routines', 'past_continuous', 'narrative_tenses']
+    connections: ['daily_routines', 'past_continuous']
   },
-  {
-    id: 'asking_directions',
-    label: 'Asking for Directions',
-    type: 'vocabulary',
-    level: 'A2',
-    category: 'Levels',
-    x: 180,
-    y: 50,
-    description: 'Navigate unfamiliar neighborhoods with confidence by mastering critical spatial questions and answers.',
-    connections: ['modal_requests']
-  },
-  {
-    id: 'modal_requests',
-    label: 'Modal Verbs for Requests',
-    type: 'grammar',
-    level: 'A2',
-    category: 'Levels',
-    x: 290,
-    y: 90,
-    description: 'Polish your interpersonal etiquette using polite forms like "could," "would," and "may" for requests.',
-    connections: ['asking_directions', 'dining_out']
-  },
+ 
+  // B1 Nodes
   {
     id: 'dining_out',
     label: 'Restaurant & Dining Out',
     type: 'vocabulary',
     level: 'A2',
     category: 'Levels',
-    x: 390,
-    y: 120,
+    x: 380,
+    y: 90,
     description: 'Interact with restaurant staff, order dishes, express dietary needs, and handle culinary transactions.',
     connections: ['modal_requests', 'present_perfect']
   },
-
-  // B1 Nodes
   {
     id: 'past_continuous',
     label: 'Past Continuous',
     type: 'grammar',
     level: 'B1',
     category: 'Levels',
-    x: 330,
-    y: 370,
+    x: 390,
+    y: 330,
     description: 'Describe ongoing background scenarios and interrupted actions in past timelines.',
     connections: ['past_simple', 'present_perfect']
   },
@@ -143,23 +143,23 @@ const NETWORK_NODES: NetworkNode[] = [
     type: 'grammar',
     level: 'B1',
     category: 'Levels',
-    x: 480,
-    y: 220,
+    x: 470,
+    y: 210,
     description: 'Connect historical events or personal achievements with their direct, current relevance in the present.',
     connections: ['dining_out', 'past_continuous', 'academic_trends', 'second_conditional']
   },
-
+ 
   // B2 Nodes
   {
-    id: 'second_conditional',
-    label: 'Second Conditional',
-    type: 'grammar',
+    id: 'meetings_negotiations',
+    label: 'Meetings & Negotiations',
+    type: 'vocabulary',
     level: 'B2',
     category: 'Levels',
-    x: 450,
-    y: 340,
-    description: 'Formulate hypotheses and imagine outcomes for unreal, hypothetical, or highly improbable scenarios.',
-    connections: ['present_perfect', 'wish_if_only', 'meetings_negotiations']
+    x: 540,
+    y: 80,
+    description: 'Gain executive-level authority in workplace settings with essential collocations for commercial diplomacy.',
+    connections: ['present_perfect', 'formal_emails']
   },
   {
     id: 'wish_if_only',
@@ -167,32 +167,21 @@ const NETWORK_NODES: NetworkNode[] = [
     type: 'grammar',
     level: 'B2',
     category: 'Levels',
-    x: 320,
-    y: 190,
+    x: 530,
+    y: 200,
     description: 'Acknowledge present and past regrets, and voice strong aspirations for situations to be completely different.',
-    connections: ['second_conditional', 'third_conditional']
+    connections: ['present_perfect', 'second_conditional', 'third_conditional']
   },
   {
-    id: 'meetings_negotiations',
-    label: 'Meetings & Negotiations',
-    type: 'vocabulary',
+    id: 'second_conditional',
+    label: 'Second Conditional',
+    type: 'grammar',
     level: 'B2',
     category: 'Levels',
-    x: 510,
-    y: 60,
-    description: 'Gain executive-level authority in workplace settings with essential collocations for commercial diplomacy.',
-    connections: ['second_conditional', 'formal_emails']
-  },
-  {
-    id: 'formal_emails',
-    label: 'Formal Emails & Requests',
-    type: 'vocabulary',
-    level: 'B2',
-    category: 'Levels',
-    x: 610,
-    y: 100,
-    description: 'Compose elegant, professional, and clear textual requests for cross-functional business communication.',
-    connections: ['meetings_negotiations', 'subjunctive']
+    x: 540,
+    y: 310,
+    description: 'Formulate hypotheses and imagine outcomes for unreal, hypothetical, or highly improbable scenarios.',
+    connections: ['present_perfect', 'wish_if_only', 'third_conditional']
   },
   {
     id: 'third_conditional',
@@ -200,23 +189,23 @@ const NETWORK_NODES: NetworkNode[] = [
     type: 'grammar',
     level: 'B2',
     category: 'Levels',
-    x: 430,
-    y: 410,
+    x: 550,
+    y: 400,
     description: 'Analyze historical regret by theorizing alternate outcomes for events that have already concluded.',
-    connections: ['wish_if_only', 'mixed_conditionals']
+    connections: ['wish_if_only', 'second_conditional', 'mixed_conditionals']
   },
-
+ 
   // C1 Nodes
   {
-    id: 'mixed_conditionals',
-    label: 'Mixed Conditionals',
-    type: 'grammar',
-    level: 'C1',
+    id: 'formal_emails',
+    label: 'Formal Emails & Requests',
+    type: 'vocabulary',
+    level: 'B2',
     category: 'Levels',
-    x: 560,
-    y: 380,
-    description: 'Seamlessly blend distinct time frames to illustrate how past actions impact current or future parameters.',
-    connections: ['third_conditional', 'inversion']
+    x: 630,
+    y: 100,
+    description: 'Compose elegant, professional, and clear textual requests for cross-functional business communication.',
+    connections: ['meetings_negotiations', 'subjunctive']
   },
   {
     id: 'academic_trends',
@@ -224,10 +213,21 @@ const NETWORK_NODES: NetworkNode[] = [
     type: 'vocabulary',
     level: 'C1',
     category: 'Levels',
-    x: 590,
-    y: 280,
+    x: 620,
+    y: 220,
     description: 'Leverage precise adjectives, verbs, and nouns to detail fluctuations and patterns in scientific charts.',
     connections: ['present_perfect', 'inversion']
+  },
+  {
+    id: 'mixed_conditionals',
+    label: 'Mixed Conditionals',
+    type: 'grammar',
+    level: 'C1',
+    category: 'Levels',
+    x: 640,
+    y: 360,
+    description: 'Seamlessly blend distinct time frames to illustrate how past actions impact current or future parameters.',
+    connections: ['third_conditional', 'inversion']
   },
   {
     id: 'inversion',
@@ -235,8 +235,8 @@ const NETWORK_NODES: NetworkNode[] = [
     type: 'grammar',
     level: 'C1',
     category: 'Levels',
-    x: 690,
-    y: 330,
+    x: 700,
+    y: 290,
     description: 'Restructure clauses by moving negative or limiting adverbs to the front for majestic, formal emphasis.',
     connections: ['mixed_conditionals', 'academic_trends', 'subjunctive']
   },
@@ -246,12 +246,12 @@ const NETWORK_NODES: NetworkNode[] = [
     type: 'grammar',
     level: 'C1',
     category: 'Levels',
-    x: 730,
-    y: 190,
+    x: 720,
+    y: 170,
     description: 'Express strong recommendations, urgent prerequisites, or hypothetical conditions with correct formal registers.',
     connections: ['inversion', 'formal_emails', 'precise_vocabulary']
   },
-
+ 
   // C2 Nodes
   {
     id: 'narrative_tenses',
@@ -259,10 +259,10 @@ const NETWORK_NODES: NetworkNode[] = [
     type: 'grammar',
     level: 'C2',
     category: 'Levels',
-    x: 680,
-    y: 40,
+    x: 790,
+    y: 70,
     description: 'Weave masterful tales and academic stories with precise shifts in perspective, pacing, and aspect.',
-    connections: ['past_simple', 'precise_vocabulary']
+    connections: ['precise_vocabulary']
   },
   {
     id: 'precise_vocabulary',
@@ -270,8 +270,8 @@ const NETWORK_NODES: NetworkNode[] = [
     type: 'vocabulary',
     level: 'C2',
     category: 'Levels',
-    x: 760,
-    y: 100,
+    x: 800,
+    y: 170,
     description: 'Deploy rare, hyper-specific, and contextually rich vocabulary to convey exact emotional or physical nuance.',
     connections: ['subjunctive', 'narrative_tenses']
   }

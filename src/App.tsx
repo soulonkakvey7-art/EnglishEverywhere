@@ -104,143 +104,188 @@ const CEFR_LEVELS: { level: CEFRLevel, topics: string[] }[] = [
   {
     level: 'A1',
     topics: [
-      'To Be (am, is, are)', 
-      'Question Words', 
-      'Possessive Adjectives', 
-      'Articles (a, an, the)', 
-      'Plural Nouns', 
-      'Subject Pronouns', 
-      'Prepositions of Place', 
-      'Present Simple', 
-      'Can/Can\'t',
-      'Numbers, Days & Months',
+      'Subject Pronouns',
+      'To Be (am, is, are)',
+      'Singular and Plural Nouns',
+      'Articles (a, an, the)',
+      'Demonstratives (this, that, these, those)',
+      'Possessive Adjectives',
+      'Question Words',
+      'Prepositions of Place',
+      'Present Simple',
       'Prepositions of Time',
-      'Demonstratives',
+      'Numbers, Days & Months',
+      'Object Pronouns',
+      'Countable & Uncountable Nouns Basics',
       'Imperatives',
       'There is/There are',
-      'Basic Adjectives/Adverbs',
       'Have Got / Has Got',
-      'Object Pronouns',
-      'Countable & Uncountable Nouns Basics'
+      'Basic Adjectives/Adverbs',
+      'Can/Can\'t',
+      'Basic Possessive \'s',
+      'Like, Love, Hate + Gerund',
+      'Adjectives for Describing People',
+      'Telling the Time',
+      'Prepositions of Movement (to, into, out of)',
+      'Present Simple Questions & Negatives',
+      'Wh- Questions with To Be and Do'
     ]
   },
   {
     level: 'A2',
     topics: [
-      'Adverbs of Frequency', 
-      'Simple Past', 
-      'Comparative Adjectives', 
-      'Superlative Adjectives', 
-      'Possessive Pronouns', 
-      'Present Continuous', 
-      'Future with Going To', 
-      'Prepositions of Time', 
-      'Quantifiers',
+      'Present Continuous',
+      'Present Simple vs. Present Continuous Contrast',
+      'Adverbs of Frequency',
+      'Simple Past',
       'Past Continuous',
-      'Present Perfect for Experience',
+      'Past Simple vs. Past Continuous Contrast',
+      'Future with Going To',
+      'Future with Will / Shall',
+      'Comparative Adjectives',
+      'Superlative Adjectives',
+      'Possessive Pronouns',
+      'Reflexive Pronouns (myself, yourself)',
+      'Too and Enough',
+      'Quantifiers (some, any, much, many)',
       'Adverbs of Manner',
       'Infinitives of Purpose',
-      'Modals of Obligation',
-      'Relative Pronouns',
-      'Too and Enough',
-      'Reflexive Pronouns (myself, yourself)',
+      'Modal Verbs for Requests',
+      'Relative Pronouns (who, which, that)',
       'Gerunds vs Infinitives Basics',
-      'Modal Verbs for Requests'
+      'Present Perfect for Experience',
+      'As... As Comparisons',
+      'Subject and Object Questions',
+      'Modals of Ability (can, could, be able to)',
+      'Prepositions of Place & Direction (across, through, past)',
+      'Something, Anyone, Nowhere (Indefinite Pronouns)',
+      'Conjunctions of Contrast and Reason (but, because, although)',
+      'Present Perfect with For and Since'
     ]
   },
   {
     level: 'B1',
     topics: [
-      'Present Perfect', 
-      'Past Continuous', 
-      'Modal Verbs (Advice)', 
-      'First Conditional', 
-      'Zero Conditional', 
-      'Passive Voice Basic', 
-      'Relative Clauses', 
-      'Used to', 
-      'Reported Speech Basics',
+      'Present Perfect',
+      'Present Perfect vs. Past Simple Contrast',
       'Present Perfect Continuous',
       'Past Perfect Simple',
       'Future Continuous',
-      'Modals of Permission',
+      'Zero Conditional',
+      'First Conditional',
+      'Second Conditional Introduction',
+      'Wish & If Only Basics',
+      'Passive Voice Basics',
+      'Active vs Passive Voice',
+      'Modal Verbs for Advice',
+      'Modals of Permission & Obligation',
       'Defining vs Non-Defining Relative Clauses',
+      'Reported Speech Basics',
+      'Colloquial Short Answers',
       'Question Tags',
-      'Full Passive Voice',
-      'Phrasal Verbs Basics',
       'So and Such Contrast',
-      'Second Conditional Introduction'
+      'Phrasal Verbs Basics',
+      'Used to',
+      'The Art of Punctuation & Semicolons',
+      'Past Habits with Used To and Would',
+      'Modals of Deduction/Possibility in the Present (might, may, must, can\'t)',
+      'Third Conditional Introduction',
+      'Reporting Verbs in Present & Past',
+      'Gerunds as Subjects and Objects',
+      'Future Tense Review & Contrast',
+      'Both, Either, Neither',
+      'Relative Clauses with Where, When, Whose'
     ]
   },
   {
     level: 'B2',
     topics: [
-      'Second Conditional', 
-      'Third Conditional', 
-      'Past Perfect', 
-      'Advanced Passive', 
-      'Gerunds and Infinitives', 
-      'Modals of Deduction', 
-      'Phrasal Verbs', 
-      'Sentence Connectors', 
       'Narrative Tenses',
-      'Wish & If Only',
+      'Present and Past Habits (be/get used to)',
       'Future Perfect & Continuous',
-      'Relative Clauses with Prepositions',
+      'Second Conditional',
+      'Third Conditional',
+      'Mixed Conditionals Introduction',
+      'Wish & If Only',
+      'Relative Clauses (Defining & Non-defining)',
+      'Passive Voice in Full',
+      'Passive Voice in Reports',
+      'Causative Verbs',
+      'Modals of Deduction',
       'Past Modals',
-      'Mixed Conditionals',
+      'Gerunds and Infinitives',
+      'Relative Clauses with Prepositions',
       'Participle Clauses',
+      'Phrasal Verbs',
+      'Sentence Connectors',
       'Negative Inversion',
       'Reporting Verbs',
-      'Causative Verbs',
-      'Passive Voice in Reports'
+      'Reported Speech & Indirect Quotes',
+      'Dangling & Misplaced Modifiers',
+      'Cleft Sentences',
+      'Mixed Conditionals in Full',
+      'Future in the Past (was going to, would)',
+      'Prepositions Following Verbs and Adjectives',
+      'Wishes about the Past (Wish + Past Perfect)',
+      'Causative Have and Get',
+      'Inversion after Negative Adverbials Basics',
+      'Non-Finite Participle Clauses'
     ]
   },
   {
     level: 'C1',
     topics: [
-      'Mixed Conditionals', 
-      'Inversion for Emphasis', 
-      'Cleft Sentences', 
-      'Subjunctive Mood', 
-      'Compound Adjectives', 
-      'Advanced Modals', 
-      'Discourse Markers', 
-      'Future in the Past', 
-      'Complex Sentence Structures',
+      'Mixed Conditionals',
       'Inversion in Conditionals',
-      'All Cleft Sentences',
-      'Subjunctive in Formal Writing',
-      'Advanced Prepositional Relative Clauses',
-      'Gerunds and Infinitives after reporting verbs',
+      'Inversion for Emphasis',
+      'Cleft Sentences',
+      'Subjunctive Mood',
+      'Diplomatic & Indirect Language',
       'Unreal Past',
-      'Advanced Discourse Markers',
-      'Future Perfect Continuous in complex sentences',
-      'Advanced Causatives'
+      'Advanced Passive Constructions',
+      'Advanced Modals',
+      'Gerunds and Infinitives after reporting verbs',
+      'Advanced Prepositional Relative Clauses',
+      'Discourse Markers',
+      'Compound Adjectives',
+      'Future in the Past',
+      'Ellipsis and Substitution',
+      'Complex Sentence Structures',
+      'Hypothesizing & Speculating',
+      'Advanced Adverbials & Modifiers',
+      'Parallel Structure in Writing',
+      'Nominal Relative Clauses (what, whatever, whoever)',
+      'Fronting for Emphasis and Rhetorical Flow',
+      'Advanced Conditionals (but for, had it not been for, should you need)',
+      'Register and Voice Shifts',
+      'Metaphorical Extensions & Idiomatic Grammar',
+      'Advanced Punctuation & Rhetorical Transitions',
+      'Preposed Adjectives & Absolute Clauses'
     ]
   },
   {
     level: 'C2',
     topics: [
-      'Complex Inversions', 
-      'Ellipsis and Substitution', 
-      'Sophisticated Modal Usage', 
-      'Archaic Structures', 
-      'Academic Register', 
-      'Advanced Narrative Techniques', 
-      'Rhetorical Devices', 
-      'Contextual Nuance', 
-      'Precise Vocabulary',
       'Sophisticated Inversion & Fronting',
       'Archaic & Literary Subjunctive',
-      'Metaphorical Extension',
       'Nuanced Ellipsis & Substitution',
       'Advanced Modality',
-      'Register Shifts (Legal, Literary)',
+      'Complex Parenthetical Clauses',
+      'Advanced Narrative Techniques',
+      'Rhetorical Devices',
+      'Register Shifts',
       'Syntactic Ambiguity',
+      'Precise Vocabulary',
       'Advanced Rhetorical Parallelism',
       'Advanced Punctuation & Rhetorical Flow',
-      'Subjunctive Mood'
+      'Subjunctive Mood',
+      'Advanced Synthesis and Stylistic Inversion',
+      'Idiosyncratic Grammar & Neologisms',
+      'Polysyndeton & Asyndeton',
+      'Anaphora & Cataphora in Textual Cohesion',
+      'Chiasmus and Antimetabole',
+      'Rhetorical Litotes and Double Negatives',
+      'Syntactic Condensation in Literary Registers'
     ]
   }
 ];
@@ -492,7 +537,7 @@ export default function App() {
   const [error, setError] = useState<string | null>(null);
   const [contentCache, setContentCache] = useState<Record<string, any>>(() => {
     try {
-      const CACHE_VERSION = 'v1.2';
+      const CACHE_VERSION = 'v1.5';
       const savedVersion = localStorage.getItem('english_everywhere_cache_version');
       if (savedVersion !== CACHE_VERSION) {
         localStorage.removeItem('english_everywhere_cache');
@@ -666,37 +711,15 @@ export default function App() {
     
     const staticTopics = CEFR_LEVELS.find(l => l.level === level)?.topics || [];
 
-    // Check cache first (only if it has at least the same number of topics as our static list)
-    if (contentCache[cacheKey] && contentCache[cacheKey].length >= staticTopics.length) {
-      setContent(contentCache[cacheKey]);
-      setView({ type: 'grammar_level_menu', level });
-      markLessonComplete(cacheKey);
-      return;
-    }
-
-    // Default to our pre-defined static topics for instant load
-    if (staticTopics.length > 0) {
+    // Always prefer the static list defined in our code to ensure updates are immediately visible.
+    // Sync the cache key to have the latest list
+    if (!contentCache[cacheKey] || JSON.stringify(contentCache[cacheKey]) !== JSON.stringify(staticTopics)) {
       setContentCache(prev => ({ ...prev, [cacheKey]: staticTopics }));
-      setContent(staticTopics);
-      setView({ type: 'grammar_level_menu', level });
-      markLessonComplete(cacheKey);
-      return;
     }
 
-    // Fallback to AI if no static topics (shouldn't happen with our constant)
-    setIsLoading(true);
-    try {
-      const topics = await generateGrammarTopics(level);
-      setContentCache(prev => ({ ...prev, [cacheKey]: topics }));
-      setContent(topics);
-      setView({ type: 'grammar_level_menu', level });
-      markLessonComplete(cacheKey);
-    } catch (err) { 
-      console.error(err);
-      setError("AI generation failed. The service might be under high load. Please try again in 30 seconds.");
-    } finally {
-      setIsLoading(false);
-    }
+    setContent(staticTopics);
+    setView({ type: 'grammar_level_menu', level });
+    markLessonComplete(cacheKey);
   };
 
   const loadLesson = async (topic: string, category: GrammarCategory, level?: CEFRLevel, forceRefresh = false) => {
@@ -4264,9 +4287,7 @@ function HomeView({ onStart, onOverallTest, progress, onJumpToLesson }: { onStar
 
 function LevelsGrid({ onSelect, onOverallTest, progress, contentCache }: { onSelect: (level: CEFRLevel) => void, onOverallTest: (level: CEFRLevel) => void, progress: UserProgress, contentCache: any }) {
   const getLevelCompletion = (level: CEFRLevel) => {
-    const staticTopics = CEFR_LEVELS.find(l => l.level === level)?.topics || [];
-    const cachedTopics = contentCache[`topics_${level}`];
-    const topics = (cachedTopics && cachedTopics.length >= staticTopics.length) ? cachedTopics : staticTopics;
+    const topics = CEFR_LEVELS.find(l => l.level === level)?.topics || [];
     if (topics.length === 0) return 0;
     let completed = 0;
     topics.forEach((t: string) => {
