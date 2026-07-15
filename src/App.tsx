@@ -1617,6 +1617,61 @@ export default function App() {
             </motion.div>
           )}
         </AnimatePresence>
+
+        {/* About The Creator Section */}
+        <div className="w-full max-w-5xl mx-auto px-6 md:px-12 pb-12 pt-6 mt-auto">
+          <div className="bg-white dark:bg-zinc-900/60 border border-gray-200/60 dark:border-zinc-800 rounded-3xl p-6 md:p-8 shadow-sm space-y-4">
+            <div className="flex items-center gap-3">
+              <div className="p-2 bg-indigo-50 dark:bg-indigo-950/40 text-indigo-600 dark:text-indigo-400 rounded-xl">
+                <GraduationCap size={22} />
+              </div>
+              <h2 className="text-lg md:text-xl font-bold tracking-tight text-[#1A1A1A] dark:text-white">
+                About The Creator
+              </h2>
+            </div>
+            
+            <div className="space-y-4 text-sm text-gray-600 dark:text-gray-300 leading-relaxed">
+              <p>
+                Hello and Welcome! I am Sou Lonkakvey. I developed EnglishEverywhere as part of my ongoing journey in educational technology. As an educator, my ultimate goal is always to find practical, meaningful ways to help students build confidence in their language skills using modern digital tools. 
+              </p>
+              <p>
+                I believe that learning shouldn't stop when the school bell rings. That is why I built this app—to give my students and fellow learners a supportive, interactive space where they can reinforce what they learn at their own pace. By combining standard classroom learning with smart AI tools, I hope to make language practice more accessible, engaging, and seamless for everyone.
+              </p>
+              <p>
+                Thank you so much for testing out the app and exploring this project!
+              </p>
+            </div>
+
+            <div className="pt-4 border-t border-gray-100 dark:border-zinc-800/80">
+              <ul className="space-y-2 text-sm text-gray-600 dark:text-gray-300">
+                <li className="flex items-start gap-2.5">
+                  <span className="text-[#4F46E5] dark:text-indigo-400 mt-1 font-sans">•</span>
+                  <span>
+                    <strong className="text-[#1A1A1A] dark:text-white font-semibold">Affiliation:</strong> Prey Veng Regional Teacher Training Center (PVRTTC)
+                  </span>
+                </li>
+                <li className="flex items-start gap-2.5">
+                  <span className="text-[#4F46E5] dark:text-indigo-400 mt-1 font-sans">•</span>
+                  <span>
+                    <strong className="text-[#1A1A1A] dark:text-white font-semibold">Purpose:</strong> Strengthening language skills through interactive, demonstration-based digital practice
+                  </span>
+                </li>
+                <li className="flex items-start gap-2.5">
+                  <span className="text-[#4F46E5] dark:text-indigo-400 mt-1 font-sans">•</span>
+                  <span>
+                    <strong className="text-[#1A1A1A] dark:text-white font-semibold">Email:</strong> soulonkakvey7@gmail.com
+                  </span>
+                </li>
+                <li className="flex items-start gap-2.5">
+                  <span className="text-[#4F46E5] dark:text-indigo-400 mt-1 font-sans">•</span>
+                  <span>
+                    <strong className="text-[#1A1A1A] dark:text-white font-semibold">Telegram:</strong> 097 5394254
+                  </span>
+                </li>
+              </ul>
+            </div>
+          </div>
+        </div>
       </main>
 
       {/* Accessibility Modal */}
