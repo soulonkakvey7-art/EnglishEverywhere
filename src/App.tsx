@@ -127,53 +127,89 @@ const KHMER_TRANSLATIONS: Record<string, string> = {
   'Future Perfect Continuous': 'អនាគតកាលបរិបូណ៍កំពុងបន្ត'
 };
 
-function formatTitleWithKhmer(title: string, baseSizeClass = "text-lg md:text-xl") {
-  const keys = Object.keys(KHMER_TRANSLATIONS).sort((a, b) => b.length - a.length);
+function getMatchingFixedKey(title: string): string | null {
+  // Normalize whitespace
+  let clean = title.replace(/\s+/g, ' ').trim();
   
+  // Remove level indicators (e.g., A1, A2, B1, B2, C1, C2) case-insensitively, optionally preceded/followed by "Level" or "Level:"
+  clean = clean.replace(/\b(level\s+)?[a-c][1-2]\b/i, '');
+  clean = clean.replace(/\b[a-c][1-2](\s+level)?\b/i, '');
+  
+  // Remove common lesson/quiz/drill trailing words case-insensitively
+  clean = clean.replace(/\b(tense|tenses|grammar|quiz|quizzes|drill|drills|lesson|lessons)\b/gi, '');
+  
+  // Clean up any double spaces, trailing colons or dashes
+  clean = clean.replace(/[:\-]/g, '');
+  clean = clean.replace(/\s+/g, ' ').trim();
+  
+  // Check direct matches (case-insensitive)
+  const keys = Object.keys(KHMER_TRANSLATIONS);
   for (const key of keys) {
-    // For parts of speech, allow optional 's' at the end
-    const isPartOfSpeech = ['Noun', 'Pronoun', 'Verb', 'Adjective', 'Adverb', 'Preposition', 'Conjunction', 'Interjection'].includes(key);
-    const pattern = isPartOfSpeech ? `\\b${key}s?\\b` : `\\b${key}\\b`;
-    const regex = new RegExp(pattern, 'i');
-    
-    if (regex.test(title)) {
-      const khmer = KHMER_TRANSLATIONS[key];
-      const match = title.match(regex);
-      if (match && match.index !== undefined) {
-        const index = match.index;
-        const matchedLength = match[0].length;
-        const before = title.substring(0, index);
-        const matchedText = title.substring(index, index + matchedLength);
-        const after = title.substring(index + matchedLength);
-        
-        // Dynamically reduce the English text size slightly when paired with Khmer to fit perfectly on any screen
-        let smallerBaseClass = baseSizeClass;
-        if (baseSizeClass.includes("text-lg md:text-xl")) {
-          smallerBaseClass = baseSizeClass.replace("text-lg md:text-xl", "text-base md:text-lg");
-        } else if (baseSizeClass.includes("text-base md:text-lg")) {
-          smallerBaseClass = baseSizeClass.replace("text-base md:text-lg", "text-sm md:text-base");
-        } else if (baseSizeClass.includes("text-sm md:text-base")) {
-          smallerBaseClass = baseSizeClass.replace("text-sm md:text-base", "text-xs md:text-sm");
-        }
+    if (clean.toLowerCase() === key.toLowerCase()) {
+      return key;
+    }
+  }
+  
+  // Check plural forms for parts of speech (e.g. "Nouns" -> "Noun", "Verbs" -> "Verb")
+  // Only for parts of speech (to avoid touching "Continuous")
+  const partsOfSpeech = ['Noun', 'Pronoun', 'Verb', 'Adjective', 'Adverb', 'Preposition', 'Conjunction', 'Interjection'];
+  for (const pos of partsOfSpeech) {
+    const plural = pos + 's';
+    if (clean.toLowerCase() === plural.toLowerCase()) {
+      return pos;
+    }
+  }
+  
+  return null;
+}
 
-        // Determine size class for Khmer word based on English text size to ensure proportional scaling
-        let khmerSizeClass = "text-[14px] md:text-base"; // default larger Khmer size
-        if (baseSizeClass.includes("text-xl") || baseSizeClass.includes("text-2xl") || baseSizeClass.includes("text-lg")) {
-          khmerSizeClass = "text-lg md:text-xl"; // bigger inside the lesson titles
-        } else if (baseSizeClass.includes("text-base") || baseSizeClass.includes("text-md")) {
-          khmerSizeClass = "text-sm md:text-base";
-        }
-        
-        return (
-          <span className="flex flex-col items-start min-w-0 max-w-full text-left">
-            <span className={`${smallerBaseClass} truncate w-full`}>{before}{matchedText}{after}</span>
-            <span className={`${khmerSizeClass} font-black text-black dark:text-white font-khmer mt-1 leading-normal select-none`}>
-              {khmer}
-            </span>
-          </span>
-        );
+function formatTitleWithKhmer(title: string, baseSizeClass = "text-lg md:text-xl", isLarge = false) {
+  const matchedKey = getMatchingFixedKey(title);
+  
+  if (matchedKey) {
+    const khmer = KHMER_TRANSLATIONS[matchedKey];
+    
+    let englishClass = baseSizeClass;
+    let khmerClass = "";
+    let dashClass = "text-gray-400 dark:text-gray-500 font-bold select-none shrink-0";
+    let containerClass = "inline-flex items-center gap-x-1.5 flex-wrap min-w-0 max-w-full text-left leading-normal py-0.5";
+    
+    if (isLarge) {
+      // Inside the lesson: big, bold, and prominent
+      englishClass = "text-xl md:text-2xl lg:text-3xl font-black";
+      khmerClass = "text-[18px] md:text-xl lg:text-2xl font-black font-khmer shrink-0";
+      dashClass += " text-lg md:text-xl";
+      containerClass = "inline-flex items-center gap-x-2.5 flex-wrap min-w-0 max-w-full text-left leading-relaxed py-1";
+    } else {
+      // Outside the lesson (in list cards, menus, headers): make it smaller to fit border frames beautifully
+      // Remove any text-xl, text-lg, text-base, text-sm, text-xs size classes and map them to clean, compact sizes
+      let hasBold = baseSizeClass.includes("font-bold") || baseSizeClass.includes("font-black");
+      let hasMedium = baseSizeClass.includes("font-medium");
+      
+      const isCardTitle = baseSizeClass.includes("text-base md:text-lg") || baseSizeClass.includes("text-lg");
+      
+      if (isCardTitle) {
+        // e.g., Card title outside lesson (Tenses / Parts of Speech)
+        englishClass = `${hasBold ? "font-bold" : hasMedium ? "font-medium" : ""} text-xs sm:text-sm md:text-[15px] truncate shrink-0`;
+        khmerClass = "text-[11px] sm:text-xs md:text-[13px] font-bold font-khmer text-gray-500 dark:text-gray-400 shrink-0";
+        dashClass += " text-xs md:text-sm";
+      } else {
+        // e.g., Sidebar list item, small subheadings
+        englishClass = `${hasBold ? "font-bold" : hasMedium ? "font-medium" : ""} text-[11px] sm:text-xs md:text-sm truncate shrink-0`;
+        khmerClass = "text-[10px] sm:text-[11px] md:text-xs font-bold font-khmer text-gray-500 dark:text-gray-400 shrink-0";
+        dashClass += " text-[10px] md:text-xs";
       }
     }
+    
+    return (
+      <span className={containerClass}>
+        <span className={`${englishClass} text-black dark:text-white truncate`}>{title}</span>
+        <span className={dashClass}>-</span>
+        <span className={`${khmerClass} text-black dark:text-white font-khmer`}>
+          {khmer}
+        </span>
+      </span>
+    );
   }
   
   return <span className={`${baseSizeClass} truncate`}>{title}</span>;
@@ -4713,7 +4749,7 @@ function GrammarLessonView({ data, category, onBack, onTakeTest, onTakeDrills, o
       </div>
       
       <div className="space-y-4">
-        <h1 className="text-base md:text-xl font-black tracking-tight">{formatTitleWithKhmer(data.title, "text-base md:text-xl font-black tracking-tight")}</h1>
+        <h1 className="text-xl md:text-2xl lg:text-3xl font-black tracking-tight">{formatTitleWithKhmer(data.title, "text-xl md:text-2xl lg:text-3xl font-black tracking-tight", true)}</h1>
         {data.structure && (
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-4">
              {['affirmative', 'negative', 'question'].map(key => (

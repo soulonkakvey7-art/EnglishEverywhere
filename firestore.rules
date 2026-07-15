@@ -1,14 +1,27 @@
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
+    // Global safety net
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
     match /cached_lessons/{lessonId} {
       allow read: if true;
-      allow create: if request.resource.data.key is string
-                    && request.resource.data.type is string
-                    && request.resource.data.topic is string
-                    && request.resource.data.content is map
-                    && request.resource.data.createdAt is string;
-      allow update, delete: if false;
+      allow create, update: if isValidId(lessonId) && isValidCachedLesson(request.resource.data);
     }
   }
 }
+
+function isValidId(id) {
+  return id is string && id.size() <= 200;
+}
+
+function isValidCachedLesson(data) {
+  return data.key is string
+      && data.type is string
+      && data.topic is string
+      && (data.content is map || data.content is list)
+      && data.createdAt is string;
+}
+
