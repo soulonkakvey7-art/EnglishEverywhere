@@ -72,7 +72,6 @@ import {
   TranslationResult,
   QuizAnalysisResult
 } from './types';
-import { TopicNetwork } from './components/TopicNetwork';
 import { DICTIONARY_DATA } from './dictionaryData';
 import { searchWords, getIrregularVerbs, generateDictionaryTest, WordSuggestion } from './services/dictionaryService';
 import { 
@@ -100,6 +99,85 @@ const TENSES = [
   'Conditional Sentences', 'Future with Going To & Will'
 ];
 const IDIOM_CATEGORIES = ['Animals', 'Body Parts', 'Colors', 'Food & Drink', 'Nature', 'Time', 'Money', 'Weather', 'Emotions', 'Travel', 'Work & Business', 'Health', 'Relationships', 'Success & Failure'];
+
+const KHMER_TRANSLATIONS: Record<string, string> = {
+  // Parts of Speech
+  'Noun': 'នាម',
+  'Pronoun': 'សព្វនាម',
+  'Verb': 'កិរិយាសព្ទ',
+  'Adjective': 'គុណនាម',
+  'Adverb': 'គុណកិរិយា',
+  'Preposition': 'ធ្នាក់',
+  'Conjunction': 'ឈ្នាប់',
+  'Interjection': 'ឧទានសព្ទ',
+
+  // Tenses
+  'Present Simple': 'បច្ចុប្បន្នកាលធម្មតា',
+  'Present Continuous': 'បច្ចុប្បន្នកាលកំពុងបន្ត',
+  'Present Perfect': 'បច្ចុប្បន្នកាលបរិបូណ៍',
+  'Present Perfect Continuous': 'បច្ចុប្បន្នកាលបរិបូណ៍កំពុងបន្ត',
+  'Past Simple': 'អតីតកាលធម្មតា',
+  'Simple Past': 'អតីតកាលធម្មតា',
+  'Past Continuous': 'អតីតកាលកំពុងបន្ត',
+  'Past Perfect': 'អតីតកាលបរិបូណ៍',
+  'Past Perfect Continuous': 'អតីតកាលបរិបូណ៍កំពុងបន្ត',
+  'Future Simple': 'អនាគតកាលធម្មតា',
+  'Future Continuous': 'អនាគតកាលកំពុងបន្ត',
+  'Future Perfect': 'អនាគតកាលបរិបូណ៍',
+  'Future Perfect Continuous': 'អនាគតកាលបរិបូណ៍កំពុងបន្ត'
+};
+
+function formatTitleWithKhmer(title: string, baseSizeClass = "text-lg md:text-xl") {
+  const keys = Object.keys(KHMER_TRANSLATIONS).sort((a, b) => b.length - a.length);
+  
+  for (const key of keys) {
+    // For parts of speech, allow optional 's' at the end
+    const isPartOfSpeech = ['Noun', 'Pronoun', 'Verb', 'Adjective', 'Adverb', 'Preposition', 'Conjunction', 'Interjection'].includes(key);
+    const pattern = isPartOfSpeech ? `\\b${key}s?\\b` : `\\b${key}\\b`;
+    const regex = new RegExp(pattern, 'i');
+    
+    if (regex.test(title)) {
+      const khmer = KHMER_TRANSLATIONS[key];
+      const match = title.match(regex);
+      if (match && match.index !== undefined) {
+        const index = match.index;
+        const matchedLength = match[0].length;
+        const before = title.substring(0, index);
+        const matchedText = title.substring(index, index + matchedLength);
+        const after = title.substring(index + matchedLength);
+        
+        // Dynamically reduce the English text size slightly when paired with Khmer to fit perfectly on any screen
+        let smallerBaseClass = baseSizeClass;
+        if (baseSizeClass.includes("text-lg md:text-xl")) {
+          smallerBaseClass = baseSizeClass.replace("text-lg md:text-xl", "text-base md:text-lg");
+        } else if (baseSizeClass.includes("text-base md:text-lg")) {
+          smallerBaseClass = baseSizeClass.replace("text-base md:text-lg", "text-sm md:text-base");
+        } else if (baseSizeClass.includes("text-sm md:text-base")) {
+          smallerBaseClass = baseSizeClass.replace("text-sm md:text-base", "text-xs md:text-sm");
+        }
+
+        // Determine size class for Khmer word based on English text size to ensure proportional scaling
+        let khmerSizeClass = "text-[14px] md:text-base"; // default larger Khmer size
+        if (baseSizeClass.includes("text-xl") || baseSizeClass.includes("text-2xl") || baseSizeClass.includes("text-lg")) {
+          khmerSizeClass = "text-lg md:text-xl"; // bigger inside the lesson titles
+        } else if (baseSizeClass.includes("text-base") || baseSizeClass.includes("text-md")) {
+          khmerSizeClass = "text-sm md:text-base";
+        }
+        
+        return (
+          <span className="flex flex-col items-start min-w-0 max-w-full text-left">
+            <span className={`${smallerBaseClass} truncate w-full`}>{before}{matchedText}{after}</span>
+            <span className={`${khmerSizeClass} font-black text-black dark:text-white font-khmer mt-1 leading-normal select-none`}>
+              {khmer}
+            </span>
+          </span>
+        );
+      }
+    }
+  }
+  
+  return <span className={`${baseSizeClass} truncate`}>{title}</span>;
+}
 
 const CEFR_LEVELS: { level: CEFRLevel, topics: string[] }[] = [
   {
@@ -1850,7 +1928,7 @@ function SearchResultsView({
                        <BookOpen size={16} md:size={18} />}
                     </div>
                     <div>
-                      <p className="font-bold text-sm md:text-base">{r.title}</p>
+                      <div className="font-bold text-sm md:text-base">{formatTitleWithKhmer(r.title, "font-bold text-sm md:text-base")}</div>
                       {r.subtitle && <p className="text-[9px] md:text-[10px] uppercase font-black tracking-widest text-gray-400">{r.subtitle}</p>}
                     </div>
                   </div>
@@ -2769,6 +2847,119 @@ const GOOGLE_LANGUAGES: Language[] = [
   { name: 'Zulu', code: 'zu-ZA' }
 ];
 
+function getLanguageFlag(name: string): string {
+  const flags: Record<string, string> = {
+    'Auto-detect': '🔍',
+    'Afrikaans': '🇿🇦',
+    'Albanian': '🇦🇱',
+    'Amharic': '🇪🇹',
+    'Arabic': '🇸🇦',
+    'Armenian': '🇦🇲',
+    'Azerbaijani': '🇦🇿',
+    'Basque': '🇪🇸',
+    'Belarusian': '🇧🇾',
+    'Bengali': '🇧🇩',
+    'Bosnian': '🇧🇦',
+    'Bulgarian': '🇧🇬',
+    'Catalan': '🇪🇸',
+    'Cebuano': '🇵🇭',
+    'Chinese (Simplified)': '🇨🇳',
+    'Chinese (Traditional)': '🇹🇼',
+    'Croatian': '🇭🇷',
+    'Czech': '🇨🇿',
+    'Danish': '🇩🇰',
+    'Dutch': '🇳🇱',
+    'English': '🇺🇸',
+    'Esperanto': '🌐',
+    'Estonian': '🇪🇪',
+    'Finnish': '🇫🇮',
+    'French': '🇫🇷',
+    'Galician': '🇪🇸',
+    'Georgian': '🇬🇪',
+    'German': '🇩🇪',
+    'Greek': '🇬🇷',
+    'Gujarati': '🇮🇳',
+    'Haitian Creole': '🇭🇹',
+    'Hausa': '🇳🇬',
+    'Hawaiian': '🌺',
+    'Hebrew': '🇮🇱',
+    'Hindi': '🇮🇳',
+    'Hmong': '🌐',
+    'Hungarian': '🇭🇺',
+    'Icelandic': '🇮🇸',
+    'Igbo': '🇳🇬',
+    'Indonesian': '🇮🇩',
+    'Irish': '🇮🇪',
+    'Italian': '🇮🇹',
+    'Japanese': '🇯🇵',
+    'Javanese': '🇮🇩',
+    'Kannada': '🇮🇳',
+    'Kazakh': '🇰🇿',
+    'Khmer': '🇰🇭',
+    'Kinyarwanda': '🇷🇼',
+    'Korean': '🇰🇷',
+    'Kurdish': '🌐',
+    'Kyrgyz': '🇰🇬',
+    'Lao': '🇱🇦',
+    'Latin': '🇻🇦',
+    'Latvian': '🇱🇻',
+    'Lithuanian': '🇱🇹',
+    'Macedonian': '🇲🇰',
+    'Malagasy': '🇲🇬',
+    'Malay': '🇲🇾',
+    'Malayalam': '🇮🇳',
+    'Maltese': '🇲🇹',
+    'Maori': '🇳🇿',
+    'Marathi': '🇮🇳',
+    'Mongolian': '🇲🇳',
+    'Myanmar (Burmese)': '🇲🇲',
+    'Nepali': '🇳🇵',
+    'Norwegian': '🇳🇴',
+    'Nyanja (Chichewa)': '🇲🇼',
+    'Odia (Oriya)': '🇮🇳',
+    'Pashto': '🇦🇫',
+    'Persian': '🇮🇷',
+    'Polish': '🇵🇱',
+    'Portuguese': '🇵🇹',
+    'Punjabi': '🇮🇳',
+    'Romanian': '🇷🇴',
+    'Russian': '🇷🇺',
+    'Samoan': '🇼🇸',
+    'Scots Gaelic': '🏴󠁧󠁢󠁳󠁣󠁴󠁿',
+    'Serbian': '🇷🇸',
+    'Sesotho': '🇱🇸',
+    'Shona': '🇿🇼',
+    'Sindhi': '🇵🇰',
+    'Sinhala (Sinhalese)': '🇱🇰',
+    'Slovak': '🇸🇰',
+    'Slovenian': '🇸🇮',
+    'Somali': '🇸🇴',
+    'Spanish': '🇪🇸',
+    'Sundanese': '🇮🇩',
+    'Swahili': '🇰🇪',
+    'Swedish': '🇸🇪',
+    'Tagalog (Filipino)': '🇵🇭',
+    'Tajik': '🇹🇯',
+    'Tamil': '🇮🇳',
+    'Tatar': '🇷🇺',
+    'Telugu': '🇮🇳',
+    'Thai': '🇹🇭',
+    'Turkish': '🇹🇷',
+    'Turkmen': '🇹🇲',
+    'Ukrainian': '🇺🇦',
+    'Urdu': '🇵🇰',
+    'Uyghur': '🌐',
+    'Uzbek': '🇺🇿',
+    'Vietnamese': '🇻🇳',
+    'Welsh': '🏴󠁧󠁢󠁷󠁬󠁳󠁿',
+    'Xhosa': '🇿🇦',
+    'Yiddish': '✡️',
+    'Yoruba': '🇳🇬',
+    'Zulu': '🇿🇦'
+  };
+  return flags[name] || '🌐';
+}
+
 function TranslateView() {
   const [inputText, setInputText] = useState('');
   const [translatedResult, setTranslatedResult] = useState<TranslationResult | null>(null);
@@ -3297,7 +3488,10 @@ ${translatedResult.alternatives.map(alt => `*   ${alt}`).join('\n')}
                 onClick={() => setShowLanguageModal('source')}
                 className="flex-1 px-4 py-3 bg-white border border-gray-200 rounded-2xl text-sm font-black text-indigo-950 flex items-center justify-center gap-1.5 shadow-sm active:bg-gray-50 transition-all text-ellipsis overflow-hidden whitespace-nowrap"
               >
-                <span className="truncate">{sourceLang}</span>
+                <span className="truncate flex items-center gap-1.5">
+                  <span className="text-base select-none">{getLanguageFlag(sourceLang)}</span>
+                  <span>{sourceLang}</span>
+                </span>
                 <span className="text-gray-400 text-xs">▼</span>
               </button>
 
@@ -3314,7 +3508,10 @@ ${translatedResult.alternatives.map(alt => `*   ${alt}`).join('\n')}
                 onClick={() => setShowLanguageModal('target')}
                 className="flex-1 px-4 py-3 bg-white border border-gray-200 rounded-2xl text-sm font-black text-indigo-950 flex items-center justify-center gap-1.5 shadow-sm active:bg-gray-50 transition-all text-ellipsis overflow-hidden whitespace-nowrap"
               >
-                <span className="truncate">{targetLang}</span>
+                <span className="truncate flex items-center gap-1.5">
+                  <span className="text-base select-none">{getLanguageFlag(targetLang)}</span>
+                  <span>{targetLang}</span>
+                </span>
                 <span className="text-gray-400 text-xs">▼</span>
               </button>
             </div>
@@ -3329,9 +3526,10 @@ ${translatedResult.alternatives.map(alt => `*   ${alt}`).join('\n')}
                   <button
                     key={lang}
                     onClick={() => handleSourceLangChange(lang)}
-                    className={`px-3 py-1.5 rounded-xl text-xs font-black transition-all ${sourceLang === lang ? 'bg-indigo-50 text-indigo-600 shadow-sm border border-indigo-100' : 'text-gray-500 hover:text-indigo-950 hover:bg-gray-50'}`}
+                    className={`px-3 py-1.5 rounded-xl text-xs font-black transition-all flex items-center gap-1.5 ${sourceLang === lang ? 'bg-indigo-50 text-indigo-600 shadow-sm border border-indigo-100' : 'text-gray-500 hover:text-indigo-950 hover:bg-gray-50'}`}
                   >
-                    {lang}
+                    <span className="text-base select-none">{getLanguageFlag(lang)}</span>
+                    <span>{lang}</span>
                   </button>
                 ))}
               </div>
@@ -3351,9 +3549,10 @@ ${translatedResult.alternatives.map(alt => `*   ${alt}`).join('\n')}
                   <button
                     key={lang}
                     onClick={() => handleTargetLangChange(lang)}
-                    className={`px-3 py-1.5 rounded-xl text-xs font-black transition-all ${targetLang === lang ? 'bg-indigo-50 text-indigo-600 shadow-sm border border-indigo-100' : 'text-gray-500 hover:text-indigo-950 hover:bg-gray-50'}`}
+                    className={`px-3 py-1.5 rounded-xl text-xs font-black transition-all flex items-center gap-1.5 ${targetLang === lang ? 'bg-indigo-50 text-indigo-600 shadow-sm border border-indigo-100' : 'text-gray-500 hover:text-indigo-950 hover:bg-gray-50'}`}
                   >
-                    {lang}
+                    <span className="text-base select-none">{getLanguageFlag(lang)}</span>
+                    <span>{lang}</span>
                   </button>
                 ))}
               </div>
@@ -3374,7 +3573,13 @@ ${translatedResult.alternatives.map(alt => `*   ${alt}`).join('\n')}
             <div className={colClasses}>
               <div className="space-y-4 flex-1 flex flex-col min-h-0">
                 <div className="flex items-center justify-between">
-                  <span className="text-[10px] font-black uppercase tracking-widest text-gray-400">Translate from {sourceLang}</span>
+                  <span className="text-[10px] font-black uppercase tracking-widest text-gray-400 flex items-center gap-1">
+                    <span>Translate from</span>
+                    <span className="text-gray-500 flex items-center gap-1 font-bold">
+                      <span>{getLanguageFlag(sourceLang)}</span>
+                      <span>{sourceLang}</span>
+                    </span>
+                  </span>
                   {inputText.length > 0 && (
                     <button 
                       onClick={() => { setInputText(''); setTranslatedResult(null); }} 
@@ -3453,11 +3658,16 @@ ${translatedResult.alternatives.map(alt => `*   ${alt}`).join('\n')}
               )}
 
               <div className="space-y-4 flex-1 flex flex-col min-h-0">
-                <span className="text-[10px] font-black uppercase tracking-widest text-indigo-500">
-                  {targetLang} Translation
+                <span className="text-[10px] font-black uppercase tracking-widest text-indigo-500 flex items-center flex-wrap gap-1">
+                  <span className="flex items-center gap-1">
+                    <span>{getLanguageFlag(targetLang)}</span>
+                    <span>{targetLang} Translation</span>
+                  </span>
                   {sourceLang === 'Auto-detect' && translatedResult?.detectedSourceLanguage && (
-                    <span className="text-gray-400 font-bold lowercase normal-case tracking-normal ml-2">
-                      (detected: {translatedResult.detectedSourceLanguage})
+                    <span className="text-gray-400 font-bold lowercase normal-case tracking-normal ml-2 flex items-center gap-1">
+                      <span>(detected:</span>
+                      <span>{getLanguageFlag(translatedResult.detectedSourceLanguage)}</span>
+                      <span>{translatedResult.detectedSourceLanguage})</span>
                     </span>
                   )}
                 </span>
@@ -3666,9 +3876,15 @@ ${translatedResult.alternatives.map(alt => `*   ${alt}`).join('\n')}
                   <div className="space-y-3">
                     <div className="flex items-center justify-between gap-2">
                       <div className="flex items-center gap-1.5 text-[10px] font-black uppercase tracking-wider text-gray-400">
-                        <span>{item.sourceLang}</span>
+                        <span className="flex items-center gap-1">
+                          <span>{getLanguageFlag(item.sourceLang)}</span>
+                          <span>{item.sourceLang}</span>
+                        </span>
                         <span>➔</span>
-                        <span className="text-indigo-600">{item.targetLang}</span>
+                        <span className="text-indigo-600 flex items-center gap-1">
+                          <span>{getLanguageFlag(item.targetLang)}</span>
+                          <span>{item.targetLang}</span>
+                        </span>
                       </div>
                       
                       {/* Action buttons on card */}
@@ -3965,7 +4181,10 @@ ${translatedResult.alternatives.map(alt => `*   ${alt}`).join('\n')}
                     }}
                     className={`w-full flex items-center justify-between px-4 py-3.5 text-sm font-bold rounded-xl transition-all ${sourceLang === 'Auto-detect' ? 'text-indigo-600 bg-indigo-50/70 shadow-sm' : 'text-gray-700 hover:bg-gray-50'}`}
                   >
-                    <span>Auto-detect Language</span>
+                    <div className="flex items-center gap-2.5">
+                      <span className="text-base select-none">{getLanguageFlag('Auto-detect')}</span>
+                      <span>Auto-detect Language</span>
+                    </div>
                     {sourceLang === 'Auto-detect' && <Check size={16} className="text-[#4F46E5]" />}
                   </button>
                 )}
@@ -3993,7 +4212,10 @@ ${translatedResult.alternatives.map(alt => `*   ${alt}`).join('\n')}
                       }}
                       className={`w-full flex items-center justify-between px-4 py-3.5 text-sm font-bold rounded-xl transition-all ${isSelected ? 'text-indigo-600 bg-indigo-50/70 shadow-sm' : 'text-gray-700 hover:bg-gray-50'}`}
                     >
-                      <span>{lang.name}</span>
+                      <div className="flex items-center gap-2.5">
+                        <span className="text-base select-none">{getLanguageFlag(lang.name)}</span>
+                        <span>{lang.name}</span>
+                      </div>
                       {isSelected && <Check size={16} className="text-[#4F46E5]" />}
                     </button>
                   );
@@ -4281,47 +4503,6 @@ function HomeView({ onStart, onOverallTest, progress, onJumpToLesson }: { onStar
           </div>
         </section>
       )}
-
-      {/* Topic Network Constellation */}
-      <TopicNetwork progress={progress} onJumpToLesson={onJumpToLesson} />
-
-      {/* Leaderboard Mockup */}
-      <section className="w-full bg-[#1A1A1A] rounded-[3rem] p-8 md:p-12 text-white overflow-hidden relative">
-        <div className="absolute top-0 right-0 w-64 h-64 bg-white/5 rounded-full -translate-y-1/2 translate-x-1/2 blur-3xl pointer-events-none" />
-        <div className="relative z-10 grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
-            <div className="space-y-6">
-                <div className="inline-flex items-center gap-2 px-3 py-1 bg-amber-500/20 text-amber-500 rounded-full border border-amber-500/30 text-[10px] font-black uppercase tracking-widest">
-                    <Award size={12} /> Leaderboard
-                </div>
-                <h3 className="text-xl md:text-2xl font-black leading-tight">Climb to the top <br/> of the rankings.</h3>
-                <p className="text-gray-400 text-xs md:text-sm">Earn points with every lesson to showcase your dedication.</p>
-            </div>
-            <div className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-3xl p-6 space-y-4">
-                <div className="flex items-center justify-between p-3 bg-white/10 rounded-2xl border border-white/10">
-                    <div className="flex items-center gap-4">
-                        <span className="font-black text-amber-500">1</span>
-                        <div className="w-10 h-10 bg-amber-500 rounded-full flex items-center justify-center font-black text-xs">YOU</div>
-                        <span className="font-bold">You (Student)</span>
-                    </div>
-                    <span className="font-black">{progress.points} pts</span>
-                </div>
-                {/* Mock Competitors */}
-                {[
-                    { name: 'Alex T.', pts: Math.max(0, progress.points - 50) },
-                    { name: 'Sarah M.', pts: Math.max(0, progress.points - 120) }
-                ].map((c, i) => (
-                    <div key={i} className="flex items-center justify-between p-3 opacity-40">
-                         <div className="flex items-center gap-4">
-                            <span className="font-black">{i + 2}</span>
-                            <div className="w-10 h-10 bg-gray-500 rounded-full flex items-center justify-center font-black text-xs uppercase">{c.name.split(' ')[0][0]}{c.name.split(' ')[1][0]}</div>
-                            <span className="font-bold">{c.name}</span>
-                        </div>
-                        <span className="font-black">{c.pts} pts</span>
-                    </div>
-                ))}
-            </div>
-        </div>
-      </section>
     </div>
   );
 }
@@ -4400,9 +4581,9 @@ function TopicList({ title, items, onBack, onSelect, onTest, onDrills, progress,
 
           return (
             <div key={topic} className="p-4 md:p-6 flex flex-col sm:flex-row sm:items-center justify-between hover:bg-gray-50 transition-colors gap-4">
-              <div className="flex items-center gap-3">
-                <span className="font-medium text-base md:text-lg">{topic}</span>
-                {isLessonDone && <CheckCircle2 size={16} className="text-emerald-500" />}
+              <div className="flex items-center gap-3 max-w-full truncate">
+                {formatTitleWithKhmer(topic, "font-medium text-sm md:text-base truncate")}
+                {isLessonDone && <CheckCircle2 size={16} className="text-emerald-500 shrink-0" />}
                 {quizScore !== undefined && (
                   <span className={`text-[10px] font-black px-2 py-0.5 rounded ${quizScore >= 80 ? 'bg-emerald-100 text-emerald-700' : 'bg-orange-100 text-orange-700'}`}>
                     TEST: {quizScore}%
@@ -4464,9 +4645,9 @@ function SimpleList({ title, items, onSelect, onDrills, onTest, onOverallTest, p
               isDone ? 'bg-emerald-50/30 border-emerald-100 hover:border-emerald-500' : 'bg-white border-gray-200 hover:border-[#1A1A1A]'
             }`}>
               <div className="flex flex-col truncate pr-2">
-                <div className="flex items-center gap-2">
-                  <span className="font-bold text-lg md:text-xl truncate">{item}</span>
-                  {isDone && <CheckCircle2 size={16} className="text-emerald-500" />}
+                <div className="flex items-center gap-2 max-w-full truncate">
+                  {formatTitleWithKhmer(item, "font-bold text-base md:text-lg truncate")}
+                  {isDone && <CheckCircle2 size={16} className="text-emerald-500 shrink-0" />}
                 </div>
                 {score !== undefined && (
                   <span className="text-[10px] font-bold text-emerald-600">BEST SCORE: {score}%</span>
@@ -4532,7 +4713,7 @@ function GrammarLessonView({ data, category, onBack, onTakeTest, onTakeDrills, o
       </div>
       
       <div className="space-y-4">
-        <h1 className="text-lg md:text-2xl font-black tracking-tight">{data.title}</h1>
+        <h1 className="text-base md:text-xl font-black tracking-tight">{formatTitleWithKhmer(data.title, "text-base md:text-xl font-black tracking-tight")}</h1>
         {data.structure && (
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-4">
              {['affirmative', 'negative', 'question'].map(key => (
@@ -5885,19 +6066,108 @@ function DrillView({ data, onBack, onComplete }: { data: DrillSet, onBack: () =>
   const [scores, setScores] = useState<boolean[]>([]);
   const [finished, setFinished] = useState(false);
 
+  // Drag & drop + tap swap states
+  const [draggedIndex, setDraggedIndex] = useState<number | null>(null);
+  const [selectedWordIndex, setSelectedWordIndex] = useState<number | null>(null);
+
+  // New states for interactive Drag and Drop Sentence Builder
+  const [wordBank, setWordBank] = useState<{ id: string; text: string; isUsed: boolean }[]>([]);
+  const [answerWords, setAnswerWords] = useState<{ id: string; text: string }[]>([]);
+
   const hasDrills = data && data.drills && Array.isArray(data.drills) && data.drills.length > 0;
   const currentDrill = hasDrills ? data.drills[currentIndex] : null;
 
   useEffect(() => {
     if (currentDrill && currentDrill.type === 'reorder') {
-      const shuffled = [...(currentDrill.options || [])].sort(() => Math.random() - 0.5);
-      setReorderedWords(shuffled);
+      const options = currentDrill.options || [];
+      // Generate stable, unique items for the word bank
+      const initialBank = options.map((word, idx) => ({
+        id: `${word}-${idx}-${Math.random().toString(36).substr(2, 4)}`,
+        text: word,
+        isUsed: false
+      }));
+      // Shuffle the bank
+      const shuffledBank = [...initialBank].sort(() => Math.random() - 0.5);
+      setWordBank(shuffledBank);
+      setAnswerWords([]);
+      setReorderedWords([]);
     }
     setUserInput('');
     setSelectedStructure(null);
     setShowFeedback(false);
     setShowHint(false);
+    setDraggedIndex(null);
+    setSelectedWordIndex(null);
   }, [currentIndex, currentDrill]);
+
+  // Click/tap interaction (Duolingo-style)
+  const handleWordBankClick = (item: { id: string, text: string }) => {
+    if (showFeedback) return;
+    setWordBank(prev => prev.map(w => w.id === item.id ? { ...w, isUsed: true } : w));
+    setAnswerWords(prev => [...prev, item]);
+  };
+
+  const handleAnswerWordClick = (item: { id: string, text: string }) => {
+    if (showFeedback) return;
+    setWordBank(prev => prev.map(w => w.id === item.id ? { ...w, isUsed: false } : w));
+    setAnswerWords(prev => prev.filter(w => w.id !== item.id));
+  };
+
+  // Drag-and-drop: Word from Bank to Tray
+  const handleBankWordDragStart = (e: React.DragEvent, item: { id: string, text: string }) => {
+    if (showFeedback) return;
+    e.dataTransfer.setData("text/plain", JSON.stringify({ type: "bank", item }));
+  };
+
+  // Drag-and-drop: Word inside Tray (reorder)
+  const handleTrayWordDragStart = (e: React.DragEvent, index: number) => {
+    if (showFeedback) return;
+    e.dataTransfer.setData("text/plain", JSON.stringify({ type: "tray", index }));
+    setDraggedIndex(index);
+  };
+
+  const handleTrayDragOver = (e: React.DragEvent) => {
+    e.preventDefault();
+  };
+
+  const handleTrayDrop = (e: React.DragEvent, targetIndex?: number) => {
+    e.preventDefault();
+    if (showFeedback) return;
+    try {
+      const rawData = e.dataTransfer.getData("text/plain");
+      if (!rawData) return;
+      const parsed = JSON.parse(rawData);
+
+      if (parsed.type === "bank") {
+        const { item } = parsed;
+        if (wordBank.find(w => w.id === item.id)?.isUsed) return;
+
+        setWordBank(prev => prev.map(w => w.id === item.id ? { ...w, isUsed: true } : w));
+        setAnswerWords(prev => {
+          const updated = [...prev];
+          if (typeof targetIndex === "number") {
+            updated.splice(targetIndex, 0, item);
+          } else {
+            updated.push(item);
+          }
+          return updated;
+        });
+      } else if (parsed.type === "tray") {
+        const fromIndex = parsed.index;
+        if (typeof fromIndex === "number" && typeof targetIndex === "number" && fromIndex !== targetIndex) {
+          setAnswerWords(prev => {
+            const updated = [...prev];
+            const [moved] = updated.splice(fromIndex, 1);
+            updated.splice(targetIndex, 0, moved);
+            return updated;
+          });
+        }
+      }
+    } catch (err) {
+      console.error("Drop failed:", err);
+    }
+    setDraggedIndex(null);
+  };
 
   const checkAnswer = () => {
     if (!currentDrill) return;
@@ -5910,7 +6180,9 @@ function DrillView({ data, onBack, onComplete }: { data: DrillSet, onBack: () =>
       
       correct = cleanReconstructed === cleanFullSolution || cleanInput === cleanFullSolution;
     } else if (currentDrill.type === 'reorder') {
-      correct = reorderedWords.join(' ') === currentDrill.solution;
+      const cleanAnswer = answerWords.map(w => w.text).join(' ').trim().toLowerCase().replace(/[.,!?;]$/, '');
+      const cleanSolution = currentDrill.solution.trim().toLowerCase().replace(/[.,!?;]$/, '');
+      correct = cleanAnswer === cleanSolution;
     } else if (currentDrill.type === 'structure') {
       correct = selectedStructure === currentDrill.solution;
     }
@@ -5955,7 +6227,7 @@ function DrillView({ data, onBack, onComplete }: { data: DrillSet, onBack: () =>
         </div>
         <div className="space-y-2">
           <h2 className="text-2xl md:text-3xl font-black">Drills Completed!</h2>
-          <p className="text-gray-500">You've sharpened your skills on {data.topic}.</p>
+          <div className="text-gray-500 font-medium inline-block">You've sharpened your skills on {formatTitleWithKhmer(data.topic, "text-gray-500 font-medium")}.</div>
         </div>
         <div className="grid grid-cols-5 gap-2 max-w-xs mx-auto">
           {scores.map((s, i) => (
@@ -6022,25 +6294,97 @@ function DrillView({ data, onBack, onComplete }: { data: DrillSet, onBack: () =>
             )}
 
             {currentDrill.type === 'reorder' && (
-              <div className="flex flex-wrap items-center justify-center gap-2 md:gap-3">
-                {reorderedWords.map((word, i) => (
-                  <motion.button
-                    layout
-                    key={i}
-                    disabled={showFeedback}
-                    onClick={() => {
-                      const newWords = [...reorderedWords];
-                      if (i < newWords.length - 1) {
-                         [newWords[i], newWords[i+1]] = [newWords[i+1], newWords[i]];
-                         setReorderedWords(newWords);
+              <div className="flex flex-col gap-6 w-full max-w-2xl mx-auto">
+                {/* Shuffled Word Bank */}
+                <div className="space-y-2">
+                  <span className="text-xs font-bold text-gray-400 uppercase tracking-wider block">Word Bank:</span>
+                  <div className="flex flex-wrap items-center justify-center gap-2 md:gap-3 p-5 bg-gray-50/50 rounded-2xl border border-gray-100 min-h-[90px] w-full">
+                    {wordBank.map((item) => {
+                      if (item.isUsed) {
+                        return (
+                          <div 
+                            key={item.id}
+                            className="px-4 py-2.5 border-2 border-dashed border-gray-200 rounded-2xl bg-gray-50/50 text-transparent font-bold select-none font-sans"
+                          >
+                            {item.text}
+                          </div>
+                        );
                       }
-                    }}
-                    className={`px-4 py-2 bg-white border-2 rounded-2xl font-bold shadow-sm transition-all flex items-center gap-2 ${showFeedback ? (isCorrect ? 'border-emerald-200 text-emerald-700 bg-emerald-50' : 'border-orange-200 text-orange-700 bg-orange-50') : 'border-gray-100 hover:border-indigo-500 active:scale-95'}`}
+
+                      return (
+                        <motion.button
+                          layout
+                          key={item.id}
+                          draggable={!showFeedback}
+                          onDragStart={(e) => handleBankWordDragStart(e, item)}
+                          onClick={() => handleWordBankClick(item)}
+                          className="px-4 py-2.5 bg-white border-2 border-gray-200 rounded-2xl font-bold text-gray-800 shadow-sm hover:border-indigo-300 hover:shadow-md active:scale-95 transition-all cursor-grab active:cursor-grabbing select-none"
+                        >
+                          {item.text}
+                        </motion.button>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                {/* Drag / Drop target - Answer Tray */}
+                <div className="space-y-2 mt-2">
+                  <span className="text-xs font-bold text-gray-400 uppercase tracking-wider block">Your Answer:</span>
+                  <div 
+                    onDragOver={handleTrayDragOver}
+                    onDrop={(e) => handleTrayDrop(e)}
+                    className={`flex flex-wrap items-center justify-center gap-2 md:gap-3 p-6 bg-white border-2 border-dashed rounded-[2rem] min-h-[100px] w-full transition-all duration-300 relative ${
+                      showFeedback
+                        ? isCorrect
+                          ? 'border-emerald-200 bg-emerald-50/30'
+                          : 'border-orange-200 bg-orange-50/30'
+                        : 'border-gray-200 hover:border-indigo-200'
+                    }`}
                   >
-                    {word}
-                    {!showFeedback && <div className="text-gray-300">⋮</div>}
-                  </motion.button>
-                ))}
+                    {answerWords.length === 0 && (
+                      <div className="absolute inset-0 flex items-center justify-center pointer-events-none text-gray-400 text-sm font-medium px-4 text-center">
+                        Drag words here or tap them to build your sentence
+                      </div>
+                    )}
+
+                    {answerWords.map((wordObj, i) => {
+                      const isDragging = draggedIndex === i;
+                      
+                      return (
+                        <motion.button
+                          layout
+                          key={wordObj.id}
+                          draggable={!showFeedback}
+                          onDragStart={(e) => handleTrayWordDragStart(e, i)}
+                          onDragOver={handleTrayDragOver}
+                          onDrop={(e) => {
+                            e.stopPropagation();
+                            handleTrayDrop(e, i);
+                          }}
+                          onClick={() => handleAnswerWordClick(wordObj)}
+                          className={`px-4 py-2.5 bg-white border-2 rounded-2xl font-bold shadow-sm transition-all flex items-center gap-1.5 cursor-grab active:cursor-grabbing select-none ${
+                            showFeedback
+                              ? isCorrect
+                                ? 'border-emerald-200 text-emerald-700 bg-emerald-50'
+                                : 'border-orange-200 text-orange-700 bg-orange-50'
+                              : isDragging
+                              ? 'opacity-40 scale-95 border-dashed border-indigo-200 bg-indigo-50/50'
+                              : 'border-gray-200 hover:border-indigo-300 hover:shadow-md'
+                          }`}
+                        >
+                          <span className="text-gray-800">{wordObj.text}</span>
+                        </motion.button>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                {!showFeedback && (
+                  <p className="text-xs text-gray-400 text-center flex items-center justify-center gap-1.5 font-medium">
+                    <span>💡</span>
+                    <span>Drag & drop words into the answer box, or tap them to move them back and forth!</span>
+                  </p>
+                )}
               </div>
             )}
 

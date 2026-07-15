@@ -43,7 +43,7 @@ export async function generateGrammarLesson(topic: string, level?: string): Prom
     const response = await ai.models.generateContent({
       model: "gemini-3-flash-preview",
       contents: `Explain the English grammar topic: "${topic}" ${level ? `for level ${level}` : ''}. 
-      Provide a highly detailed, easy-to-understand explanation and at least 8 varied examples.
+      Provide a highly detailed, easy-to-understand explanation and at least 15 varied, realistic, and highly comprehensive examples to cover every nuance and aspect of the topic in full detail.
       IMPORTANT: In each example sentence, wrap the specific word(s) or phrase(s) that demonstrate the grammar topic (e.g., the specific nouns, verbs, or tenses being taught) in double asterisks like **this**.
       If this topic has clear, standard grammatical forms or sentence structures (like Affirmative, Negative, and Question formulas/forms, e.g., for modals, conditional clauses, pronouns, modifiers, etc.), please provide them in the optional 'structure' object. If the topic does not have standard forms or formulas, do not include the 'structure' field.`,
       config: {
@@ -80,7 +80,7 @@ export async function generateTenseLesson(tense: string): Promise<LessonContent 
     const response = await ai.models.generateContent({
       model: "gemini-3-flash-preview",
       contents: `Explain the English tense: "${tense}". 
-      Provide the structure/formula (Affirmative, Negative, Question), deep explanation of usage contexts, and at least 5 examples for each usage context.
+      Provide the structure/formula (Affirmative, Negative, Question), deep explanation of usage contexts, and at least 8 varied, high-quality examples for each usage context to ensure excellent, detailed coverage of different scenarios.
       IMPORTANT: In each example sentence, wrap the verb(s) demonstrating the "${tense}" tense in double asterisks like **this**.`,
       config: {
         responseMimeType: "application/json",
@@ -121,7 +121,7 @@ export async function generateVocabularyLesson(topic: string): Promise<Vocabular
       1. The part of speech (noun, verb, adjective, etc.)
       2. The IPA phonetic transcription
       3. A detailed, clear definition
-      4. Exactly 3 example sentences that show natural usage.
+      4. Exactly 5 highly detailed and natural example sentences demonstrating diverse usages, settings, and conversational contexts for the word.
       
       Aim to provide a massive, comprehensive list of at least 50-60 high-quality, relevant words and essential terms to ensure extremely exhaustive, detailed coverage of the topic.
       IMPORTANT: In each example sentence, wrap the target word in double asterisks like **this**.`,
@@ -179,7 +179,7 @@ export async function generateIdiomLesson(topic: string): Promise<VocabularyLess
     const response = await ai.models.generateContent({
       model: "gemini-3-flash-preview",
       contents: `Provide a detailed list of English idioms related to: "${topic}".
-      For EACH idiom, provide the part of speech (usually 'idiom' or 'phrase'), the IPA (optional if standard), a clear definition, the historical origin (brief), and exactly 2 example sentences.
+      For EACH idiom, provide the part of speech (usually 'idiom' or 'phrase'), the IPA (optional if standard), a clear definition, the historical origin (brief), and exactly 4 diverse example sentences showcasing real-world application.
       Include at least 10-12 idioms.
       IMPORTANT: In each example sentence, wrap the idiom itself in double asterisks like **this**.`,
       config: {
