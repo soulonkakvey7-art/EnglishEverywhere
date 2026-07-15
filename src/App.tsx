@@ -645,6 +645,11 @@ export default function App() {
   }, [lineHeightScale]);
 
   const [view, setView] = useState<ViewState>({ type: 'home' });
+  const [isReadingMode, setIsReadingMode] = useState(false);
+
+  useEffect(() => {
+    setIsReadingMode(false);
+  }, [view]);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [content, setContent] = useState<any>(null);
@@ -1146,8 +1151,8 @@ export default function App() {
       {/* Sidebar */}
       <aside className={`
         fixed inset-y-0 left-0 z-50 w-72 bg-white border-r border-gray-200 flex flex-col transition-transform duration-300 transform
+        ${isReadingMode ? 'hidden pointer-events-none lg:hidden' : 'lg:relative lg:translate-x-0'}
         ${isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full'}
-        lg:relative lg:translate-x-0
       `}>
         <div className="flex-1 overflow-y-auto p-4 lg:p-8 pb-4">
           <div className="flex items-center justify-between lg:justify-start gap-3 mb-6 lg:mb-8">
@@ -1301,29 +1306,31 @@ export default function App() {
       {/* Main Content Area */}
       <main className="flex-1 overflow-y-auto relative flex flex-col">
         {/* Mobile Header */}
-        <header className="lg:hidden flex items-center justify-between p-4 bg-white border-b border-gray-200 sticky top-0 z-30">
-          <button onClick={() => setIsMobileMenuOpen(true)} className="p-2 hover:bg-gray-100 rounded-lg">
-            <Menu size={20} />
-          </button>
-          <div className="flex items-center gap-2">
-            <div className="bg-[#1A1A1A] p-1.5 rounded-lg">
-              <GraduationCap className="text-white w-5 h-5" />
+        {!isReadingMode && (
+          <header className="lg:hidden flex items-center justify-between p-4 bg-white border-b border-gray-200 sticky top-0 z-30">
+            <button onClick={() => setIsMobileMenuOpen(true)} className="p-2 hover:bg-gray-100 rounded-lg">
+              <Menu size={20} />
+            </button>
+            <div className="flex items-center gap-2">
+              <div className="bg-[#1A1A1A] p-1.5 rounded-lg">
+                <GraduationCap className="text-white w-5 h-5" />
+              </div>
+              <span className="font-bold tracking-tight">EnglishEverywhere</span>
             </div>
-            <span className="font-bold tracking-tight">EnglishEverywhere</span>
-          </div>
-          <div className="flex items-center gap-1">
-            <button 
-              onClick={() => setTheme(prev => prev === 'light' ? 'dark' : 'light')} 
-              className="p-2 hover:bg-gray-100 rounded-lg text-gray-500" 
-              title={theme === 'light' ? 'Switch to Dark Mode' : 'Switch to Light Mode'}
-            >
-              {theme === 'light' ? <Moon size={20} /> : <Sun size={20} />}
-            </button>
-            <button onClick={() => setIsAccessibilityOpen(true)} className="p-2 hover:bg-gray-100 rounded-lg text-gray-500" title="Accessibility Options">
-              <Settings size={20} />
-            </button>
-          </div>
-        </header>
+            <div className="flex items-center gap-1">
+              <button 
+                onClick={() => setTheme(prev => prev === 'light' ? 'dark' : 'light')} 
+                className="p-2 hover:bg-gray-100 rounded-lg text-gray-500" 
+                title={theme === 'light' ? 'Switch to Dark Mode' : 'Switch to Light Mode'}
+              >
+                {theme === 'light' ? <Moon size={20} /> : <Sun size={20} />}
+              </button>
+              <button onClick={() => setIsAccessibilityOpen(true)} className="p-2 hover:bg-gray-100 rounded-lg text-gray-500" title="Accessibility Options">
+                <Settings size={20} />
+              </button>
+            </div>
+          </header>
+        )}
 
         <AnimatePresence mode="wait">
           {error ? (
@@ -1366,7 +1373,7 @@ export default function App() {
               initial={{ opacity: 0, scale: 0.98 }}
               animate={{ opacity: 1, scale: 1 }}
               exit={{ opacity: 0, scale: 0.98 }}
-              className="p-6 md:p-12 max-w-5xl mx-auto w-full"
+              className={isReadingMode ? "p-6 md:p-8 max-w-4xl mx-auto w-full flex-1 flex flex-col" : "p-6 md:p-12 max-w-5xl mx-auto w-full"}
             >
               {view.type === 'home' && (
                 <HomeView 
@@ -1445,12 +1452,21 @@ export default function App() {
                   data={content} 
                   category={view.category}
                   onBack={() => {
+                    setIsReadingMode(false);
                     if (view.category === 'Levels') loadGrammarTopics(view.level!);
                     else setView({ type: 'grammar_menu', category: view.category });
                   }}
-                  onTakeTest={() => loadQuiz(view.topic, 'grammar', view.category, view.level)}
-                  onTakeDrills={() => loadDrills(view.topic, view.category, view.level)}
+                  onTakeTest={() => {
+                    setIsReadingMode(false);
+                    loadQuiz(view.topic, 'grammar', view.category, view.level);
+                  }}
+                  onTakeDrills={() => {
+                    setIsReadingMode(false);
+                    loadDrills(view.topic, view.category, view.level);
+                  }}
                   onRefresh={() => loadLesson(view.topic, view.category, view.level, true)}
+                  isReadingMode={isReadingMode}
+                  setIsReadingMode={setIsReadingMode}
                 />
               )}
 
@@ -1619,59 +1635,61 @@ export default function App() {
         </AnimatePresence>
 
         {/* About The Creator Section */}
-        <div className="w-full max-w-5xl mx-auto px-6 md:px-12 pb-12 pt-6 mt-auto">
-          <div className="bg-white dark:bg-zinc-900/60 border border-gray-200/60 dark:border-zinc-800 rounded-3xl p-6 md:p-8 shadow-sm space-y-4">
-            <div className="flex items-center gap-3">
-              <div className="p-2 bg-indigo-50 dark:bg-indigo-950/40 text-indigo-600 dark:text-indigo-400 rounded-xl">
-                <GraduationCap size={22} />
+        {!isReadingMode && (
+          <div className="w-full max-w-5xl mx-auto px-6 md:px-12 pb-12 pt-6 mt-auto">
+            <div className="bg-white dark:bg-zinc-900/60 border border-gray-200/60 dark:border-zinc-800 rounded-3xl p-6 md:p-8 shadow-sm space-y-4">
+              <div className="flex items-center gap-3">
+                <div className="p-2 bg-indigo-50 dark:bg-indigo-950/40 text-indigo-600 dark:text-indigo-400 rounded-xl">
+                  <GraduationCap size={22} />
+                </div>
+                <h2 className="text-lg md:text-xl font-bold tracking-tight text-[#1A1A1A] dark:text-white">
+                  About The Creator
+                </h2>
               </div>
-              <h2 className="text-lg md:text-xl font-bold tracking-tight text-[#1A1A1A] dark:text-white">
-                About The Creator
-              </h2>
-            </div>
-            
-            <div className="space-y-4 text-sm text-gray-600 dark:text-gray-300 leading-relaxed">
-              <p>
-                Hello and Welcome! I am Sou Lonkakvey. I developed EnglishEverywhere as part of my ongoing journey in educational technology. As an educator, my ultimate goal is always to find practical, meaningful ways to help students build confidence in their language skills using modern digital tools. 
-              </p>
-              <p>
-                I believe that learning shouldn't stop when the school bell rings. That is why I built this app—to give my students and fellow learners a supportive, interactive space where they can reinforce what they learn at their own pace. By combining standard classroom learning with smart AI tools, I hope to make language practice more accessible, engaging, and seamless for everyone.
-              </p>
-              <p>
-                Thank you so much for testing out the app and exploring this project!
-              </p>
-            </div>
+              
+              <div className="space-y-4 text-sm text-gray-600 dark:text-gray-300 leading-relaxed">
+                <p>
+                  Hello and Welcome! I am Sou Lonkakvey. I developed EnglishEverywhere as part of my ongoing journey in educational technology. As an educator, my ultimate goal is always to find practical, meaningful ways to help students build confidence in their language skills using modern digital tools. 
+                </p>
+                <p>
+                  I believe that learning shouldn't stop when the school bell rings. That is why I built this app—to give my students and fellow learners a supportive, interactive space where they can reinforce what they learn at their own pace. By combining standard classroom learning with smart AI tools, I hope to make language practice more accessible, engaging, and seamless for everyone.
+                </p>
+                <p>
+                  Thank you so much for testing out the app and exploring this project!
+                </p>
+              </div>
 
-            <div className="pt-4 border-t border-gray-100 dark:border-zinc-800/80">
-              <ul className="space-y-2 text-sm text-gray-600 dark:text-gray-300">
-                <li className="flex items-start gap-2.5">
-                  <span className="text-[#4F46E5] dark:text-indigo-400 mt-1 font-sans">•</span>
-                  <span>
-                    <strong className="text-[#1A1A1A] dark:text-white font-semibold">Affiliation:</strong> Prey Veng Regional Teacher Training Center (PVRTTC)
-                  </span>
-                </li>
-                <li className="flex items-start gap-2.5">
-                  <span className="text-[#4F46E5] dark:text-indigo-400 mt-1 font-sans">•</span>
-                  <span>
-                    <strong className="text-[#1A1A1A] dark:text-white font-semibold">Purpose:</strong> Strengthening language skills through interactive, demonstration-based digital practice
-                  </span>
-                </li>
-                <li className="flex items-start gap-2.5">
-                  <span className="text-[#4F46E5] dark:text-indigo-400 mt-1 font-sans">•</span>
-                  <span>
-                    <strong className="text-[#1A1A1A] dark:text-white font-semibold">Email:</strong> soulonkakvey7@gmail.com
-                  </span>
-                </li>
-                <li className="flex items-start gap-2.5">
-                  <span className="text-[#4F46E5] dark:text-indigo-400 mt-1 font-sans">•</span>
-                  <span>
-                    <strong className="text-[#1A1A1A] dark:text-white font-semibold">Telegram:</strong> 097 5394254
-                  </span>
-                </li>
-              </ul>
+              <div className="pt-4 border-t border-gray-100 dark:border-zinc-800/80">
+                <ul className="space-y-2 text-sm text-gray-600 dark:text-gray-300">
+                  <li className="flex items-start gap-2.5">
+                    <span className="text-[#4F46E5] dark:text-indigo-400 mt-1 font-sans">•</span>
+                    <span>
+                      <strong className="text-[#1A1A1A] dark:text-white font-semibold">Affiliation:</strong> Prey Veng Regional Teacher Training Center (PVRTTC)
+                    </span>
+                  </li>
+                  <li className="flex items-start gap-2.5">
+                    <span className="text-[#4F46E5] dark:text-indigo-400 mt-1 font-sans">•</span>
+                    <span>
+                      <strong className="text-[#1A1A1A] dark:text-white font-semibold">Purpose:</strong> Strengthening language skills through interactive, demonstration-based digital practice
+                    </span>
+                  </li>
+                  <li className="flex items-start gap-2.5">
+                    <span className="text-[#4F46E5] dark:text-indigo-400 mt-1 font-sans">•</span>
+                    <span>
+                      <strong className="text-[#1A1A1A] dark:text-white font-semibold">Email:</strong> soulonkakvey7@gmail.com
+                    </span>
+                  </li>
+                  <li className="flex items-start gap-2.5">
+                    <span className="text-[#4F46E5] dark:text-indigo-400 mt-1 font-sans">•</span>
+                    <span>
+                      <strong className="text-[#1A1A1A] dark:text-white font-semibold">Telegram:</strong> 097 5394254
+                    </span>
+                  </li>
+                </ul>
+              </div>
             </div>
           </div>
-        </div>
+        )}
       </main>
 
       {/* Accessibility Modal */}
@@ -4763,7 +4781,25 @@ function SimpleList({ title, items, onSelect, onDrills, onTest, onOverallTest, p
   );
 }
 
-function GrammarLessonView({ data, category, onBack, onTakeTest, onTakeDrills, onRefresh }: { data: any, category: GrammarCategory, onBack: () => void, onTakeTest: () => void, onTakeDrills: () => void, onRefresh?: () => void }) {
+function GrammarLessonView({ 
+  data, 
+  category, 
+  onBack, 
+  onTakeTest, 
+  onTakeDrills, 
+  onRefresh,
+  isReadingMode,
+  setIsReadingMode
+}: { 
+  data: any, 
+  category: GrammarCategory, 
+  onBack: () => void, 
+  onTakeTest: () => void, 
+  onTakeDrills: () => void, 
+  onRefresh?: () => void,
+  isReadingMode?: boolean,
+  setIsReadingMode?: (val: boolean) => void
+}) {
   if (!data || !data.examples || !Array.isArray(data.examples)) {
     return (
       <div className="p-12 text-center text-gray-500 font-medium space-y-4">
@@ -4773,59 +4809,102 @@ function GrammarLessonView({ data, category, onBack, onTakeTest, onTakeDrills, o
     );
   }
   return (
-    <div className="space-y-12 accessibility-content">
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
-        <button onClick={onBack} className="flex items-center gap-2 text-gray-400 hover:text-[#1A1A1A] font-medium transition-colors">
-          <ArrowLeft size={16} /> Back to menu
-        </button>
-        <div className="flex flex-wrap gap-3">
-          {onRefresh && (
-            <button 
-              onClick={onRefresh}
-              className="flex-1 md:flex-none px-5 py-3 bg-white border border-gray-200 text-gray-600 rounded-2xl font-bold text-sm hover:bg-gray-50 hover:text-[#1A1A1A] hover:border-gray-300 transition-all flex items-center justify-center gap-2"
-              title="Regenerate this lesson with updated models or settings"
+    <div className={`space-y-12 accessibility-content transition-all duration-300 ${isReadingMode ? 'py-4 max-w-4xl mx-auto' : ''}`}>
+      {/* Reading Mode Header */}
+      {isReadingMode ? (
+        <div className="sticky top-0 z-40 bg-white/90 dark:bg-zinc-950/90 backdrop-blur-md border-b border-gray-100 dark:border-zinc-800 py-4 px-6 -mx-6 md:-mx-12 -mt-6 md:-mt-12 mb-8 flex items-center justify-between rounded-b-2xl shadow-sm">
+          <div className="flex items-center gap-3">
+            <div className="p-2 bg-indigo-50 dark:bg-indigo-950/40 text-indigo-600 dark:text-indigo-400 rounded-xl">
+              <BookOpen size={18} />
+            </div>
+            <div>
+              <p className="text-[10px] font-bold text-indigo-500 uppercase tracking-widest leading-none">Reading Mode</p>
+              <h2 className="text-sm md:text-base font-black truncate max-w-xs md:max-w-md mt-1 dark:text-white">{data.title}</h2>
+            </div>
+          </div>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => setIsReadingMode?.(false)}
+              className="flex items-center gap-2 px-4 py-2 bg-[#1A1A1A] text-white dark:bg-white dark:text-[#1A1A1A] rounded-xl font-bold text-xs hover:scale-[1.03] transition-all shadow-md"
             >
-              <RotateCcw size={16} /> Regenerate
+              <Minimize2 size={14} /> Exit Reader
             </button>
-          )}
-          <button 
-            onClick={onTakeDrills}
-            className="flex-1 md:flex-none px-5 py-3 bg-indigo-50 text-indigo-600 border border-indigo-100 rounded-2xl font-bold text-sm hover:bg-indigo-100 transition-all flex items-center justify-center gap-2"
-          >
-            <Shuffle size={16} /> Practice Drills
-          </button>
-          <button 
-            onClick={onTakeTest}
-            className="flex-1 md:flex-none px-5 py-3 bg-[#1A1A1A] text-white rounded-2xl font-bold text-sm hover:scale-105 transition-all flex items-center justify-center gap-2 shadow-lg"
-          >
-            <BrainCircuit size={16} /> Final Test
-          </button>
+          </div>
         </div>
-      </div>
+      ) : (
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
+          <button onClick={onBack} className="flex items-center gap-2 text-gray-400 hover:text-[#1A1A1A] font-medium transition-colors">
+            <ArrowLeft size={16} /> Back to menu
+          </button>
+          <div className="flex flex-wrap gap-3">
+            {onRefresh && (
+              <button 
+                onClick={onRefresh}
+                className="flex-1 md:flex-none px-5 py-3 bg-white border border-gray-200 text-gray-600 dark:bg-zinc-900 dark:border-zinc-800 dark:text-gray-300 rounded-2xl font-bold text-sm hover:bg-gray-50 hover:text-[#1A1A1A] hover:border-gray-300 transition-all flex items-center justify-center gap-2"
+                title="Regenerate this lesson with updated models or settings"
+              >
+                <RotateCcw size={16} /> Regenerate
+              </button>
+            )}
+            <button 
+              onClick={() => setIsReadingMode?.(true)}
+              className="flex-1 md:flex-none px-5 py-3 bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-800 text-gray-700 dark:text-gray-300 rounded-2xl font-bold text-sm hover:bg-gray-50 dark:hover:bg-zinc-800 hover:text-[#1A1A1A] dark:hover:text-white transition-all flex items-center justify-center gap-2"
+              title="Reading Mode: Full-screen, distracted-free focused view"
+            >
+              <Maximize2 size={16} /> Reading Mode
+            </button>
+            <button 
+              onClick={onTakeDrills}
+              className="flex-1 md:flex-none px-5 py-3 bg-indigo-50 dark:bg-indigo-950/30 text-indigo-600 dark:text-indigo-400 border border-indigo-100 dark:border-indigo-900/40 rounded-2xl font-bold text-sm hover:bg-indigo-100 transition-all flex items-center justify-center gap-2"
+            >
+              <Shuffle size={16} /> Practice Drills
+            </button>
+            <button 
+              onClick={onTakeTest}
+              className="flex-1 md:flex-none px-5 py-3 bg-[#1A1A1A] text-white rounded-2xl font-bold text-sm hover:scale-105 transition-all flex items-center justify-center gap-2 shadow-lg"
+            >
+              <BrainCircuit size={16} /> Final Test
+            </button>
+          </div>
+        </div>
+      )}
       
-      <div className="space-y-4">
-        <h1 className="text-xl md:text-2xl lg:text-3xl font-black tracking-tight">{formatTitleWithKhmer(data.title, "text-xl md:text-2xl lg:text-3xl font-black tracking-tight", true)}</h1>
+      <div className={`space-y-4 ${isReadingMode ? 'max-w-3xl mx-auto text-center' : ''}`}>
+        <h1 className={`font-black tracking-tight ${isReadingMode ? 'text-2xl md:text-4xl text-gray-900 dark:text-white border-b border-gray-100 dark:border-zinc-800 pb-6' : 'text-xl md:text-2xl lg:text-3xl'}`}>
+          {formatTitleWithKhmer(data.title, isReadingMode ? "text-2xl md:text-4xl font-black tracking-tight" : "text-xl md:text-2xl lg:text-3xl font-black tracking-tight", true)}
+        </h1>
         {data.structure && (
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-4">
+          <div className={`grid grid-cols-1 sm:grid-cols-3 gap-4 pt-4 ${isReadingMode ? 'max-w-2xl mx-auto' : ''}`}>
              {['affirmative', 'negative', 'question'].map(key => (
-               <div key={key} className="bg-gray-50 px-4 py-3 rounded-2xl border border-gray-100">
-                 <p className="text-[10px] font-bold uppercase tracking-widest text-gray-400 mb-1">{key}</p>
-                 <p className="font-mono text-xs md:text-sm">{(data.structure as any)[key]}</p>
+               <div key={key} className="bg-gray-50 dark:bg-zinc-900/50 px-4 py-3 rounded-2xl border border-gray-100 dark:border-zinc-800/80 text-left">
+                 <p className="text-[10px] font-bold uppercase tracking-widest text-indigo-500 mb-1">{key}</p>
+                 <p className="font-mono text-xs md:text-sm text-gray-800 dark:text-gray-200 font-semibold">{(data.structure as any)[key]}</p>
                </div>
              ))}
           </div>
         )}
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-12">
-        <div className="md:col-span-2 space-y-8">
+      <div className={isReadingMode ? "max-w-3xl mx-auto space-y-12" : "grid grid-cols-1 md:grid-cols-3 gap-12"}>
+        <div className={isReadingMode ? "space-y-12" : "md:col-span-2 space-y-8"}>
           <section className="space-y-4">
             <h3 className="text-base md:text-lg font-bold flex items-center gap-2">
-              <div className="w-1.5 h-6 bg-[#1A1A1A] rounded-full" /> Detailed Explanation
+              <div className="w-1.5 h-6 bg-[#1A1A1A] dark:bg-white rounded-full" /> Detailed Explanation
             </h3>
-            <div className="text-xs md:text-sm text-gray-700 leading-relaxed space-y-4 whitespace-pre-wrap">
+            <div className={`text-gray-700 dark:text-gray-300 leading-relaxed whitespace-pre-wrap ${isReadingMode ? 'text-base md:text-lg font-serif space-y-6 md:leading-loose' : 'text-xs md:text-sm space-y-4'}`}>
               {data.explanation}
             </div>
+
+            {data.explanationKhmer && (
+              <div className="mt-8 pt-8 border-t border-gray-100 dark:border-zinc-800 space-y-4">
+                <h3 className="text-base md:text-lg font-bold font-khmer flex items-center gap-2 text-indigo-600 dark:text-indigo-400">
+                  <div className="w-1.5 h-6 bg-indigo-500 rounded-full" /> ការពន្យល់ជាភាសាខ្មែរ (Explanation in Khmer)
+                </h3>
+                <div className={`text-gray-700 dark:text-gray-300 font-khmer leading-relaxed whitespace-pre-wrap ${isReadingMode ? 'text-base md:text-lg space-y-6 md:leading-loose' : 'text-xs md:text-sm'}`}>
+                  {data.explanationKhmer}
+                </div>
+              </div>
+            )}
           </section>
 
           <section className="space-y-4">
@@ -4834,7 +4913,7 @@ function GrammarLessonView({ data, category, onBack, onTakeTest, onTakeDrills, o
              </h3>
              <div className="space-y-3">
                {data.examples.map((ex: string, i: number) => (
-                 <div key={i} className="p-4 bg-emerald-50/50 border border-emerald-100 rounded-2xl font-medium text-xs md:text-sm relative group leading-relaxed">
+                 <div key={i} className="p-4 bg-emerald-50/50 dark:bg-emerald-950/10 border border-emerald-100/60 dark:border-emerald-900/30 rounded-2xl font-medium text-xs md:text-sm relative group leading-relaxed">
                    <span className="absolute -left-2 -top-2 bg-emerald-500 text-white w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-bold shadow-sm">
                      {i + 1}
                    </span>
@@ -4845,32 +4924,54 @@ function GrammarLessonView({ data, category, onBack, onTakeTest, onTakeDrills, o
           </section>
         </div>
 
-        <div className="space-y-6">
-           <div className="bg-[#1A1A1A] p-6 rounded-3xl text-white space-y-3 shadow-xl">
-             <h3 className="text-base md:text-lg font-bold">Ready to test?</h3>
-             <p className="text-gray-400 text-xs">Take the 20-question randomized test for this topic.</p>
-             <button 
-              onClick={onTakeTest}
-              className="w-full py-3 bg-white text-[#1A1A1A] rounded-2xl font-bold hover:scale-[1.02] transition-all flex items-center justify-center gap-2 text-xs md:text-sm"
-             >
-               Start Quiz <BrainCircuit size={18} />
-             </button>
-           </div>
-           
-           <div className="p-8 bg-white border border-gray-100 rounded-3xl shadow-sm">
-             <h4 className="font-bold mb-4 flex items-center gap-2">
-               <Volume2 size={18} /> Pro Tip
-             </h4>
-             <p className="text-sm text-gray-500 italic">
-               Try reading the examples out loud to practice your prosody and rhythm while focusing on the grammar.
-             </p>
-           </div>
-        </div>
+        {!isReadingMode && (
+          <div className="space-y-6">
+             <div className="bg-[#1A1A1A] p-6 rounded-3xl text-white space-y-3 shadow-xl">
+               <h3 className="text-base md:text-lg font-bold">Ready to test?</h3>
+               <p className="text-gray-400 text-xs">Take the 20-question randomized test for this topic.</p>
+               <button 
+                onClick={onTakeTest}
+                className="w-full py-3 bg-white text-[#1A1A1A] rounded-2xl font-bold hover:scale-[1.02] transition-all flex items-center justify-center gap-2 text-xs md:text-sm"
+               >
+                 Start Quiz <BrainCircuit size={18} />
+               </button>
+             </div>
+             
+             <div className="p-8 bg-white dark:bg-zinc-900/40 border border-gray-100 dark:border-zinc-800 rounded-3xl shadow-sm">
+               <h4 className="font-bold mb-4 flex items-center gap-2 text-gray-900 dark:text-white">
+                 <Volume2 size={18} /> Pro Tip
+               </h4>
+               <p className="text-sm text-gray-500 dark:text-gray-400 italic">
+                 Try reading the examples out loud to practice your prosody and rhythm while focusing on the grammar.
+               </p>
+             </div>
+          </div>
+        )}
       </div>
       
-      <div className="pt-12 border-t border-gray-100 text-center">
-        <p className="text-gray-400 mb-6 font-medium">Would you like to see more examples, or are you ready to take the 20-question test for this topic?</p>
-      </div>
+      {isReadingMode ? (
+        <div className="pt-12 border-t border-gray-100 dark:border-zinc-800 text-center max-w-xl mx-auto space-y-6">
+          <p className="text-gray-500 dark:text-gray-400 font-medium">You have finished reading this lesson! Ready to test your skills?</p>
+          <div className="flex flex-col sm:flex-row gap-4 justify-center">
+            <button 
+              onClick={onTakeDrills}
+              className="px-6 py-3 bg-indigo-50 dark:bg-indigo-950/40 text-indigo-600 dark:text-indigo-400 border border-indigo-100 dark:border-indigo-900/40 rounded-2xl font-bold text-sm hover:bg-indigo-100/60 transition-all flex items-center justify-center gap-2"
+            >
+              <Shuffle size={16} /> Practice Drills
+            </button>
+            <button 
+              onClick={onTakeTest}
+              className="px-6 py-3 bg-[#1A1A1A] dark:bg-white text-white dark:text-[#1A1A1A] rounded-2xl font-bold text-sm hover:scale-105 transition-all flex items-center justify-center gap-2 shadow-lg"
+            >
+              <BrainCircuit size={16} /> Start Final Test
+            </button>
+          </div>
+        </div>
+      ) : (
+        <div className="pt-12 border-t border-gray-100 dark:border-zinc-800 text-center">
+          <p className="text-gray-400 mb-6 font-medium">Would you like to see more examples, or are you ready to take the 20-question test for this topic?</p>
+        </div>
+      )}
     </div>
   );
 }
@@ -4999,7 +5100,12 @@ function VocabularyLessonView({ data, onBack, onTakeTest, speak, onRefresh }: { 
                 <div className="flex justify-between items-start mb-4">
                   <div>
                     <div className="flex items-center gap-2 mb-1">
-                      <h3 className="text-lg md:text-xl font-black">{word.word}</h3>
+                      <h3 className="text-lg md:text-xl font-black">
+                        {word.word}
+                        {word.translationKhmer && (
+                          <span className="font-normal text-indigo-600 dark:text-indigo-400 font-khmer"> - {word.translationKhmer}</span>
+                        )}
+                      </h3>
                       <span className="text-[10px] uppercase font-black tracking-widest text-emerald-500 bg-emerald-50 px-2 py-0.5 rounded-lg border border-emerald-100">
                         {word.partOfSpeech}
                       </span>
@@ -5095,7 +5201,12 @@ function VocabularyFlashcards({ data, speak }: { data: VocabularyLesson, speak: 
         >
           {/* Front */}
           <div className="absolute inset-0 backface-hidden bg-white border-2 border-gray-100 rounded-[2rem] md:rounded-[2.5rem] shadow-xl flex flex-col items-center justify-center p-6 md:p-12 text-center group-hover:border-[#1A1A1A] transition-colors">
-            <h3 className="text-2xl md:text-3xl lg:text-4xl font-bold tracking-tight mb-4">{currentWord.word}</h3>
+            <h3 className="text-2xl md:text-3xl lg:text-4xl font-bold tracking-tight mb-4">
+              {currentWord.word}
+              {currentWord.translationKhmer && (
+                <span className="font-normal text-indigo-600 dark:text-indigo-400 font-khmer"> - {currentWord.translationKhmer}</span>
+              )}
+            </h3>
             <p className="text-gray-400 font-medium text-[10px] md:text-sm uppercase tracking-widest">Click to reveal</p>
           </div>
 
@@ -5104,7 +5215,12 @@ function VocabularyFlashcards({ data, speak }: { data: VocabularyLesson, speak: 
             <div className="flex justify-between items-start mb-4 md:mb-6">
               <div>
                 <div className="flex items-center gap-3 mb-1">
-                  <h3 className="text-lg md:text-2xl font-bold">{currentWord.word}</h3>
+                  <h3 className="text-lg md:text-2xl font-bold">
+                    {currentWord.word}
+                    {currentWord.translationKhmer && (
+                      <span className="font-normal text-indigo-600 dark:text-indigo-400 font-khmer text-sm md:text-lg"> - {currentWord.translationKhmer}</span>
+                    )}
+                  </h3>
                   <span className="text-[9px] md:text-[10px] uppercase font-black tracking-widest text-emerald-500 bg-emerald-50 px-2 py-0.5 rounded-lg border border-emerald-100">
                     {currentWord.partOfSpeech}
                   </span>

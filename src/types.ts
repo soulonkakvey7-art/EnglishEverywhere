@@ -25,6 +25,7 @@ export interface GrammarTopic {
 export interface LessonContent {
   title: string;
   explanation: string;
+  explanationKhmer?: string;
   examples: string[];
   structure?: {
     affirmative: string;
@@ -40,6 +41,7 @@ export interface VocabularyWord {
   definition: string;
   examples: string[];
   origin?: string;
+  translationKhmer?: string;
 }
 
 export interface VocabularyLesson {

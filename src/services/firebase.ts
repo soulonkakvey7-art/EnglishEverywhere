@@ -1,5 +1,5 @@
 import { initializeApp } from "firebase/app";
-import { getFirestore, doc, getDoc, setDoc, getDocFromServer } from "firebase/firestore";
+import { initializeFirestore, doc, getDoc, setDoc, getDocFromServer } from "firebase/firestore";
 import { getLocalFallbackLesson } from "../data/preGeneratedLessons";
 
 const firebaseConfig = {
@@ -13,8 +13,10 @@ const firebaseConfig = {
 
 const app = initializeApp(firebaseConfig);
 
-// Initialize Firestore with the named database ID
-export const db = getFirestore(app, "ai-studio-englisheverywher-3b1ac224-9e77-4879-9b91-a7cd1d4e5b3e");
+// Initialize Firestore with the named database ID and force long polling for iframe connectivity
+export const db = initializeFirestore(app, {
+  experimentalForceLongPolling: true
+}, "ai-studio-englisheverywher-3b1ac224-9e77-4879-9b91-a7cd1d4e5b3e");
 
 // Validate connection to Firestore as per SKILL.md guidelines
 async function testConnection() {
@@ -23,7 +25,7 @@ async function testConnection() {
     console.log("Firebase connection validated successfully.");
   } catch (error) {
     if (error instanceof Error && error.message.includes('the client is offline')) {
-      console.error("Please check your Firebase configuration: client is offline.");
+      console.warn("Please check your Firebase configuration: client is offline.");
     } else {
       console.log("Firebase initialized (offline or pending first fetch).");
     }

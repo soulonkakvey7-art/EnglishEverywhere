@@ -45,7 +45,8 @@ export async function generateGrammarLesson(topic: string, level?: string): Prom
       contents: `Explain the English grammar topic: "${topic}" ${level ? `for level ${level}` : ''}. 
       Provide a highly detailed, easy-to-understand explanation and at least 15 varied, realistic, and highly comprehensive examples to cover every nuance and aspect of the topic in full detail.
       IMPORTANT: In each example sentence, wrap the specific word(s) or phrase(s) that demonstrate the grammar topic (e.g., the specific nouns, verbs, or tenses being taught) in double asterisks like **this**.
-      If this topic has clear, standard grammatical forms or sentence structures (like Affirmative, Negative, and Question formulas/forms, e.g., for modals, conditional clauses, pronouns, modifiers, etc.), please provide them in the optional 'structure' object. If the topic does not have standard forms or formulas, do not include the 'structure' field.`,
+      If this topic has clear, standard grammatical forms or sentence structures (like Affirmative, Negative, and Question formulas/forms, e.g., for modals, conditional clauses, pronouns, modifiers, etc.), please provide them in the optional 'structure' object. If the topic does not have standard forms or formulas, do not include the 'structure' field.
+      Also, provide a complete translation of the detailed explanation into Khmer in the 'explanationKhmer' field. For English grammatical terms or words that do not need translation, keep them in English within the Khmer explanation.`,
       config: {
         responseMimeType: "application/json",
         responseSchema: {
@@ -53,6 +54,7 @@ export async function generateGrammarLesson(topic: string, level?: string): Prom
           properties: {
             title: { type: Type.STRING },
             explanation: { type: Type.STRING },
+            explanationKhmer: { type: Type.STRING },
             structure: {
               type: Type.OBJECT,
               properties: {
@@ -67,7 +69,7 @@ export async function generateGrammarLesson(topic: string, level?: string): Prom
               items: { type: Type.STRING }
             }
           },
-          required: ["title", "explanation", "examples"]
+          required: ["title", "explanation", "explanationKhmer", "examples"]
         }
       }
     });
@@ -81,7 +83,8 @@ export async function generateTenseLesson(tense: string): Promise<LessonContent 
       model: "gemini-3-flash-preview",
       contents: `Explain the English tense: "${tense}". 
       Provide the structure/formula (Affirmative, Negative, Question), deep explanation of usage contexts, and at least 8 varied, high-quality examples for each usage context to ensure excellent, detailed coverage of different scenarios.
-      IMPORTANT: In each example sentence, wrap the verb(s) demonstrating the "${tense}" tense in double asterisks like **this**.`,
+      IMPORTANT: In each example sentence, wrap the verb(s) demonstrating the "${tense}" tense in double asterisks like **this**.
+      Also, provide a complete translation of the detailed explanation into Khmer in the 'explanationKhmer' field. For English grammatical terms or words that do not need translation, keep them in English within the Khmer explanation.`,
       config: {
         responseMimeType: "application/json",
         responseSchema: {
@@ -89,6 +92,7 @@ export async function generateTenseLesson(tense: string): Promise<LessonContent 
           properties: {
             title: { type: Type.STRING },
             explanation: { type: Type.STRING },
+            explanationKhmer: { type: Type.STRING },
             structure: {
               type: Type.OBJECT,
               properties: {
@@ -103,7 +107,7 @@ export async function generateTenseLesson(tense: string): Promise<LessonContent 
               items: { type: Type.STRING }
             }
           },
-          required: ["title", "explanation", "structure", "examples"]
+          required: ["title", "explanation", "explanationKhmer", "structure", "examples"]
         }
       }
     });
@@ -122,6 +126,7 @@ export async function generateVocabularyLesson(topic: string): Promise<Vocabular
       2. The IPA phonetic transcription
       3. A detailed, clear definition
       4. Exactly 5 highly detailed and natural example sentences demonstrating diverse usages, settings, and conversational contexts for the word.
+      5. The Khmer translation/word equivalent in the 'translationKhmer' field (e.g., if the word is 'Son', translationKhmer should be 'កូនប្រុស'). Only the word itself is translated, do not translate the definitions or examples into Khmer unless specified.
       
       Aim to provide a massive, comprehensive list of at least 50-60 high-quality, relevant words and essential terms to ensure extremely exhaustive, detailed coverage of the topic.
       IMPORTANT: In each example sentence, wrap the target word in double asterisks like **this**.`,
@@ -140,12 +145,13 @@ export async function generateVocabularyLesson(topic: string): Promise<Vocabular
                   partOfSpeech: { type: Type.STRING },
                   ipa: { type: Type.STRING },
                   definition: { type: Type.STRING },
+                  translationKhmer: { type: Type.STRING },
                   examples: { 
                       type: Type.ARRAY,
                       items: { type: Type.STRING }
                   }
                 },
-                required: ["word", "partOfSpeech", "ipa", "definition", "examples"]
+                required: ["word", "partOfSpeech", "ipa", "definition", "translationKhmer", "examples"]
               }
             }
           },
