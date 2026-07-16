@@ -293,3 +293,101 @@ html {
   background: #444444;
 }
 
+/* --- Print Styles for PDF Export --- */
+@media print {
+  /* Hide all elements on the page by default */
+  html, body, #root, #root * {
+    visibility: hidden;
+    height: auto !important;
+    overflow: visible !important;
+  }
+
+  /* Show only the grammar lesson container and its children */
+  .printable-lesson,
+  .printable-lesson * {
+    visibility: visible;
+  }
+
+  /* Position the printable lesson perfectly on the page */
+  .printable-lesson {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+    background: white !important;
+    color: #111827 !important;
+    padding: 0 !important;
+    margin: 0 !important;
+  }
+
+  /* Force light colors and clean layout on paper */
+  .printable-lesson .text-gray-700,
+  .printable-lesson .text-gray-500,
+  .printable-lesson .text-gray-800,
+  .printable-lesson p,
+  .printable-lesson h1,
+  .printable-lesson h2,
+  .printable-lesson h3,
+  .printable-lesson h4,
+  .printable-lesson h5,
+  .printable-lesson h6,
+  .printable-lesson div,
+  .printable-lesson span {
+    color: #111827 !important;
+  }
+
+  /* Style section backgrounds for optimal contrast in black/white */
+  .printable-lesson .bg-emerald-50\/50,
+  .printable-lesson .bg-emerald-50,
+  .printable-lesson .bg-gray-50 {
+    background-color: #f9fafb !important;
+    border: 1px solid #e5e7eb !important;
+    color: #111827 !important;
+  }
+
+  .printable-lesson .bg-indigo-50,
+  .printable-lesson .bg-indigo-50\/50 {
+    background-color: #f3f4f6 !important;
+    border: 1px solid #e5e7eb !important;
+    color: #111827 !important;
+  }
+
+  /* Hide interactive or non-study components during print */
+  .no-print,
+  .printable-lesson .no-print,
+  button,
+  header,
+  footer,
+  aside,
+  nav {
+    display: none !important;
+  }
+
+  /* Prevent page breaks inside cards or lists */
+  .printable-lesson section,
+  .printable-lesson div.p-4,
+  .printable-lesson .grid > div {
+    page-break-inside: avoid;
+    break-inside: avoid;
+  }
+
+  /* Ensure text scales beautifully on standard A4 or Letter sizes */
+  .printable-lesson h1 {
+    font-size: 24pt !important;
+    margin-bottom: 12pt !important;
+  }
+
+  .printable-lesson h3 {
+    font-size: 16pt !important;
+    margin-top: 18pt !important;
+    margin-bottom: 8pt !important;
+  }
+
+  .printable-lesson p,
+  .printable-lesson div {
+    font-size: 11pt !important;
+    line-height: 1.6 !important;
+  }
+}
+
+

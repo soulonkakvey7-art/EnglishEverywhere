@@ -4812,6 +4812,20 @@ function GrammarLessonView({
   isReadingMode?: boolean,
   setIsReadingMode?: (val: boolean) => void
 }) {
+  const [showIframeNotice, setShowIframeNotice] = useState(false);
+
+  const handleDownloadPDF = () => {
+    const isIframe = window.self !== window.top;
+    if (isIframe) {
+      setShowIframeNotice(true);
+    }
+    try {
+      window.print();
+    } catch (err) {
+      console.error("Print error:", err);
+    }
+  };
+
   if (!data || !data.examples || !Array.isArray(data.examples)) {
     return (
       <div className="p-12 text-center text-gray-500 font-medium space-y-4">
@@ -4824,7 +4838,7 @@ function GrammarLessonView({
     <div className={`space-y-12 accessibility-content transition-all duration-300 ${isReadingMode ? 'py-4 max-w-4xl mx-auto' : ''}`}>
       {/* Reading Mode Header */}
       {isReadingMode ? (
-        <div className="sticky top-0 z-40 bg-white/90 dark:bg-zinc-950/90 backdrop-blur-md border-b border-gray-100 dark:border-zinc-800 py-4 px-6 -mx-6 md:-mx-12 -mt-6 md:-mt-12 mb-8 flex items-center justify-between rounded-b-2xl shadow-sm">
+        <div className="sticky top-0 z-40 bg-white/90 dark:bg-zinc-950/90 backdrop-blur-md border-b border-gray-100 dark:border-zinc-800 py-4 px-6 -mx-6 md:-mx-12 -mt-6 md:-mt-12 mb-8 flex items-center justify-between rounded-b-2xl shadow-sm no-print">
           <div className="flex items-center gap-3">
             <div className="p-2 bg-indigo-50 dark:bg-indigo-950/40 text-indigo-600 dark:text-indigo-400 rounded-xl">
               <BookOpen size={18} />
@@ -4836,6 +4850,13 @@ function GrammarLessonView({
           </div>
           <div className="flex items-center gap-2">
             <button
+              onClick={handleDownloadPDF}
+              className="flex items-center gap-2 px-4 py-2 bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-800 text-gray-700 dark:text-gray-300 rounded-xl font-bold text-xs hover:bg-gray-50 dark:hover:bg-zinc-800 transition-all shadow-sm cursor-pointer"
+              title="Download/Save this lesson as a PDF for offline study"
+            >
+              <Download size={14} /> Save PDF
+            </button>
+            <button
               onClick={() => setIsReadingMode?.(false)}
               className="flex items-center gap-2 px-4 py-2 bg-[#1A1A1A] text-white dark:bg-white dark:text-[#1A1A1A] rounded-xl font-bold text-xs hover:scale-[1.03] transition-all shadow-md"
             >
@@ -4844,7 +4865,7 @@ function GrammarLessonView({
           </div>
         </div>
       ) : (
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 no-print">
           <button onClick={onBack} className="flex items-center gap-2 text-gray-400 hover:text-[#1A1A1A] font-medium transition-colors">
             <ArrowLeft size={16} /> Back to menu
           </button>
@@ -4866,6 +4887,13 @@ function GrammarLessonView({
               <Maximize2 size={16} /> Reading Mode
             </button>
             <button 
+              onClick={handleDownloadPDF}
+              className="flex-1 md:flex-none px-5 py-3 bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-800 text-gray-700 dark:text-gray-300 rounded-2xl font-bold text-sm hover:bg-gray-50 dark:hover:bg-zinc-800 hover:text-[#1A1A1A] dark:hover:text-white transition-all flex items-center justify-center gap-2 cursor-pointer"
+              title="Download/Save this lesson as a PDF for offline study"
+            >
+              <Download size={16} /> Download PDF
+            </button>
+            <button 
               onClick={onTakeDrills}
               className="flex-1 md:flex-none px-5 py-3 bg-indigo-50 dark:bg-indigo-950/30 text-indigo-600 dark:text-indigo-400 border border-indigo-100 dark:border-indigo-900/40 rounded-2xl font-bold text-sm hover:bg-indigo-100 transition-all flex items-center justify-center gap-2"
             >
@@ -4880,89 +4908,113 @@ function GrammarLessonView({
           </div>
         </div>
       )}
-      
-      <div className={`space-y-4 ${isReadingMode ? 'max-w-3xl mx-auto text-center' : ''}`}>
-        <h1 className={`font-black tracking-tight ${isReadingMode ? 'text-2xl md:text-4xl text-gray-900 dark:text-white border-b border-gray-100 dark:border-zinc-800 pb-6' : 'text-xl md:text-2xl lg:text-3xl'}`}>
-          {formatTitleWithKhmer(data.title, isReadingMode ? "text-2xl md:text-4xl font-black tracking-tight" : "text-xl md:text-2xl lg:text-3xl font-black tracking-tight", true)}
-        </h1>
-        {data.structure && (
-          <div className={`grid grid-cols-1 sm:grid-cols-3 gap-4 pt-4 ${isReadingMode ? 'max-w-2xl mx-auto' : ''}`}>
-             {['affirmative', 'negative', 'question'].map(key => (
-               <div key={key} className="bg-gray-50 dark:bg-zinc-900/50 px-4 py-3 rounded-2xl border border-gray-100 dark:border-zinc-800/80 text-left">
-                 <p className="text-[10px] font-bold uppercase tracking-widest text-indigo-500 mb-1">{key}</p>
-                 <p className="font-mono text-xs md:text-sm text-gray-800 dark:text-gray-200 font-semibold">{(data.structure as any)[key]}</p>
-               </div>
-             ))}
-          </div>
-        )}
-      </div>
 
-      <div className={isReadingMode ? "max-w-3xl mx-auto space-y-12" : "grid grid-cols-1 md:grid-cols-3 gap-12"}>
-        <div className={isReadingMode ? "space-y-12" : "md:col-span-2 space-y-8"}>
-          <section className="space-y-4">
-            <h3 className="text-base md:text-lg font-bold flex items-center gap-2">
-              <div className="w-1.5 h-6 bg-[#1A1A1A] dark:bg-white rounded-full" /> Detailed Explanation
-            </h3>
-            <div className={`text-gray-700 dark:text-gray-300 leading-relaxed whitespace-pre-wrap ${isReadingMode ? 'text-base md:text-lg font-serif space-y-6 md:leading-loose' : 'text-xs md:text-sm space-y-4'}`}>
-              {data.explanation}
+      {showIframeNotice && (
+        <div className="p-5 bg-amber-50/80 dark:bg-amber-950/20 border border-amber-100 dark:border-amber-900/30 rounded-2xl text-amber-900 dark:text-amber-200 text-xs md:text-sm flex items-start justify-between gap-4 shadow-sm no-print">
+          <div className="flex items-start gap-3">
+            <AlertCircle size={18} className="mt-0.5 text-amber-500 shrink-0" />
+            <div>
+              <p className="font-bold text-amber-800 dark:text-amber-300">Triggering Browser Print Dialog...</p>
+              <p className="text-gray-600 dark:text-gray-400 mt-1 leading-relaxed">
+                If the PDF export/print dialog did not appear, it might be blocked by the workspace preview container sandbox. 
+                For the best high-resolution PDF study guides, click the <strong>"Open in New Tab"</strong> button in the top-right corner of the browser preview and click <strong>"Download PDF"</strong> there.
+              </p>
             </div>
-
-            {data.explanationKhmer && (
-              <div className="mt-8 pt-8 border-t border-gray-100 dark:border-zinc-800 space-y-4">
-                <h3 className="text-base md:text-lg font-bold font-khmer flex items-center gap-2 text-indigo-600 dark:text-indigo-400">
-                  <div className="w-1.5 h-6 bg-indigo-500 rounded-full" /> ការពន្យល់ជាភាសាខ្មែរ (Explanation in Khmer)
-                </h3>
-                <div className={`text-gray-700 dark:text-gray-300 font-khmer leading-relaxed whitespace-pre-wrap ${isReadingMode ? 'text-base md:text-lg space-y-6 md:leading-loose' : 'text-xs md:text-sm'}`}>
-                  {data.explanationKhmer}
-                </div>
-              </div>
-            )}
-          </section>
-
-          <section className="space-y-4">
-             <h3 className="text-base md:text-lg font-bold flex items-center gap-2">
-               <div className="w-1.5 h-6 bg-emerald-500 rounded-full" /> Usage Examples
-             </h3>
-             <div className="space-y-3">
-               {data.examples.map((ex: string, i: number) => (
-                 <div key={i} className="p-4 bg-emerald-50/50 dark:bg-emerald-950/10 border border-emerald-100/60 dark:border-emerald-900/30 rounded-2xl font-medium text-xs md:text-sm relative group leading-relaxed">
-                   <span className="absolute -left-2 -top-2 bg-emerald-500 text-white w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-bold shadow-sm">
-                     {i + 1}
-                   </span>
-                   <ExampleText text={ex} />
+          </div>
+          <button 
+            onClick={() => setShowIframeNotice(false)} 
+            className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 transition-colors cursor-pointer p-1 rounded-lg hover:bg-black/5 dark:hover:bg-white/5"
+          >
+            <X size={16} />
+          </button>
+        </div>
+      )}
+      
+      {/* Printable Area Wrapper */}
+      <div className="printable-lesson space-y-12">
+        <div className={`space-y-4 ${isReadingMode ? 'max-w-3xl mx-auto text-center' : ''}`}>
+          <h1 className={`font-black tracking-tight ${isReadingMode ? 'text-2xl md:text-4xl text-gray-900 dark:text-white border-b border-gray-100 dark:border-zinc-800 pb-6' : 'text-xl md:text-2xl lg:text-3xl'}`}>
+            {formatTitleWithKhmer(data.title, isReadingMode ? "text-2xl md:text-4xl font-black tracking-tight" : "text-xl md:text-2xl lg:text-3xl font-black tracking-tight", true)}
+          </h1>
+          {data.structure && (
+            <div className={`grid grid-cols-1 sm:grid-cols-3 gap-4 pt-4 ${isReadingMode ? 'max-w-2xl mx-auto' : ''}`}>
+               {['affirmative', 'negative', 'question'].map(key => (
+                 <div key={key} className="bg-gray-50 dark:bg-zinc-900/50 px-4 py-3 rounded-2xl border border-gray-100 dark:border-zinc-800/80 text-left">
+                   <p className="text-[10px] font-bold uppercase tracking-widest text-indigo-500 mb-1">{key}</p>
+                   <p className="font-mono text-xs md:text-sm text-gray-800 dark:text-gray-200 font-semibold">{(data.structure as any)[key]}</p>
                  </div>
                ))}
-             </div>
-          </section>
+            </div>
+          )}
         </div>
 
-        {!isReadingMode && (
-          <div className="space-y-6">
-             <div className="bg-[#1A1A1A] p-6 rounded-3xl text-white space-y-3 shadow-xl">
-               <h3 className="text-base md:text-lg font-bold">Ready to test?</h3>
-               <p className="text-gray-400 text-xs">Take the 20-question randomized test for this topic.</p>
-               <button 
-                onClick={onTakeTest}
-                className="w-full py-3 bg-white text-[#1A1A1A] rounded-2xl font-bold hover:scale-[1.02] transition-all flex items-center justify-center gap-2 text-xs md:text-sm"
-               >
-                 Start Quiz <BrainCircuit size={18} />
-               </button>
-             </div>
-             
-             <div className="p-8 bg-white dark:bg-zinc-900/40 border border-gray-100 dark:border-zinc-800 rounded-3xl shadow-sm">
-               <h4 className="font-bold mb-4 flex items-center gap-2 text-gray-900 dark:text-white">
-                 <Volume2 size={18} /> Pro Tip
-               </h4>
-               <p className="text-sm text-gray-500 dark:text-gray-400 italic">
-                 Try reading the examples out loud to practice your prosody and rhythm while focusing on the grammar.
-               </p>
-             </div>
+        <div className={isReadingMode ? "max-w-3xl mx-auto space-y-12" : "grid grid-cols-1 md:grid-cols-3 gap-12"}>
+          <div className={isReadingMode ? "space-y-12" : "md:col-span-2 space-y-8"}>
+            <section className="space-y-4">
+              <h3 className="text-base md:text-lg font-bold flex items-center gap-2">
+                <div className="w-1.5 h-6 bg-[#1A1A1A] dark:bg-white rounded-full" /> Detailed Explanation
+              </h3>
+              <div className={`text-gray-700 dark:text-gray-300 leading-relaxed whitespace-pre-wrap ${isReadingMode ? 'text-base md:text-lg font-serif space-y-6 md:leading-loose' : 'text-xs md:text-sm space-y-4'}`}>
+                {data.explanation}
+              </div>
+
+              {data.explanationKhmer && (
+                <div className="mt-8 pt-8 border-t border-gray-100 dark:border-zinc-800 space-y-4">
+                  <h3 className="text-base md:text-lg font-bold font-khmer flex items-center gap-2 text-indigo-600 dark:text-indigo-400">
+                    <div className="w-1.5 h-6 bg-indigo-500 rounded-full" /> ការពន្យល់ជាភាសាខ្មែរ (Explanation in Khmer)
+                  </h3>
+                  <div className={`text-gray-700 dark:text-gray-300 font-khmer leading-relaxed whitespace-pre-wrap ${isReadingMode ? 'text-base md:text-lg space-y-6 md:leading-loose' : 'text-xs md:text-sm'}`}>
+                    {data.explanationKhmer}
+                  </div>
+                </div>
+              )}
+            </section>
+
+            <section className="space-y-4">
+               <h3 className="text-base md:text-lg font-bold flex items-center gap-2">
+                 <div className="w-1.5 h-6 bg-emerald-500 rounded-full" /> Usage Examples
+               </h3>
+               <div className="space-y-3">
+                 {data.examples.map((ex: string, i: number) => (
+                   <div key={i} className="p-4 bg-emerald-50/50 dark:bg-emerald-950/10 border border-emerald-100/60 dark:border-emerald-900/30 rounded-2xl font-medium text-xs md:text-sm relative group leading-relaxed">
+                     <span className="absolute -left-2 -top-2 bg-emerald-500 text-white w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-bold shadow-sm">
+                       {i + 1}
+                     </span>
+                     <ExampleText text={ex} />
+                   </div>
+                 ))}
+               </div>
+            </section>
           </div>
-        )}
+
+          {!isReadingMode && (
+            <div className="space-y-6 no-print">
+               <div className="bg-[#1A1A1A] p-6 rounded-3xl text-white space-y-3 shadow-xl">
+                 <h3 className="text-base md:text-lg font-bold">Ready to test?</h3>
+                 <p className="text-gray-400 text-xs">Take the 20-question randomized test for this topic.</p>
+                 <button 
+                  onClick={onTakeTest}
+                  className="w-full py-3 bg-white text-[#1A1A1A] rounded-2xl font-bold hover:scale-[1.02] transition-all flex items-center justify-center gap-2 text-xs md:text-sm"
+                 >
+                   Start Quiz <BrainCircuit size={18} />
+                 </button>
+               </div>
+               
+               <div className="p-8 bg-white dark:bg-zinc-900/40 border border-gray-100 dark:border-zinc-800 rounded-3xl shadow-sm">
+                 <h4 className="font-bold mb-4 flex items-center gap-2 text-gray-900 dark:text-white">
+                   <Volume2 size={18} /> Pro Tip
+                 </h4>
+                 <p className="text-sm text-gray-500 dark:text-gray-400 italic">
+                   Try reading the examples out loud to practice your prosody and rhythm while focusing on the grammar.
+                 </p>
+               </div>
+            </div>
+          )}
+        </div>
       </div>
       
       {isReadingMode ? (
-        <div className="pt-12 border-t border-gray-100 dark:border-zinc-800 text-center max-w-xl mx-auto space-y-6">
+        <div className="pt-12 border-t border-gray-100 dark:border-zinc-800 text-center max-w-xl mx-auto space-y-6 no-print">
           <p className="text-gray-500 dark:text-gray-400 font-medium">You have finished reading this lesson! Ready to test your skills?</p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <button 
@@ -4980,7 +5032,7 @@ function GrammarLessonView({
           </div>
         </div>
       ) : (
-        <div className="pt-12 border-t border-gray-100 dark:border-zinc-800 text-center">
+        <div className="pt-12 border-t border-gray-100 dark:border-zinc-800 text-center no-print">
           <p className="text-gray-400 mb-6 font-medium">Would you like to see more examples, or are you ready to take the 20-question test for this topic?</p>
         </div>
       )}
