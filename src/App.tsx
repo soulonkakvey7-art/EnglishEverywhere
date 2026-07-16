@@ -21,6 +21,8 @@ import {
   BrainCircuit,
   Menu,
   X,
+  Eye,
+  FileText,
   Award,
   Trophy,
   Star,
@@ -53,7 +55,8 @@ import {
   Maximize2,
   Minimize2,
   Trash2,
-  XCircle
+  XCircle,
+  ExternalLink
 } from 'lucide-react';
 import { 
   CEFRLevel, 
@@ -91,6 +94,8 @@ import {
   analyzeQuizPerformance
 } from './services/geminiService';
 import { getCachedLesson, saveCachedLesson } from './services/firebase';
+import jsPDF from 'jspdf';
+import { toPng } from 'html-to-image';
 
 const LEVELS: CEFRLevel[] = ['A1', 'A2', 'B1', 'B2', 'C1', 'C2'];
 const PARTS_OF_SPEECH = ['Noun', 'Pronoun', 'Verb', 'Adjective', 'Adverb', 'Preposition', 'Conjunction', 'Interjection'];
@@ -4793,6 +4798,87 @@ function SimpleList({ title, items, onSelect, onDrills, onTest, onOverallTest, p
   );
 }
 
+// Global font cache to prevent redundant CDN fetches and ensure lightning fast PDF loads
+let cachedInterReg = '';
+let cachedInterBold = '';
+let cachedSiemreap = '';
+
+const loadFonts = async (): Promise<{ interReg: string; interBold: string; siemreap: string }> => {
+  const blobToBase64 = (blob: Blob): Promise<string> => {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        resolve((reader.result as string).split(',')[1]);
+      };
+      reader.onerror = reject;
+      reader.readAsDataURL(blob);
+    });
+  };
+
+  const fetchWithTimeout = async (url: string, timeoutMs: number = 4000): Promise<Response> => {
+    const controller = new AbortController();
+    const id = setTimeout(() => controller.abort(), timeoutMs);
+    try {
+      const response = await fetch(url, { signal: controller.signal });
+      clearTimeout(id);
+      return response;
+    } catch (err) {
+      clearTimeout(id);
+      throw err;
+    }
+  };
+
+  const tryFetchFont = async (urls: string[]): Promise<string> => {
+    for (const url of urls) {
+      try {
+        const res = await fetchWithTimeout(url, 4000);
+        if (res && res.ok) {
+          const blob = await res.blob();
+          const base64 = await blobToBase64(blob);
+          if (base64 && base64.length > 100) {
+            return base64;
+          }
+        }
+      } catch (err) {
+        console.warn(`Font fetch failed for ${url}, trying next fallback...`, err);
+      }
+    }
+    return '';
+  };
+
+  const interRegUrls = [
+    'https://cdn.jsdelivr.net/npm/@fontsource/inter/files/inter-latin-400-normal.ttf',
+    'https://fonts.gstatic.com/s/inter/v12/UcCO3FwrK3iLTeHuS_fvQtMwCp5GP37T.ttf',
+    'https://raw.githubusercontent.com/google/fonts/main/ofl/inter/Inter-Regular.ttf'
+  ];
+
+  const interBoldUrls = [
+    'https://cdn.jsdelivr.net/npm/@fontsource/inter/files/inter-latin-700-normal.ttf',
+    'https://fonts.gstatic.com/s/inter/v12/UcC73FwrK3iLTeHuS_fvQtMwCp5GP37T.ttf',
+    'https://raw.githubusercontent.com/google/fonts/main/ofl/inter/static/Inter-Bold.ttf'
+  ];
+
+  const siemreapUrls = [
+    'https://fonts.gstatic.com/s/siemreap/v18/lybB2971_G6b81G-w7s6W1M.ttf',
+    'https://cdn.jsdelivr.net/gh/google/fonts@main/ofl/siemreap/Siemreap.ttf',
+    'https://raw.githubusercontent.com/google/fonts/main/ofl/siemreap/Siemreap.ttf',
+    'https://fonts.gstatic.com/s/khmer/v18/0Fl_7zeP3YV_GA9X.ttf',
+    'https://fonts.gstatic.com/s/battambang/v23/6xK6dSZv6Z7rO9e9v2Oka_0I0tY.ttf'
+  ];
+
+  const [reg, bold, khmer] = await Promise.all([
+    cachedInterReg ? Promise.resolve(cachedInterReg) : tryFetchFont(interRegUrls),
+    cachedInterBold ? Promise.resolve(cachedInterBold) : tryFetchFont(interBoldUrls),
+    cachedSiemreap ? Promise.resolve(cachedSiemreap) : tryFetchFont(siemreapUrls)
+  ]);
+
+  if (reg) cachedInterReg = reg;
+  if (bold) cachedInterBold = bold;
+  if (khmer) cachedSiemreap = khmer;
+
+  return { interReg: reg, interBold: bold, siemreap: khmer };
+};
+
 function GrammarLessonView({ 
   data, 
   category, 
@@ -4813,18 +4899,370 @@ function GrammarLessonView({
   setIsReadingMode?: (val: boolean) => void
 }) {
   const [showIframeNotice, setShowIframeNotice] = useState(false);
+  const [isDownloading, setIsDownloading] = useState(false);
+  const lessonRef = useRef<HTMLDivElement>(null);
 
-  const handleDownloadPDF = () => {
-    const isIframe = window.self !== window.top;
-    if (isIframe) {
-      setShowIframeNotice(true);
-    }
+  const [isPreviewOpen, setIsPreviewOpen] = useState(false);
+  const [previewPdfUrl, setPreviewPdfUrl] = useState<string | null>(null);
+  const [isGeneratingPreview, setIsGeneratingPreview] = useState(false);
+
+  const buildPDF = async (): Promise<jsPDF | null> => {
     try {
-      window.print();
+      const fonts = await loadFonts();
+
+      const pdf = new jsPDF('p', 'mm', 'a4');
+      pdf.setProperties({
+        title: `${data.title} - Study Guide`,
+        subject: `${category ? category.toUpperCase() : 'GRAMMAR'} Lesson Study Guide`,
+        author: 'English Everywhere',
+        creator: 'English Everywhere Platform',
+        keywords: 'English, Khmer, Grammar, Study Guide, Education'
+      });
+
+      const hasInterReg = !!fonts.interReg;
+      const hasInterBold = !!fonts.interBold;
+      const hasSiemreap = !!fonts.siemreap;
+
+      if (hasInterReg) {
+        pdf.addFileToVFS('Inter-Regular.ttf', fonts.interReg);
+        pdf.addFont('Inter-Regular.ttf', 'Inter', 'normal');
+      }
+      if (hasInterBold) {
+        pdf.addFileToVFS('Inter-Bold.ttf', fonts.interBold);
+        pdf.addFont('Inter-Bold.ttf', 'Inter', 'bold');
+      }
+      if (hasSiemreap) {
+        pdf.addFileToVFS('Siemreap.ttf', fonts.siemreap);
+        pdf.addFont('Siemreap.ttf', 'Siemreap', 'normal');
+        pdf.addFont('Siemreap.ttf', 'Siemreap', 'bold');
+      }
+
+      // Fonts have been loaded from cache/fallbacks and registered above.
+
+
+      // Helper function to draw page header
+      const drawPageHeader = () => {
+        if (hasInterBold) {
+          pdf.setFont('Inter', 'bold');
+        } else {
+          pdf.setFont('Helvetica', 'bold');
+        }
+        pdf.setFontSize(8);
+        pdf.setTextColor(156, 163, 175); // gray-400
+        pdf.text('ENGLISH EVERYWHERE • STUDY GUIDE', 20, 15);
+        
+        const catText = category ? category.toUpperCase() : 'GRAMMAR';
+        pdf.text(catText, 190, 15, { align: 'right' });
+        
+        pdf.setDrawColor(243, 244, 246); // gray-100
+        pdf.setLineWidth(0.3);
+        pdf.line(20, 17, 190, 17);
+      };
+
+      // Font applying helpers
+      const setInterFont = (style: 'normal' | 'bold', size: number, color: [number, number, number] = [31, 41, 55]) => {
+        if (style === 'bold' && hasInterBold) {
+          pdf.setFont('Inter', 'bold');
+        } else if (hasInterReg) {
+          pdf.setFont('Inter', 'normal');
+        } else {
+          pdf.setFont('Helvetica', style);
+        }
+        pdf.setFontSize(size);
+        pdf.setTextColor(color[0], color[1], color[2]);
+      };
+
+      const setSiemreapFont = (size: number, color: [number, number, number] = [31, 41, 55]) => {
+        if (hasSiemreap) {
+          pdf.setFont('Siemreap', 'normal');
+        } else {
+          pdf.setFont('Helvetica', 'normal');
+        }
+        pdf.setFontSize(size);
+        pdf.setTextColor(color[0], color[1], color[2]);
+      };
+
+      // Pagination tracking
+      let y = 25;
+
+      const checkPageOverflow = (heightNeeded: number) => {
+        if (y + heightNeeded > 272) {
+          pdf.addPage();
+          y = 25;
+          drawPageHeader();
+        }
+      };
+
+      // Start by drawing Page 1 header
+      drawPageHeader();
+
+      // 1. Title section
+      setInterFont('bold', 22, [17, 24, 39]); // Deep dark gray
+      const titleLines = pdf.splitTextToSize(data.title, 170);
+      titleLines.forEach((line: string) => {
+        checkPageOverflow(8);
+        pdf.text(line, 20, y);
+        y += 8;
+      });
+
+      const matchedKey = getMatchingFixedKey(data.title);
+      if (matchedKey) {
+        const khmerTranslation = KHMER_TRANSLATIONS[matchedKey];
+        y += 2;
+        setSiemreapFont(16, [79, 70, 229]); // Indigo-600
+        const khmerLines = pdf.splitTextToSize(khmerTranslation, 170);
+        khmerLines.forEach((line: string) => {
+          checkPageOverflow(7);
+          pdf.text(line, 20, y);
+          y += 7;
+        });
+      }
+      y += 6;
+
+      // 2. Grammar Structures Section
+      if (data.structure && (data.structure.affirmative || data.structure.negative || data.structure.question)) {
+        const formulas = [
+          { label: 'AFFIRMATIVE FORMULA', value: data.structure.affirmative },
+          { label: 'NEGATIVE FORMULA', value: data.structure.negative },
+          { label: 'QUESTION FORMULA', value: data.structure.question }
+        ].filter(f => f.value);
+
+        if (formulas.length > 0) {
+          checkPageOverflow(10);
+          setInterFont('bold', 10, [67, 56, 202]); // Indigo-700
+          pdf.text('GRAMMAR STRUCTURES', 20, y);
+          y += 6;
+
+          for (const form of formulas) {
+            if (!form.value) continue;
+            
+            setInterFont('normal', 11, [31, 41, 55]);
+            const valueLines = pdf.splitTextToSize(form.value, 158);
+            const cardHeight = 8 + 4 + (valueLines.length * 5) + 6;
+
+            checkPageOverflow(cardHeight + 4);
+
+            // Draw rounded card container
+            pdf.setFillColor(249, 250, 251); // gray-50
+            pdf.setDrawColor(243, 244, 246); // gray-100
+            pdf.setLineWidth(0.4);
+            pdf.roundedRect(20, y, 170, cardHeight, 3, 3, 'FD');
+
+            // Label
+            setInterFont('bold', 8, [79, 70, 229]); // Indigo-600
+            pdf.text(form.label, 26, y + 6);
+
+            // Value lines
+            setInterFont('normal', 11, [31, 41, 55]);
+            let lineY = y + 12;
+            valueLines.forEach((line: string) => {
+              pdf.text(line, 26, lineY);
+              lineY += 5;
+            });
+
+            y += cardHeight + 4;
+          }
+          y += 2;
+        }
+      }
+
+      // 3. Detailed Explanation Section
+      checkPageOverflow(12);
+      pdf.setDrawColor(243, 244, 246);
+      pdf.line(20, y, 190, y);
+      y += 8;
+
+      checkPageOverflow(10);
+      pdf.setFillColor(79, 70, 229); // Indigo-600
+      pdf.roundedRect(20, y - 4.5, 2, 5.5, 0.5, 0.5, 'F');
+
+      setInterFont('bold', 12, [17, 24, 39]);
+      pdf.text('Detailed Explanation', 24, y);
+      y += 8;
+
+      const expParas = data.explanation.split('\n\n');
+      for (const para of expParas) {
+        if (!para.trim()) continue;
+        setInterFont('normal', 10.5, [55, 65, 81]); // gray-700
+        const wrappedLines = pdf.splitTextToSize(para.trim(), 170);
+        const paraHeight = wrappedLines.length * 5.5;
+
+        checkPageOverflow(paraHeight + 6);
+        wrappedLines.forEach((line: string) => {
+          pdf.text(line, 20, y);
+          y += 5.5;
+        });
+        y += 3;
+      }
+      y += 4;
+
+      // 4. Khmer Explanation Section
+      if (data.explanationKhmer) {
+        checkPageOverflow(12);
+        pdf.setDrawColor(243, 244, 246);
+        pdf.line(20, y, 190, y);
+        y += 8;
+
+        checkPageOverflow(10);
+        pdf.setFillColor(79, 70, 229); // Indigo-600
+        pdf.roundedRect(20, y - 4.5, 2, 5.5, 0.5, 0.5, 'F');
+
+        setInterFont('bold', 12, [17, 24, 39]);
+        pdf.text('ការពន្យល់ជាភាសាខ្មែរ', 24, y);
+        
+        setInterFont('normal', 11, [107, 114, 128]); // gray-500
+        const subHeaderWidth = hasInterReg ? pdf.getTextWidth('ការពន្យល់ជាភាសាខ្មែរ ') : 40;
+        pdf.text(' (Explanation in Khmer)', 24 + subHeaderWidth, y);
+        y += 8;
+
+        const khmerParas = data.explanationKhmer.split('\n\n');
+        for (const para of khmerParas) {
+          if (!para.trim()) continue;
+          setSiemreapFont(11, [55, 65, 81]); // gray-700
+          const wrappedLines = pdf.splitTextToSize(para.trim(), 170);
+          const paraHeight = wrappedLines.length * 6;
+
+          checkPageOverflow(paraHeight + 6);
+          wrappedLines.forEach((line: string) => {
+            pdf.text(line, 20, y);
+            y += 6;
+          });
+          y += 4;
+        }
+        y += 4;
+      }
+
+      // 5. Usage Examples Section
+      if (data.examples && data.examples.length > 0) {
+        checkPageOverflow(12);
+        pdf.setDrawColor(243, 244, 246);
+        pdf.line(20, y, 190, y);
+        y += 8;
+
+        checkPageOverflow(10);
+        pdf.setFillColor(16, 185, 129); // Emerald-500
+        pdf.roundedRect(20, y - 4.5, 2, 5.5, 0.5, 0.5, 'F');
+
+        setInterFont('bold', 12, [17, 24, 39]);
+        pdf.text('Usage Examples', 24, y);
+        y += 8;
+
+        for (let i = 0; i < data.examples.length; i++) {
+          const ex = data.examples[i];
+          if (!ex.trim()) continue;
+
+          const containsKhmer = /[\u1780-\u17ff]/.test(ex);
+          const fontToUse = containsKhmer ? 'Siemreap' : 'Inter';
+          const stepHeight = containsKhmer ? 6 : 5.5;
+
+          if (containsKhmer) {
+            setSiemreapFont(10.5);
+          } else {
+            setInterFont('normal', 10.5);
+          }
+
+          const exLines = pdf.splitTextToSize(ex, 154);
+          const cardHeight = (exLines.length * stepHeight) + 10;
+
+          checkPageOverflow(cardHeight + 4);
+
+          // Card container
+          pdf.setFillColor(240, 253, 244); // bg-emerald-50
+          pdf.setDrawColor(209, 250, 229); // border-emerald-100
+          pdf.setLineWidth(0.4);
+          pdf.roundedRect(20, y, 170, cardHeight, 3, 3, 'FD');
+
+          // Number badge
+          pdf.setFillColor(16, 185, 129); // emerald-500
+          pdf.circle(28, y + 6.5, 2.5, 'F');
+
+          setInterFont('bold', 7.5, [255, 255, 255]);
+          pdf.text(String(i + 1), 28, y + 7.3, { align: 'center' });
+
+          // Example text
+          if (containsKhmer) {
+            setSiemreapFont(10.5, [31, 41, 55]);
+          } else {
+            setInterFont('normal', 10.5, [31, 41, 55]);
+          }
+
+          let exY = y + 7;
+          exLines.forEach((line: string) => {
+            pdf.text(line, 34, exY);
+            exY += stepHeight;
+          });
+
+          y += cardHeight + 4;
+        }
+      }
+
+      // Add elegant footers dynamically to all generated pages
+      const totalPages = (pdf.internal as any).pages.length - 1;
+      for (let i = 1; i <= totalPages; i++) {
+        pdf.setPage(i);
+        setInterFont('normal', 8, [156, 163, 175]);
+
+        pdf.setDrawColor(243, 244, 246);
+        pdf.setLineWidth(0.4);
+        pdf.line(20, 280, 190, 280);
+
+        pdf.text('English Everywhere • High Quality Study Guide • Learn English in Khmer & English', 20, 285);
+        pdf.text(`Page ${i} of ${totalPages}`, 190, 285, { align: 'right' });
+      }
+
+      return pdf;
     } catch (err) {
-      console.error("Print error:", err);
+      console.error("Vector PDF generation failure:", err);
+      return null;
     }
   };
+
+  const handleDownloadPDF = async () => {
+    if (isDownloading) return;
+    setIsDownloading(true);
+
+    try {
+      const pdf = await buildPDF();
+      if (pdf) {
+        const filename = `${data.title.replace(/[^a-zA-Z0-9]/g, '_')}_Study_Guide.pdf`;
+        pdf.save(filename);
+      }
+    } catch (err) {
+      console.error("Download PDF error:", err);
+    } finally {
+      setIsDownloading(false);
+    }
+  };
+
+  const handlePreviewPDF = async () => {
+    if (isGeneratingPreview) return;
+    setIsGeneratingPreview(true);
+
+    try {
+      const pdf = await buildPDF();
+      if (pdf) {
+        const blob = pdf.output('blob');
+        const url = URL.createObjectURL(blob);
+        if (previewPdfUrl) {
+          URL.revokeObjectURL(previewPdfUrl);
+        }
+        setPreviewPdfUrl(url);
+        setIsPreviewOpen(true);
+      }
+    } catch (err) {
+      console.error("Preview PDF error:", err);
+    } finally {
+      setIsGeneratingPreview(false);
+    }
+  };
+
+  useEffect(() => {
+    return () => {
+      if (previewPdfUrl) {
+        URL.revokeObjectURL(previewPdfUrl);
+      }
+    };
+  }, [previewPdfUrl]);
 
   if (!data || !data.examples || !Array.isArray(data.examples)) {
     return (
@@ -4850,11 +5288,44 @@ function GrammarLessonView({
           </div>
           <div className="flex items-center gap-2">
             <button
+              onClick={handlePreviewPDF}
+              disabled={isGeneratingPreview}
+              className="flex items-center gap-2 px-4 py-2 bg-indigo-50 dark:bg-indigo-950/40 text-indigo-600 dark:text-indigo-400 rounded-xl font-bold text-xs hover:bg-indigo-100 dark:hover:bg-indigo-900/60 transition-all shadow-sm cursor-pointer disabled:opacity-50"
+              title="Preview the PDF study guide before downloading"
+            >
+              {isGeneratingPreview ? (
+                <span className="flex items-center gap-1.5 animate-pulse">
+                  <svg className="animate-spin h-3 w-3 text-indigo-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                  </svg>
+                  Previewing...
+                </span>
+              ) : (
+                <>
+                  <Eye size={14} /> Preview PDF
+                </>
+              )}
+            </button>
+            <button
               onClick={handleDownloadPDF}
-              className="flex items-center gap-2 px-4 py-2 bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-800 text-gray-700 dark:text-gray-300 rounded-xl font-bold text-xs hover:bg-gray-50 dark:hover:bg-zinc-800 transition-all shadow-sm cursor-pointer"
+              disabled={isDownloading}
+              className="flex items-center gap-2 px-4 py-2 bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-800 text-gray-700 dark:text-gray-300 rounded-xl font-bold text-xs hover:bg-gray-50 dark:hover:bg-zinc-800 transition-all shadow-sm cursor-pointer disabled:opacity-50"
               title="Download/Save this lesson as a PDF for offline study"
             >
-              <Download size={14} /> Save PDF
+              {isDownloading ? (
+                <span className="flex items-center gap-1.5 animate-pulse">
+                  <svg className="animate-spin h-3 w-3 text-indigo-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                  </svg>
+                  Saving...
+                </span>
+              ) : (
+                <>
+                  <Download size={14} /> Save PDF
+                </>
+              )}
             </button>
             <button
               onClick={() => setIsReadingMode?.(false)}
@@ -4887,11 +5358,44 @@ function GrammarLessonView({
               <Maximize2 size={16} /> Reading Mode
             </button>
             <button 
+              onClick={handlePreviewPDF}
+              disabled={isGeneratingPreview}
+              className="flex-1 md:flex-none px-5 py-3 bg-indigo-50 dark:bg-indigo-950/30 text-indigo-600 dark:text-indigo-400 border border-indigo-100 dark:border-indigo-900/40 rounded-2xl font-bold text-sm hover:bg-indigo-100 transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
+              title="Preview the PDF study guide before downloading"
+            >
+              {isGeneratingPreview ? (
+                <span className="flex items-center gap-2 animate-pulse">
+                  <svg className="animate-spin h-4 w-4 text-indigo-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                  </svg>
+                  Previewing...
+                </span>
+              ) : (
+                <>
+                  <Eye size={16} /> Preview PDF
+                </>
+              )}
+            </button>
+            <button 
               onClick={handleDownloadPDF}
-              className="flex-1 md:flex-none px-5 py-3 bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-800 text-gray-700 dark:text-gray-300 rounded-2xl font-bold text-sm hover:bg-gray-50 dark:hover:bg-zinc-800 hover:text-[#1A1A1A] dark:hover:text-white transition-all flex items-center justify-center gap-2 cursor-pointer"
+              disabled={isDownloading}
+              className="flex-1 md:flex-none px-5 py-3 bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-800 text-gray-700 dark:text-gray-300 rounded-2xl font-bold text-sm hover:bg-gray-50 dark:hover:bg-zinc-800 hover:text-[#1A1A1A] dark:hover:text-white transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
               title="Download/Save this lesson as a PDF for offline study"
             >
-              <Download size={16} /> Download PDF
+              {isDownloading ? (
+                <span className="flex items-center gap-2 animate-pulse">
+                  <svg className="animate-spin h-4 w-4 text-indigo-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                  </svg>
+                  Downloading...
+                </span>
+              ) : (
+                <>
+                  <Download size={16} /> Download PDF
+                </>
+              )}
             </button>
             <button 
               onClick={onTakeDrills}
@@ -4909,29 +5413,26 @@ function GrammarLessonView({
         </div>
       )}
 
-      {showIframeNotice && (
-        <div className="p-5 bg-amber-50/80 dark:bg-amber-950/20 border border-amber-100 dark:border-amber-900/30 rounded-2xl text-amber-900 dark:text-amber-200 text-xs md:text-sm flex items-start justify-between gap-4 shadow-sm no-print">
+      {isDownloading && (
+        <div className="p-5 bg-indigo-50 dark:bg-indigo-950/20 border border-indigo-100 dark:border-indigo-900/30 rounded-2xl text-indigo-900 dark:text-indigo-200 text-xs md:text-sm flex items-start gap-4 shadow-sm">
           <div className="flex items-start gap-3">
-            <AlertCircle size={18} className="mt-0.5 text-amber-500 shrink-0" />
+            <svg className="animate-spin h-5 w-5 text-indigo-500 mt-0.5 shrink-0" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+            </svg>
             <div>
-              <p className="font-bold text-amber-800 dark:text-amber-300">Triggering Browser Print Dialog...</p>
+              <p className="font-bold text-indigo-800 dark:text-indigo-300">Generating High-Quality PDF Study Guide...</p>
               <p className="text-gray-600 dark:text-gray-400 mt-1 leading-relaxed">
-                If the PDF export/print dialog did not appear, it might be blocked by the workspace preview container sandbox. 
-                For the best high-resolution PDF study guides, click the <strong>"Open in New Tab"</strong> button in the top-right corner of the browser preview and click <strong>"Download PDF"</strong> there.
+                Your computer is converting the grammar lesson content into a gorgeous, high-resolution paginated PDF document. 
+                This will download directly to your device once finished. Please keep this tab open!
               </p>
             </div>
           </div>
-          <button 
-            onClick={() => setShowIframeNotice(false)} 
-            className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 transition-colors cursor-pointer p-1 rounded-lg hover:bg-black/5 dark:hover:bg-white/5"
-          >
-            <X size={16} />
-          </button>
         </div>
       )}
       
       {/* Printable Area Wrapper */}
-      <div className="printable-lesson space-y-12">
+      <div ref={lessonRef} className="printable-lesson space-y-12 bg-white dark:bg-transparent rounded-3xl p-1">
         <div className={`space-y-4 ${isReadingMode ? 'max-w-3xl mx-auto text-center' : ''}`}>
           <h1 className={`font-black tracking-tight ${isReadingMode ? 'text-2xl md:text-4xl text-gray-900 dark:text-white border-b border-gray-100 dark:border-zinc-800 pb-6' : 'text-xl md:text-2xl lg:text-3xl'}`}>
             {formatTitleWithKhmer(data.title, isReadingMode ? "text-2xl md:text-4xl font-black tracking-tight" : "text-xl md:text-2xl lg:text-3xl font-black tracking-tight", true)}
@@ -5034,6 +5535,86 @@ function GrammarLessonView({
       ) : (
         <div className="pt-12 border-t border-gray-100 dark:border-zinc-800 text-center no-print">
           <p className="text-gray-400 mb-6 font-medium">Would you like to see more examples, or are you ready to take the 20-question test for this topic?</p>
+        </div>
+      )}
+
+      {/* PDF Preview Modal */}
+      {isPreviewOpen && previewPdfUrl && (
+        <div className="fixed inset-0 z-50 overflow-y-auto no-print" id="pdf-preview-modal-overlay">
+          {/* Backdrop with backdrop-blur */}
+          <div 
+            className="fixed inset-0 bg-zinc-950/60 backdrop-blur-sm transition-opacity" 
+            onClick={() => setIsPreviewOpen(false)} 
+          />
+
+          <div className="flex min-h-full items-center justify-center p-4 md:p-6 text-center">
+            <div className="relative transform overflow-hidden rounded-3xl bg-white dark:bg-zinc-900 text-left shadow-2xl transition-all w-full max-w-5xl border border-gray-100 dark:border-zinc-800/80 flex flex-col h-[85vh]">
+              {/* Header */}
+              <div className="px-6 py-4 border-b border-gray-100 dark:border-zinc-800/80 flex items-center justify-between bg-gray-50/50 dark:bg-zinc-950/20 backdrop-blur-md">
+                <div className="flex items-center gap-3">
+                  <div className="p-2.5 bg-indigo-50 dark:bg-indigo-950/40 text-indigo-600 dark:text-indigo-400 rounded-xl">
+                    <FileText size={18} />
+                  </div>
+                  <div>
+                    <h3 className="text-sm md:text-base font-black text-gray-900 dark:text-white truncate max-w-xs md:max-w-md">
+                      Study Guide Preview
+                    </h3>
+                    <p className="text-[10px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest mt-0.5">
+                      {data.title}
+                    </p>
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-2">
+                  <a
+                    href={previewPdfUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="p-2 text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white rounded-xl hover:bg-gray-100 dark:hover:bg-zinc-800/80 transition-all"
+                    title="Open in standard browser tab"
+                  >
+                    <ExternalLink size={16} />
+                  </a>
+                  <button
+                    onClick={() => {
+                      const link = document.createElement('a');
+                      link.href = previewPdfUrl;
+                      link.download = `${data.title.replace(/[^a-zA-Z0-9]/g, '_')}_Study_Guide.pdf`;
+                      document.body.appendChild(link);
+                      link.click();
+                      document.body.removeChild(link);
+                    }}
+                    className="flex items-center gap-1.5 px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl font-bold text-xs shadow-md transition-all cursor-pointer"
+                    title="Download/Save PDF"
+                  >
+                    <Download size={12} /> Download
+                  </button>
+                  <button
+                    onClick={() => setIsPreviewOpen(false)}
+                    className="p-2 text-gray-400 hover:text-gray-600 dark:text-zinc-500 dark:hover:text-zinc-300 rounded-xl hover:bg-gray-100 dark:hover:bg-zinc-800/80 transition-all cursor-pointer"
+                  >
+                    <X size={16} />
+                  </button>
+                </div>
+              </div>
+
+              {/* PDF Content Area */}
+              <div className="flex-1 bg-zinc-100 dark:bg-zinc-950/60 p-4 relative flex items-center justify-center">
+                <iframe
+                  src={`${previewPdfUrl}#toolbar=0&navpanes=0&scrollbar=1`}
+                  className="w-full h-full rounded-2xl shadow-inner border-0 bg-white"
+                  title="PDF Document Reader"
+                />
+              </div>
+
+              {/* Footer Notice */}
+              <div className="px-6 py-3 border-t border-gray-100 dark:border-zinc-800/80 bg-gray-50/50 dark:bg-zinc-950/20 text-center">
+                <p className="text-[10px] text-gray-400 dark:text-gray-500 font-medium">
+                  This preview renders the vector study guide generated directly in your browser. Cambodian Khmer font characters are beautifully compiled.
+                </p>
+              </div>
+            </div>
+          </div>
         </div>
       )}
     </div>
