@@ -523,4 +523,48 @@ Please analyze these results and generate the summary, insights, and recommendat
   });
 }
 
+export async function translateWordsBatch(words: string[]): Promise<Record<string, string>> {
+  if (words.length === 0) return {};
+  return withRetry(async () => {
+    const response = await ai.models.generateContent({
+      model: "gemini-3.5-flash",
+      contents: `Translate the following English words to their primary, standard Khmer word equivalents (only the Khmer word translation itself, short and concise).
+      English words: ${JSON.stringify(words)}
+      Return a JSON array under the key "translations" containing objects with "english" and "khmer" properties.`,
+      config: {
+        responseMimeType: "application/json",
+        responseSchema: {
+          type: Type.OBJECT,
+          properties: {
+            translations: {
+              type: Type.ARRAY,
+              items: {
+                type: Type.OBJECT,
+                properties: {
+                  english: { type: Type.STRING },
+                  khmer: { type: Type.STRING }
+                },
+                required: ["english", "khmer"]
+              }
+            }
+          },
+          required: ["translations"]
+        }
+      }
+    });
+    
+    const parsed = JSON.parse(response.text);
+    const result: Record<string, string> = {};
+    if (parsed && Array.isArray(parsed.translations)) {
+      parsed.translations.forEach((item: any) => {
+        if (item && item.english && item.khmer) {
+          result[item.english.toLowerCase()] = item.khmer;
+        }
+      });
+    }
+    return result;
+  });
+}
+
+
 

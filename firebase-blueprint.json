@@ -41,12 +41,63 @@
         "content",
         "createdAt"
       ]
+    },
+    "DictionaryTranslation": {
+      "title": "DictionaryTranslation",
+      "description": "A single word English to Khmer translation cache.",
+      "type": "object",
+      "properties": {
+        "word": {
+          "type": "string",
+          "description": "The English word"
+        },
+        "khmer": {
+          "type": "string",
+          "description": "The Khmer translation"
+        },
+        "updatedAt": {
+          "type": "string",
+          "description": "Timestamp of the last translation"
+        }
+      },
+      "required": [
+        "word",
+        "khmer",
+        "updatedAt"
+      ]
+    },
+    "DictionaryLetter": {
+      "title": "DictionaryLetter",
+      "description": "A map of English words to Khmer translations for a specific letter or search query.",
+      "type": "object",
+      "properties": {
+        "translations": {
+          "type": "object",
+          "description": "Map of English words to their Khmer translations"
+        },
+        "updatedAt": {
+          "type": "string",
+          "description": "Timestamp of the update"
+        }
+      },
+      "required": [
+        "translations",
+        "updatedAt"
+      ]
     }
   },
   "firestore": {
     "cached_lessons/{lessonId}": {
       "schema": "CachedLesson",
       "description": "Collection of cached AI lessons shared across all users."
+    },
+    "dictionary_translations/{wordId}": {
+      "schema": "DictionaryTranslation",
+      "description": "Collection of English to Khmer word translations."
+    },
+    "dictionary_letters/{letterId}": {
+      "schema": "DictionaryLetter",
+      "description": "Collection of English to Khmer translations grouped by starting letter or batch identifier."
     }
   }
 }

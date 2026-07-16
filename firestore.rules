@@ -10,6 +10,16 @@ service cloud.firestore {
       allow read: if true;
       allow create, update: if isValidId(lessonId) && isValidCachedLesson(request.resource.data);
     }
+
+    match /dictionary_translations/{wordId} {
+      allow read: if true;
+      allow create, update: if isValidId(wordId) && isValidDictionaryTranslation(request.resource.data);
+    }
+
+    match /dictionary_letters/{letterId} {
+      allow read: if true;
+      allow create, update: if isValidId(letterId) && isValidDictionaryLetter(request.resource.data);
+    }
   }
 }
 
@@ -23,5 +33,16 @@ function isValidCachedLesson(data) {
       && data.topic is string
       && (data.content is map || data.content is list)
       && data.createdAt is string;
+}
+
+function isValidDictionaryTranslation(data) {
+  return data.word is string
+      && data.khmer is string
+      && data.updatedAt is string;
+}
+
+function isValidDictionaryLetter(data) {
+  return data.translations is map
+      && data.updatedAt is string;
 }
 

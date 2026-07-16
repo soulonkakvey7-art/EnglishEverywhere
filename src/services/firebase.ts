@@ -83,3 +83,79 @@ export async function saveCachedLesson(
     console.error("Error saving lesson to cache:", error);
   }
 }
+
+export async function getTranslationsFromDB(words: string[]): Promise<Record<string, string>> {
+  const results: Record<string, string> = {};
+  if (!words || words.length === 0) return results;
+  
+  try {
+    const promises = words.map(async (word) => {
+      const cleanWord = word.trim();
+      if (!cleanWord) return;
+      const docId = cleanWord.toLowerCase().replace(/\//g, "_").replace(/\./g, "_");
+      const docRef = doc(db, "dictionary_translations", docId);
+      const snap = await getDoc(docRef);
+      if (snap.exists()) {
+        const data = snap.data();
+        if (data && data.khmer) {
+          results[cleanWord.toLowerCase()] = data.khmer;
+        }
+      }
+    });
+    await Promise.all(promises);
+  } catch (error) {
+    console.error("Error getting translations from DB:", error);
+  }
+  return results;
+}
+
+export async function saveTranslationsToDB(translations: Record<string, string>): Promise<void> {
+  try {
+    const promises = Object.entries(translations).map(async ([word, khmer]) => {
+      const cleanWord = word.trim();
+      if (!cleanWord || !khmer) return;
+      const docId = cleanWord.toLowerCase().replace(/\//g, "_").replace(/\./g, "_");
+      const docRef = doc(db, "dictionary_translations", docId);
+      await setDoc(docRef, {
+        word: cleanWord,
+        khmer: khmer.trim(),
+        updatedAt: new Date().toISOString()
+      }, { merge: true });
+    });
+    await Promise.all(promises);
+  } catch (error) {
+    console.error("Error saving translations to DB:", error);
+  }
+}
+
+export async function getTranslationsForLetter(letter: string): Promise<Record<string, string>> {
+  const cleanLetter = letter.trim().toLowerCase();
+  if (!cleanLetter) return {};
+  try {
+    const docRef = doc(db, "dictionary_letters", cleanLetter);
+    const snap = await getDoc(docRef);
+    if (snap.exists()) {
+      const data = snap.data();
+      return data.translations || {};
+    }
+  } catch (error) {
+    console.error(`Error getting translations for letter ${letter}:`, error);
+  }
+  return {};
+}
+
+export async function saveTranslationsForLetter(letter: string, translations: Record<string, string>): Promise<void> {
+  const cleanLetter = letter.trim().toLowerCase();
+  if (!cleanLetter) return;
+  try {
+    const docRef = doc(db, "dictionary_letters", cleanLetter);
+    await setDoc(docRef, {
+      translations: translations,
+      updatedAt: new Date().toISOString()
+    }, { merge: true });
+  } catch (error) {
+    console.error(`Error saving translations for letter ${letter}:`, error);
+  }
+}
+
+

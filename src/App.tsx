@@ -52,7 +52,8 @@ import {
   Pin,
   Maximize2,
   Minimize2,
-  Trash2
+  Trash2,
+  XCircle
 } from 'lucide-react';
 import { 
   CEFRLevel, 
@@ -74,6 +75,7 @@ import {
 } from './types';
 import { DICTIONARY_DATA } from './dictionaryData';
 import { searchWords, getIrregularVerbs, generateDictionaryTest, WordSuggestion } from './services/dictionaryService';
+import { useKhmerTranslation, preloadTranslationsForWords } from './services/translationService';
 import { 
   generateGrammarTopics, 
   generateGrammarLesson, 
@@ -1045,6 +1047,8 @@ export default function App() {
     if (data) {
       setContent(data);
       setView({ type: 'dictionary_letter', letter: data.letter });
+      // Preload all translations for this letter
+      preloadTranslationsForWords(data.letter, data.words.map(w => w.word));
       return;
     }
 
@@ -1087,6 +1091,8 @@ export default function App() {
     };
     setContent(res);
     setView({ type: 'dictionary_letter', letter: pos === 'all' ? 'All' : pos });
+    // Preload translations for this custom list
+    preloadTranslationsForWords(`pos_${pos}`, sorted.map(w => w.word));
   };
 
   const loadIrregularVerbs = () => {
@@ -1095,6 +1101,10 @@ export default function App() {
     const irregulars = getIrregularVerbs();
     setContent(irregulars);
     setView({ type: 'dictionary_irregular' });
+    // Preload translations for irregular verbs
+    if (irregulars && Array.isArray(irregulars)) {
+      preloadTranslationsForWords('irregular_verbs', irregulars.map(w => w.word));
+    }
   };
 
   const loadDictionaryTest = () => {
@@ -1128,6 +1138,8 @@ export default function App() {
       };
       setContent(res);
       setView({ type: 'dictionary_letter', letter: 'Search Results' });
+      // Preload translations for search results
+      preloadTranslationsForWords(`search_${query}`, results.map(w => w.word));
     } else {
       setError(`No dictionary entries found for "${query}" in our essential list.`);
     }
@@ -1635,7 +1647,7 @@ export default function App() {
         </AnimatePresence>
 
         {/* About The Creator Section */}
-        {!isReadingMode && (
+        {!isReadingMode && ['home', 'grammar_menu', 'vocabulary_menu', 'idiom_menu', 'learning_paths', 'dictionary_menu'].includes(view.type) && (
           <div className="w-full max-w-5xl mx-auto px-6 md:px-12 pb-12 pt-6 mt-auto">
             <div className="bg-white dark:bg-zinc-900/60 border border-gray-200/60 dark:border-zinc-800 rounded-3xl p-6 md:p-8 shadow-sm space-y-4">
               <div className="flex items-center gap-3">
@@ -5648,15 +5660,45 @@ function QuizView({ data, onBack, onComplete, onRetake }: { data: Quiz, onBack: 
              Answer Review
           </h3>
           <div className="space-y-4 text-left">
-            {data.questions.map((q, i) => (
-              <div key={i} className="p-6 bg-white border border-gray-100 rounded-2xl shadow-sm">
-                <p className="font-bold mb-2 flex gap-3"><span className="text-gray-400">{i+1}.</span> <ExampleText text={q.question} /></p>
-                <div className="flex items-center gap-2 text-emerald-600 bg-emerald-50 px-3 py-2 rounded-xl mb-3 text-sm font-bold">
-                  <CheckCircle2 size={16} /> Correct: {q.correctAnswer}
+            {data.questions.map((q, i) => {
+              const userAnswer = userAnswers.find(ua => ua.questionIndex === i);
+              const isCorrect = userAnswer?.isCorrect;
+              return (
+                <div key={i} className={`p-6 bg-white dark:bg-zinc-900/40 border ${isCorrect === false ? 'border-red-100 dark:border-red-950/30' : 'border-gray-100 dark:border-zinc-800'} rounded-2xl shadow-sm space-y-3`}>
+                  <p className="font-bold flex gap-3"><span className="text-gray-400">{i+1}.</span> <ExampleText text={q.question} /></p>
+                  
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-2">
+                    {/* Your Answer */}
+                    <div className={`flex items-center gap-2 px-3 py-2.5 rounded-xl text-sm font-bold ${
+                      isCorrect === true 
+                        ? 'text-emerald-700 bg-emerald-50 dark:bg-emerald-950/20 dark:text-emerald-400' 
+                        : isCorrect === false
+                          ? 'text-red-700 bg-red-50 dark:bg-red-950/20 dark:text-red-400'
+                          : 'text-gray-600 bg-gray-50 dark:bg-zinc-800 dark:text-gray-400'
+                    }`}>
+                      {isCorrect === true ? (
+                        <CheckCircle2 size={16} className="shrink-0 text-emerald-500" />
+                      ) : (
+                        <XCircle size={16} className="shrink-0 text-red-500" />
+                      )}
+                      <span>Your Answer: {userAnswer ? userAnswer.selected : "Not answered"}</span>
+                    </div>
+
+                    {/* Correct Answer */}
+                    <div className="flex items-center gap-2 text-emerald-700 bg-emerald-50 dark:bg-emerald-950/20 dark:text-emerald-400 px-3 py-2.5 rounded-xl text-sm font-bold">
+                      <CheckCircle2 size={16} className="shrink-0 text-emerald-500" />
+                      <span>Correct Answer: {q.correctAnswer}</span>
+                    </div>
+                  </div>
+
+                  {q.explanation && (
+                    <p className="text-xs text-gray-500 dark:text-gray-400 italic border-t border-gray-100 dark:border-zinc-800/80 pt-3 mt-2">
+                      <ExampleText text={q.explanation} />
+                    </p>
+                  )}
                 </div>
-                <p className="text-xs text-gray-500 italic border-t pt-3 mt-2"><ExampleText text={q.explanation} /></p>
-              </div>
-            ))}
+              );
+            })}
           </div>
         </div>
       </div>
@@ -5980,6 +6022,7 @@ function DictionaryWordCard({ entry, index, speak, onSearch, letter }: { entry: 
   const isSpecial = entry.isIrregular || !!entry.variant;
   const isVerb = entry.partOfSpeech.toLowerCase().includes('verb');
   const isIrregularVerb = entry.isIrregular && isVerb;
+  const khmerTranslation = useKhmerTranslation(entry.word);
 
   return (
     <motion.div 
@@ -5998,10 +6041,15 @@ function DictionaryWordCard({ entry, index, speak, onSearch, letter }: { entry: 
       <div className="flex flex-col md:flex-row md:items-start justify-between gap-6">
         <div className="space-y-4 flex-1">
           <div className="flex flex-wrap items-center gap-4">
-            <h3 className={`text-3xl font-black tracking-tight transition-colors ${
+            <h3 className={`text-3xl font-black tracking-tight transition-colors flex items-baseline gap-2 ${
               isIrregularVerb ? 'text-rose-600' : 'group-hover:text-indigo-600'
             }`}>
-              {entry.word}
+              <span>{entry.word}</span>
+              {khmerTranslation && (
+                <span className="text-xl font-medium text-gray-400 dark:text-zinc-500 font-sans">
+                  ({khmerTranslation})
+                </span>
+              )}
             </h3>
             <div className="flex items-center gap-2">
               <span className="text-sm font-mono text-gray-400 bg-white/50 px-2 py-1 rounded-lg border border-gray-100 shadow-sm">{entry.ipa}</span>
