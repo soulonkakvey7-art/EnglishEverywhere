@@ -94,6 +94,7 @@ import {
   analyzeQuizPerformance
 } from './services/geminiService';
 import { getCachedLesson, saveCachedLesson } from './services/firebase';
+import { getLocalCachedLesson, saveLocalCachedLesson, getAllLocalLessons } from './services/localDb';
 import jsPDF from 'jspdf';
 import { toPng } from 'html-to-image';
 
@@ -654,6 +655,57 @@ export default function App() {
   const [view, setView] = useState<ViewState>({ type: 'home' });
   const [isReadingMode, setIsReadingMode] = useState(false);
 
+  const isPopStateRef = useRef(false);
+
+  useEffect(() => {
+    try {
+      if (!window.history.state) {
+        window.history.replaceState({ type: 'home' }, '');
+      }
+    } catch (e) {
+      console.warn('History API not supported or restricted in this environment:', e);
+    }
+
+    const handlePopState = (event: PopStateEvent) => {
+      isPopStateRef.current = true;
+      const incomingView = event.state || { type: 'home' };
+      setView(incomingView);
+    };
+
+    try {
+      window.addEventListener('popstate', handlePopState);
+    } catch (e) {
+      console.warn('popstate event listener could not be registered:', e);
+    }
+
+    return () => {
+      try {
+        window.removeEventListener('popstate', handlePopState);
+      } catch {}
+    };
+  }, []);
+
+  useEffect(() => {
+    if (isPopStateRef.current) {
+      isPopStateRef.current = false;
+      return;
+    }
+    
+    try {
+      const currentStateStr = JSON.stringify(window.history.state);
+      const targetStateStr = JSON.stringify(view);
+      if (currentStateStr !== targetStateStr) {
+        window.history.pushState(view, '');
+      }
+    } catch (e) {
+      try {
+        window.history.pushState(view, '');
+      } catch (err) {
+        console.warn('pushState failed:', err);
+      }
+    }
+  }, [view]);
+
   useEffect(() => {
     setIsReadingMode(false);
   }, [view]);
@@ -750,7 +802,49 @@ export default function App() {
   }, []);
 
   useEffect(() => {
-    localStorage.setItem('english_everywhere_cache', JSON.stringify(contentCache));
+    const loadFromIndexedDB = async () => {
+      try {
+        const localCached = await getAllLocalLessons();
+        if (localCached && Object.keys(localCached).length > 0) {
+          setContentCache(prev => ({
+            ...prev,
+            ...localCached
+          }));
+        }
+      } catch (err) {
+        console.error("Failed to load lessons from IndexedDB:", err);
+      }
+    };
+    loadFromIndexedDB();
+  }, []);
+
+  useEffect(() => {
+    // Save to IndexedDB individual items that changed
+    const saveToLocalDb = async () => {
+      try {
+        for (const [key, val] of Object.entries(contentCache)) {
+          if (key.startsWith('lesson_') || key.startsWith('vocab_') || key.startsWith('idiom_')) {
+            await saveLocalCachedLesson(key, val);
+          }
+        }
+      } catch (err) {
+        console.error("Error saving to IndexedDB:", err);
+      }
+    };
+    saveToLocalDb();
+
+    // To prevent localStorage quota errors, we store only lightweight keys in localStorage
+    try {
+      const lightweightCache: Record<string, any> = {};
+      for (const [key, val] of Object.entries(contentCache)) {
+        if (!key.startsWith('lesson_') && !key.startsWith('vocab_') && !key.startsWith('idiom_')) {
+          lightweightCache[key] = val;
+        }
+      }
+      localStorage.setItem('english_everywhere_cache', JSON.stringify(lightweightCache));
+    } catch (e) {
+      console.warn("localStorage sync warning:", e);
+    }
   }, [contentCache]);
 
   useEffect(() => {
@@ -4698,7 +4792,20 @@ function TopicList({ title, items, onBack, onSelect, onTest, onDrills, progress,
         <ArrowLeft size={16} /> Back to proficiency levels
       </button>
       <h2 className="text-3xl font-bold tracking-tight">{title}</h2>
-      <div className="bg-white border border-gray-200 rounded-3xl overflow-hidden divide-y divide-gray-100">
+      <motion.div 
+        className="bg-white border border-gray-200 rounded-3xl overflow-hidden divide-y divide-gray-100"
+        initial="hidden"
+        animate="visible"
+        variants={{
+          hidden: { opacity: 0 },
+          visible: {
+            opacity: 1,
+            transition: {
+              staggerChildren: 0.04
+            }
+          }
+        }}
+      >
         {(Array.isArray(items) ? items : []).map(topic => {
           const lessonKey = `lesson_${category}_${level || ''}_${topic}`;
           const quizKey = `quiz_grammar_${topic}_specific_${level || ''}`;
@@ -4706,7 +4813,14 @@ function TopicList({ title, items, onBack, onSelect, onTest, onDrills, progress,
           const quizScore = progress.completedQuizzes[quizKey];
 
           return (
-            <div key={topic} className="p-4 md:p-6 flex flex-col sm:flex-row sm:items-center justify-between hover:bg-gray-50 transition-colors gap-4">
+            <motion.div 
+              key={topic} 
+              variants={{
+                hidden: { opacity: 0, y: 12 },
+                visible: { opacity: 1, y: 0, transition: { type: 'spring', stiffness: 100, damping: 15 } }
+              }}
+              className="p-4 md:p-6 flex flex-col sm:flex-row sm:items-center justify-between hover:bg-gray-50 transition-colors gap-4"
+            >
               <div className="flex items-center gap-3 max-w-full truncate">
                 {formatTitleWithKhmer(topic, "font-medium text-sm md:text-base truncate")}
                 {isLessonDone && <CheckCircle2 size={16} className="text-emerald-500 shrink-0" />}
@@ -4739,10 +4853,10 @@ function TopicList({ title, items, onBack, onSelect, onTest, onDrills, progress,
                   {quizScore !== undefined ? 'Retest' : 'Test'}
                 </button>
               </div>
-            </div>
+            </motion.div>
           );
         })}
-      </div>
+      </motion.div>
     </div>
   );
 }
@@ -4759,7 +4873,20 @@ function SimpleList({ title, items, onSelect, onDrills, onTest, onOverallTest, p
           <BrainCircuit size={18} /> Take Overall {title} Test
         </button>
       </div>
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <motion.div 
+        className="grid grid-cols-1 md:grid-cols-2 gap-4"
+        initial="hidden"
+        animate="visible"
+        variants={{
+          hidden: { opacity: 0 },
+          visible: {
+            opacity: 1,
+            transition: {
+              staggerChildren: 0.05
+            }
+          }
+        }}
+      >
         {(Array.isArray(items) ? items : []).map(item => {
           const lessonKey = `lesson_${category}__${item}`;
           const quizKey = `quiz_grammar_${item}_specific_`;
@@ -4767,9 +4894,16 @@ function SimpleList({ title, items, onSelect, onDrills, onTest, onOverallTest, p
           const score = progress.completedQuizzes[quizKey];
 
           return (
-            <div key={item} className={`p-5 md:p-6 border rounded-2xl flex items-center justify-between transition-colors ${
-              isDone ? 'bg-emerald-50/30 border-emerald-100 hover:border-emerald-500' : 'bg-white border-gray-200 hover:border-[#1A1A1A]'
-            }`}>
+            <motion.div 
+              key={item} 
+              variants={{
+                hidden: { opacity: 0, y: 15 },
+                visible: { opacity: 1, y: 0, transition: { type: 'spring', stiffness: 100, damping: 15 } }
+              }}
+              className={`p-5 md:p-6 border rounded-2xl flex items-center justify-between transition-colors ${
+                isDone ? 'bg-emerald-50/30 border-emerald-100 hover:border-emerald-500' : 'bg-white border-gray-200 hover:border-[#1A1A1A]'
+              }`}
+            >
               <div className="flex flex-col truncate pr-2">
                 <div className="flex items-center gap-2 max-w-full truncate">
                   {formatTitleWithKhmer(item, "font-bold text-base md:text-lg truncate")}
@@ -4790,10 +4924,10 @@ function SimpleList({ title, items, onSelect, onDrills, onTest, onOverallTest, p
                   <BrainCircuit size={20} />
                 </button>
               </div>
-            </div>
+            </motion.div>
           );
         })}
-      </div>
+      </motion.div>
     </div>
   );
 }
@@ -5662,17 +5796,34 @@ function VocabularyStart({ onSelect }: { onSelect: (topic: string) => void }) {
 
       <div className="space-y-4 px-4">
         <p className="text-sm font-semibold uppercase tracking-widest text-gray-400">Popular Topics</p>
-        <div className="flex flex-wrap justify-center gap-2 md:gap-3">
+        <motion.div 
+          className="flex flex-wrap justify-center gap-2 md:gap-3"
+          initial="hidden"
+          animate="visible"
+          variants={{
+            hidden: { opacity: 0 },
+            visible: {
+              opacity: 1,
+              transition: {
+                staggerChildren: 0.03
+              }
+            }
+          }}
+        >
           {presets.map(p => (
-            <button 
+            <motion.button 
               key={p} 
+              variants={{
+                hidden: { opacity: 0, scale: 0.9, y: 10 },
+                visible: { opacity: 1, scale: 1, y: 0, transition: { type: 'spring', stiffness: 100, damping: 15 } }
+              }}
               onClick={() => onSelect(p)}
               className="px-5 py-2.5 bg-white border border-gray-200 rounded-full font-medium hover:border-[#1A1A1A] transition-colors text-sm shadow-sm"
             >
               {p}
-            </button>
+            </motion.button>
           ))}
-        </div>
+        </motion.div>
       </div>
     </div>
   );
@@ -5735,13 +5886,29 @@ function VocabularyLessonView({ data, onBack, onTakeTest, speak, onRefresh }: { 
         {practiceMode === 'list' ? (
           <motion.div 
             key="list"
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -20 }}
+            initial="hidden"
+            animate="visible"
+            exit="hidden"
+            variants={{
+              hidden: { opacity: 0 },
+              visible: {
+                opacity: 1,
+                transition: {
+                  staggerChildren: 0.04
+                }
+              }
+            }}
             className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
           >
             {data.words.map((word: VocabularyWord, i: number) => (
-              <div key={i} className="p-5 md:p-6 lg:p-8 bg-white border border-gray-200 rounded-3xl shadow-sm hover:shadow-xl hover:border-[#1A1A1A] transition-all group">
+              <motion.div 
+                key={i} 
+                variants={{
+                  hidden: { opacity: 0, y: 15 },
+                  visible: { opacity: 1, y: 0, transition: { type: 'spring', stiffness: 100, damping: 15 } }
+                }}
+                className="p-5 md:p-6 lg:p-8 bg-white border border-gray-200 rounded-3xl shadow-sm hover:shadow-xl hover:border-[#1A1A1A] transition-all group"
+              >
                 <div className="flex justify-between items-start mb-4">
                   <div>
                     <div className="flex items-center gap-2 mb-1">
@@ -5788,7 +5955,7 @@ function VocabularyLessonView({ data, onBack, onTakeTest, speak, onRefresh }: { 
                     ))}
                   </div>
                 </div>
-              </div>
+              </motion.div>
             ))}
           </motion.div>
         ) : (
