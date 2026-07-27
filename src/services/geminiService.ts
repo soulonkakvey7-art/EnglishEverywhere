@@ -224,7 +224,15 @@ export async function generateIdiomLesson(topic: string): Promise<VocabularyLess
 export async function generateQuiz(topic: string, type: 'grammar' | 'vocabulary', level?: string, isOverall?: boolean): Promise<Quiz> {
   return withRetry(async () => {
     const isCoreEverywhereOverall = topic === 'General English Proficiency';
-    const numQuestions = isCoreEverywhereOverall ? 50 : 20;
+    const isMainTopicOrLevelOverall = Boolean(
+      isOverall || 
+      isCoreEverywhereOverall || 
+      topic.toLowerCase().startsWith('overall') || 
+      ['A1', 'A2', 'B1', 'B2', 'C1', 'C2', 'CEFR Levels', 'All Levels'].includes(topic) ||
+      ['Tenses', 'Parts of Speech', 'Modals', 'Sentences', 'Conditionals', 'Passive Voice', 'Relative Clauses', 'Reported Speech', 'Gerunds & Infinitives', 'Articles & Nouns', 'Adjectives & Adverbs', 'Prepositions', 'Advanced Grammar'].includes(topic)
+    );
+
+    const numQuestions = isCoreEverywhereOverall ? 50 : (isMainTopicOrLevelOverall ? 20 : 10);
 
     const contents = isCoreEverywhereOverall 
       ? `Generate a COMPREHENSIVE 50-question randomized, non-repeating quiz covering the ENTIRE spectrum of English grammar and vocabulary (General English Proficiency).
@@ -232,9 +240,9 @@ export async function generateQuiz(topic: string, type: 'grammar' | 'vocabulary'
          You MUST generate exactly 50 quiz questions.
          Questions should be multiple choice with exactly 4 options. Include a clear explanation for the correct answer.
          IMPORTANT: In explanations, wrap any example sentences or target words in double asterisks like **this** for highlighting.`
-      : `Generate a 20-question randomized, non-repeating quiz for the English ${type} topic: "${topic}" ${level ? `at level ${level}` : ''}.
-         The questions should cover various sub-topics of "${topic}" to provide a thorough test.
-         You MUST generate exactly 20 quiz questions.
+      : `Generate a ${numQuestions}-question randomized, non-repeating quiz for the English ${type} ${isMainTopicOrLevelOverall ? 'main topic / overall level test' : 'sub-lesson topic'}: "${topic}" ${level ? `at level ${level}` : ''}.
+         The questions should cover various aspects of "${topic}" to provide a thorough test.
+         You MUST generate exactly ${numQuestions} quiz questions.
          Questions should be multiple choice with exactly 4 options. Include a clear explanation for the correct answer.
          IMPORTANT: In explanations, wrap any example sentences or target words in double asterisks like **this** for highlighting.`;
 
@@ -268,7 +276,11 @@ export async function generateQuiz(topic: string, type: 'grammar' | 'vocabulary'
         }
       }
     });
-    return JSON.parse(response.text);
+    const quizData = JSON.parse(response.text);
+    if (quizData && Array.isArray(quizData.questions) && quizData.questions.length > numQuestions) {
+      quizData.questions = quizData.questions.slice(0, numQuestions);
+    }
+    return quizData;
   });
 }
 

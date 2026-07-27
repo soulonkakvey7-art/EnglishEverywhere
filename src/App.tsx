@@ -14,6 +14,7 @@ import {
   Home as HomeIcon,
   GraduationCap,
   Volume2,
+  VolumeX,
   CheckCircle2,
   AlertCircle,
   ArrowLeft,
@@ -95,6 +96,7 @@ import {
 } from './services/geminiService';
 import { getCachedLesson, saveCachedLesson } from './services/firebase';
 import { getLocalCachedLesson, saveLocalCachedLesson, getAllLocalLessons } from './services/localDb';
+import { audioHelper } from './services/audioHelper';
 import jsPDF from 'jspdf';
 import { toPng } from 'html-to-image';
 
@@ -251,7 +253,19 @@ const CEFR_LEVELS: { level: CEFRLevel, topics: string[] }[] = [
       'Telling the Time',
       'Prepositions of Movement (to, into, out of)',
       'Present Simple Questions & Negatives',
-      'Wh- Questions with To Be and Do'
+      'Wh- Questions with To Be and Do',
+      'Alphabet & Phonetics Basics',
+      'Basic Greeting Phrases & Courtesy',
+      'Asking & Giving Personal Details',
+      'Possessive Pronouns Basics (mine, yours, his, hers)',
+      'Yes/No Questions with To Be and Do',
+      'Adverbs of Frequency Basics (always, never, usually)',
+      'Making Simple Suggestions (Let\'s...)',
+      'Ordinal Numbers & Dates',
+      'Plural Noun Rules & Irregular Plurals',
+      'Basic Conjunctions (and, but, or)',
+      'Pronouns & Determiners Summary',
+      'Basic Weather & Time Expressions'
     ]
   },
   {
@@ -283,7 +297,18 @@ const CEFR_LEVELS: { level: CEFRLevel, topics: string[] }[] = [
       'Prepositions of Place & Direction (across, through, past)',
       'Something, Anyone, Nowhere (Indefinite Pronouns)',
       'Conjunctions of Contrast and Reason (but, because, although)',
-      'Present Perfect with For and Since'
+      'Present Perfect with For and Since',
+      'Past Simple Regular and Irregular Verbs',
+      'Past Simple Questions and Negatives',
+      'Modal Verbs of Obligation (must, have to, don\'t have to)',
+      'Modal Verbs of Advice (should, shouldn\'t)',
+      'Comparative and Superlative Adverbs',
+      'Adverbs of Place and Time (here, there, soon, already)',
+      'Connectors of Sequence (first, next, then, finally)',
+      'Verbs with Direct and Indirect Objects',
+      'Subject-Verb Agreement Essentials',
+      'Question Tags Basics (isn\'t it?, don\'t you?)',
+      'Expressions of Quantity (a lot of, a few, a little)'
     ]
   },
   {
@@ -317,7 +342,18 @@ const CEFR_LEVELS: { level: CEFRLevel, topics: string[] }[] = [
       'Gerunds as Subjects and Objects',
       'Future Tense Review & Contrast',
       'Both, Either, Neither',
-      'Relative Clauses with Where, When, Whose'
+      'Relative Clauses with Where, When, Whose',
+      'Present Perfect Simple with Already, Just, Yet',
+      'Present Perfect Continuous vs Present Perfect Simple',
+      'Past Perfect vs Past Simple Sequence',
+      'Future Perfect Simple Introduction',
+      'Modals in the Past (should have, could have)',
+      'Reported Statements and Questions',
+      'Causative Structures (have/get something done)',
+      'Indirect Questions for Polite Communication',
+      'Phrasal Verbs: Separable vs Inseparable',
+      'Participial Adjectives (-ed vs -ing)',
+      'Determiners & Quantifiers (each, every, all, both, neither)'
     ]
   },
   {
@@ -352,7 +388,17 @@ const CEFR_LEVELS: { level: CEFRLevel, topics: string[] }[] = [
       'Wishes about the Past (Wish + Past Perfect)',
       'Causative Have and Get',
       'Inversion after Negative Adverbials Basics',
-      'Non-Finite Participle Clauses'
+      'Non-Finite Participle Clauses',
+      'Narrative Tenses in Complex Storytelling',
+      'Future Perfect Continuous & Complex Timeframes',
+      'Impersonal Passive Constructions (It is said that...)',
+      'Modals of Deduction in the Past (must have, might have)',
+      'Gerunds and Infinitives with Meaning Changes (stop, try, remember)',
+      'Discourse Connectors for Contrast & Concession (however, whereas, despite)',
+      'Reported Speech with Complex Reporting Verbs',
+      'Subjunctive Basics in Formal Requests',
+      'Nominalisation (Nouns from Verbs for Academic Writing)',
+      'Inverted Conditionals (Had I known, Should you need)'
     ]
   },
   {
@@ -383,7 +429,17 @@ const CEFR_LEVELS: { level: CEFRLevel, topics: string[] }[] = [
       'Register and Voice Shifts',
       'Metaphorical Extensions & Idiomatic Grammar',
       'Advanced Punctuation & Rhetorical Transitions',
-      'Preposed Adjectives & Absolute Clauses'
+      'Preposed Adjectives & Absolute Clauses',
+      'Advanced Cleft Sentences & Fronting Techniques',
+      'Subjunctive Mood in Formal & Legal Registers',
+      'Diplomatic, Euphemistic & Nuanced Phrasing',
+      'Unreal Past & Hypothetical Stances',
+      'Advanced Passive with Infinitive & Gerund Complements',
+      'Advanced Modal Shades (needn\'t have vs didn\'t need to)',
+      'Discourse Markers & Cohesion in Essays',
+      'Complex Sentence Subordination & Coordination',
+      'Advanced Adverbial Modifier Collocations',
+      'Register & Tone Shifts across Professional Genres'
     ]
   },
   {
@@ -408,7 +464,16 @@ const CEFR_LEVELS: { level: CEFRLevel, topics: string[] }[] = [
       'Anaphora & Cataphora in Textual Cohesion',
       'Chiasmus and Antimetabole',
       'Rhetorical Litotes and Double Negatives',
-      'Syntactic Condensation in Literary Registers'
+      'Syntactic Condensation in Literary Registers',
+      'Sophisticated Inversion, Fronting & Topicalization',
+      'Nuanced Ellipsis, Substitution & Structural Compression',
+      'Advanced Epistemic and Deontic Modality',
+      'Syntactic Ambiguity & Pragmatic Nuance',
+      'High-Register Academic & Literary Syntax',
+      'Chiasmus, Antimetabole & Symmetrical Syntax',
+      'Syntactic Condensation in Legal & Philosophical Texts',
+      'Hyperbaton & Metric Prose Patterns',
+      'Sarcasm, Irony & Subtle Tone in Complex Discourse'
     ]
   }
 ];
@@ -4791,9 +4856,12 @@ function TopicList({ title, items, onBack, onSelect, onTest, onDrills, progress,
       <button onClick={onBack} className="flex items-center gap-2 text-gray-400 hover:text-[#1A1A1A] font-medium transition-colors">
         <ArrowLeft size={16} /> Back to proficiency levels
       </button>
-      <h2 className="text-3xl font-bold tracking-tight">{title}</h2>
+      <div>
+        <h2 className="text-3xl font-bold tracking-tight">{title}</h2>
+        <p className="text-gray-500 text-xs md:text-sm mt-1">Follow the curriculum in sequential order (1 to {items?.length || 0}) for optimal learning progression.</p>
+      </div>
       <motion.div 
-        className="bg-white border border-gray-200 rounded-3xl overflow-hidden divide-y divide-gray-100"
+        className="bg-white border border-gray-200 rounded-3xl overflow-hidden divide-y divide-gray-100 shadow-sm"
         initial="hidden"
         animate="visible"
         variants={{
@@ -4806,7 +4874,7 @@ function TopicList({ title, items, onBack, onSelect, onTest, onDrills, progress,
           }
         }}
       >
-        {(Array.isArray(items) ? items : []).map(topic => {
+        {(Array.isArray(items) ? items : []).map((topic, idx) => {
           const lessonKey = `lesson_${category}_${level || ''}_${topic}`;
           const quizKey = `quiz_grammar_${topic}_specific_${level || ''}`;
           const isLessonDone = progress.completedLessons.includes(lessonKey);
@@ -4819,9 +4887,12 @@ function TopicList({ title, items, onBack, onSelect, onTest, onDrills, progress,
                 hidden: { opacity: 0, y: 12 },
                 visible: { opacity: 1, y: 0, transition: { type: 'spring', stiffness: 100, damping: 15 } }
               }}
-              className="p-4 md:p-6 flex flex-col sm:flex-row sm:items-center justify-between hover:bg-gray-50 transition-colors gap-4"
+              className="p-4 md:p-6 flex flex-col sm:flex-row sm:items-center justify-between hover:bg-gray-50/80 transition-colors gap-4"
             >
               <div className="flex items-center gap-3 max-w-full truncate">
+                <span className="w-7 h-7 rounded-lg bg-indigo-50 text-indigo-700 dark:bg-zinc-800 dark:text-indigo-300 font-mono font-bold text-xs flex items-center justify-center shrink-0 border border-indigo-100/50">
+                  {String(idx + 1).padStart(2, '0')}
+                </span>
                 {formatTitleWithKhmer(topic, "font-medium text-sm md:text-base truncate")}
                 {isLessonDone && <CheckCircle2 size={16} className="text-emerald-500 shrink-0" />}
                 {quizScore !== undefined && (
@@ -4830,7 +4901,7 @@ function TopicList({ title, items, onBack, onSelect, onTest, onDrills, progress,
                   </span>
                 )}
               </div>
-              <div className="flex gap-2">
+              <div className="flex items-center gap-2">
                 <button 
                   onClick={() => onDrills(topic)}
                   className="p-2 text-indigo-600 hover:bg-indigo-50 rounded-xl transition-all"
@@ -4849,8 +4920,9 @@ function TopicList({ title, items, onBack, onSelect, onTest, onDrills, progress,
                 <button 
                   onClick={() => onTest(topic)}
                   className="px-4 py-2 text-sm font-bold bg-[#1A1A1A] text-white rounded-xl hover:opacity-90 transition-opacity"
+                  title="Take 10-question sub-lesson test"
                 >
-                  {quizScore !== undefined ? 'Retest' : 'Test'}
+                  {quizScore !== undefined ? 'Retest (10Q)' : 'Test (10Q)'}
                 </button>
               </div>
             </motion.div>
@@ -4865,12 +4937,16 @@ function SimpleList({ title, items, onSelect, onDrills, onTest, onOverallTest, p
   return (
     <div className="space-y-8">
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-        <h2 className="text-2xl md:text-3xl font-bold tracking-tight">{title}</h2>
+        <div>
+          <h2 className="text-2xl md:text-3xl font-bold tracking-tight">{title}</h2>
+          <p className="text-xs md:text-sm text-gray-500 mt-1">Sequential lesson topics ordered for step-by-step mastery.</p>
+        </div>
         <button 
           onClick={onOverallTest}
           className="px-6 py-3 bg-[#1A1A1A] text-white rounded-2xl font-bold text-sm hover:scale-105 transition-all flex items-center justify-center gap-2 shadow-lg"
+          title="Take 20-question main topic overall test"
         >
-          <BrainCircuit size={18} /> Take Overall {title} Test
+          <BrainCircuit size={18} /> Take Overall {title} Test (20Q)
         </button>
       </div>
       <motion.div 
@@ -4887,7 +4963,7 @@ function SimpleList({ title, items, onSelect, onDrills, onTest, onOverallTest, p
           }
         }}
       >
-        {(Array.isArray(items) ? items : []).map(item => {
+        {(Array.isArray(items) ? items : []).map((item, idx) => {
           const lessonKey = `lesson_${category}__${item}`;
           const quizKey = `quiz_grammar_${item}_specific_`;
           const isDone = progress.completedLessons.includes(lessonKey);
@@ -4906,11 +4982,14 @@ function SimpleList({ title, items, onSelect, onDrills, onTest, onOverallTest, p
             >
               <div className="flex flex-col truncate pr-2">
                 <div className="flex items-center gap-2 max-w-full truncate">
+                  <span className="text-[11px] font-mono font-bold text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded-md border border-indigo-100/60 shrink-0">
+                    {String(idx + 1).padStart(2, '0')}
+                  </span>
                   {formatTitleWithKhmer(item, "font-bold text-base md:text-lg truncate")}
                   {isDone && <CheckCircle2 size={16} className="text-emerald-500 shrink-0" />}
                 </div>
                 {score !== undefined && (
-                  <span className="text-[10px] font-bold text-emerald-600">BEST SCORE: {score}%</span>
+                  <span className="text-[10px] font-bold text-emerald-600 mt-1">BEST SCORE: {score}%</span>
                 )}
               </div>
               <div className="flex gap-1 md:gap-2 flex-shrink-0">
@@ -5406,66 +5485,85 @@ function GrammarLessonView({
       </div>
     );
   }
+  const [readerFontSize, setReaderFontSize] = useState<'sm' | 'md' | 'lg'>('md');
+
   return (
-    <div className={`space-y-12 accessibility-content transition-all duration-300 ${isReadingMode ? 'py-4 max-w-4xl mx-auto' : ''}`}>
-      {/* Reading Mode Header */}
+    <div className={`space-y-12 accessibility-content transition-all duration-300 ${isReadingMode ? 'py-2 sm:py-4 max-w-full sm:max-w-2xl md:max-w-3xl lg:max-w-4xl mx-auto px-2 sm:px-4' : ''}`}>
+      {/* Reading Mode Responsive Header */}
       {isReadingMode ? (
-        <div className="sticky top-0 z-40 bg-white/90 dark:bg-zinc-950/90 backdrop-blur-md border-b border-gray-100 dark:border-zinc-800 py-4 px-6 -mx-6 md:-mx-12 -mt-6 md:-mt-12 mb-8 flex items-center justify-between rounded-b-2xl shadow-sm no-print">
-          <div className="flex items-center gap-3">
-            <div className="p-2 bg-indigo-50 dark:bg-indigo-950/40 text-indigo-600 dark:text-indigo-400 rounded-xl">
+        <div className="sticky top-0 z-40 bg-white/95 dark:bg-zinc-950/95 backdrop-blur-md border-b border-gray-100 dark:border-zinc-800 py-3 sm:py-4 px-3 sm:px-6 -mx-3 sm:-mx-6 md:-mx-12 -mt-6 md:-mt-12 mb-6 sm:mb-8 flex flex-wrap items-center justify-between rounded-b-2xl shadow-sm gap-2 no-print">
+          <div className="flex items-center gap-2 sm:gap-3 shrink-0">
+            <div className="p-1.5 sm:p-2 bg-indigo-50 dark:bg-indigo-950/40 text-indigo-600 dark:text-indigo-400 rounded-xl">
               <BookOpen size={18} />
             </div>
             <div>
-              <p className="text-[10px] font-bold text-indigo-500 uppercase tracking-widest leading-none">Reading Mode</p>
-              <h2 className="text-sm md:text-base font-black truncate max-w-xs md:max-w-md mt-1 dark:text-white">{data.title}</h2>
+              <div className="flex items-center gap-1.5">
+                <p className="text-[10px] font-bold text-indigo-500 uppercase tracking-widest leading-none">Reading Mode</p>
+                <span className="hidden sm:inline-block text-[9px] font-mono bg-gray-100 dark:bg-zinc-800 text-gray-500 px-1.5 py-0.5 rounded">Device-Optimized</span>
+              </div>
+              <h2 className="text-xs sm:text-sm md:text-base font-black truncate max-w-[160px] sm:max-w-xs md:max-w-md mt-0.5 dark:text-white">{data.title}</h2>
             </div>
           </div>
-          <div className="flex items-center gap-2">
+
+          <div className="flex items-center gap-1.5 sm:gap-2 flex-wrap ml-auto">
+            {/* Font Size Adjuster for Device Customization */}
+            <div className="flex items-center bg-gray-100 dark:bg-zinc-900 p-1 rounded-xl border border-gray-200/60 dark:border-zinc-800">
+              <button 
+                onClick={() => setReaderFontSize('sm')} 
+                className={`px-2 py-1 text-[10px] font-bold rounded-lg transition-colors ${readerFontSize === 'sm' ? 'bg-white dark:bg-zinc-800 text-indigo-600 dark:text-indigo-400 shadow-xs' : 'text-gray-500'}`}
+                title="Compact Font (Mobile / High Density)"
+              >
+                A-
+              </button>
+              <button 
+                onClick={() => setReaderFontSize('md')} 
+                className={`px-2 py-1 text-[10px] font-bold rounded-lg transition-colors ${readerFontSize === 'md' ? 'bg-white dark:bg-zinc-800 text-indigo-600 dark:text-indigo-400 shadow-xs' : 'text-gray-500'}`}
+                title="Standard Font (Tablet / Laptop)"
+              >
+                A
+              </button>
+              <button 
+                onClick={() => setReaderFontSize('lg')} 
+                className={`px-2 py-1 text-[10px] font-bold rounded-lg transition-colors ${readerFontSize === 'lg' ? 'bg-white dark:bg-zinc-800 text-indigo-600 dark:text-indigo-400 shadow-xs' : 'text-gray-500'}`}
+                title="Large Font (Accessible / Large Display)"
+              >
+                A+
+              </button>
+            </div>
+
             <button
               onClick={handlePreviewPDF}
               disabled={isGeneratingPreview}
-              className="flex items-center gap-2 px-4 py-2 bg-indigo-50 dark:bg-indigo-950/40 text-indigo-600 dark:text-indigo-400 rounded-xl font-bold text-xs hover:bg-indigo-100 dark:hover:bg-indigo-900/60 transition-all shadow-sm cursor-pointer disabled:opacity-50"
+              className="flex items-center gap-1.5 px-3 py-1.5 sm:px-4 sm:py-2 bg-indigo-50 dark:bg-indigo-950/40 text-indigo-600 dark:text-indigo-400 rounded-xl font-bold text-xs hover:bg-indigo-100 dark:hover:bg-indigo-900/60 transition-all shadow-xs disabled:opacity-50"
               title="Preview the PDF study guide before downloading"
             >
               {isGeneratingPreview ? (
-                <span className="flex items-center gap-1.5 animate-pulse">
-                  <svg className="animate-spin h-3 w-3 text-indigo-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                  </svg>
-                  Previewing...
-                </span>
+                <span className="animate-pulse flex items-center gap-1">Previewing...</span>
               ) : (
                 <>
-                  <Eye size={14} /> Preview PDF
+                  <Eye size={14} /> <span className="hidden sm:inline">Preview PDF</span><span className="sm:hidden">PDF</span>
                 </>
               )}
             </button>
             <button
               onClick={handleDownloadPDF}
               disabled={isDownloading}
-              className="flex items-center gap-2 px-4 py-2 bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-800 text-gray-700 dark:text-gray-300 rounded-xl font-bold text-xs hover:bg-gray-50 dark:hover:bg-zinc-800 transition-all shadow-sm cursor-pointer disabled:opacity-50"
+              className="flex items-center gap-1.5 px-3 py-1.5 sm:px-4 sm:py-2 bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-800 text-gray-700 dark:text-gray-300 rounded-xl font-bold text-xs hover:bg-gray-50 dark:hover:bg-zinc-800 transition-all shadow-xs disabled:opacity-50"
               title="Download/Save this lesson as a PDF for offline study"
             >
               {isDownloading ? (
-                <span className="flex items-center gap-1.5 animate-pulse">
-                  <svg className="animate-spin h-3 w-3 text-indigo-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                  </svg>
-                  Saving...
-                </span>
+                <span className="animate-pulse">Saving...</span>
               ) : (
                 <>
-                  <Download size={14} /> Save PDF
+                  <Download size={14} /> <span className="hidden sm:inline">Save PDF</span><span className="sm:hidden">Save</span>
                 </>
               )}
             </button>
             <button
               onClick={() => setIsReadingMode?.(false)}
-              className="flex items-center gap-2 px-4 py-2 bg-[#1A1A1A] text-white dark:bg-white dark:text-[#1A1A1A] rounded-xl font-bold text-xs hover:scale-[1.03] transition-all shadow-md"
+              className="flex items-center gap-1.5 px-3 py-1.5 sm:px-4 sm:py-2 bg-[#1A1A1A] text-white dark:bg-white dark:text-[#1A1A1A] rounded-xl font-bold text-xs hover:scale-[1.03] transition-all shadow-md"
             >
-              <Minimize2 size={14} /> Exit Reader
+              <Minimize2 size={14} /> <span className="hidden sm:inline">Exit Reader</span><span className="sm:hidden">Exit</span>
             </button>
           </div>
         </div>
@@ -5487,7 +5585,7 @@ function GrammarLessonView({
             <button 
               onClick={() => setIsReadingMode?.(true)}
               className="flex-1 md:flex-none px-5 py-3 bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-800 text-gray-700 dark:text-gray-300 rounded-2xl font-bold text-sm hover:bg-gray-50 dark:hover:bg-zinc-800 hover:text-[#1A1A1A] dark:hover:text-white transition-all flex items-center justify-center gap-2"
-              title="Reading Mode: Full-screen, distracted-free focused view"
+              title="Reading Mode: Responsive, distraction-free view for all devices"
             >
               <Maximize2 size={16} /> Reading Mode
             </button>
@@ -5541,7 +5639,7 @@ function GrammarLessonView({
               onClick={onTakeTest}
               className="flex-1 md:flex-none px-5 py-3 bg-[#1A1A1A] text-white rounded-2xl font-bold text-sm hover:scale-105 transition-all flex items-center justify-center gap-2 shadow-lg"
             >
-              <BrainCircuit size={16} /> Final Test
+              <BrainCircuit size={16} /> Final Test (10Q)
             </button>
           </div>
         </div>
@@ -5566,13 +5664,13 @@ function GrammarLessonView({
       )}
       
       {/* Printable Area Wrapper */}
-      <div ref={lessonRef} className="printable-lesson space-y-12 bg-white dark:bg-transparent rounded-3xl p-1">
+      <div ref={lessonRef} className="printable-lesson space-y-8 sm:space-y-12 bg-white dark:bg-transparent rounded-3xl p-1">
         <div className={`space-y-4 ${isReadingMode ? 'max-w-3xl mx-auto text-center' : ''}`}>
-          <h1 className={`font-black tracking-tight ${isReadingMode ? 'text-2xl md:text-4xl text-gray-900 dark:text-white border-b border-gray-100 dark:border-zinc-800 pb-6' : 'text-xl md:text-2xl lg:text-3xl'}`}>
-            {formatTitleWithKhmer(data.title, isReadingMode ? "text-2xl md:text-4xl font-black tracking-tight" : "text-xl md:text-2xl lg:text-3xl font-black tracking-tight", true)}
+          <h1 className={`font-black tracking-tight ${isReadingMode ? 'text-xl sm:text-3xl md:text-4xl text-gray-900 dark:text-white border-b border-gray-100 dark:border-zinc-800 pb-4 sm:pb-6' : 'text-xl md:text-2xl lg:text-3xl'}`}>
+            {formatTitleWithKhmer(data.title, isReadingMode ? "text-xl sm:text-3xl md:text-4xl font-black tracking-tight" : "text-xl md:text-2xl lg:text-3xl font-black tracking-tight", true)}
           </h1>
           {data.structure && (
-            <div className={`grid grid-cols-1 sm:grid-cols-3 gap-4 pt-4 ${isReadingMode ? 'max-w-2xl mx-auto' : ''}`}>
+            <div className={`grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4 pt-2 sm:pt-4 ${isReadingMode ? 'max-w-2xl mx-auto' : ''}`}>
                {['affirmative', 'negative', 'question'].map(key => (
                  <div key={key} className="bg-gray-50 dark:bg-zinc-900/50 px-4 py-3 rounded-2xl border border-gray-100 dark:border-zinc-800/80 text-left">
                    <p className="text-[10px] font-bold uppercase tracking-widest text-indigo-500 mb-1">{key}</p>
@@ -5583,22 +5681,30 @@ function GrammarLessonView({
           )}
         </div>
 
-        <div className={isReadingMode ? "max-w-3xl mx-auto space-y-12" : "grid grid-cols-1 md:grid-cols-3 gap-12"}>
-          <div className={isReadingMode ? "space-y-12" : "md:col-span-2 space-y-8"}>
+        <div className={isReadingMode ? "max-w-3xl mx-auto space-y-8 sm:space-y-12" : "grid grid-cols-1 md:grid-cols-3 gap-12"}>
+          <div className={isReadingMode ? "space-y-8 sm:space-y-12" : "md:col-span-2 space-y-8"}>
             <section className="space-y-4">
               <h3 className="text-base md:text-lg font-bold flex items-center gap-2">
                 <div className="w-1.5 h-6 bg-[#1A1A1A] dark:bg-white rounded-full" /> Detailed Explanation
               </h3>
-              <div className={`text-gray-700 dark:text-gray-300 leading-relaxed whitespace-pre-wrap ${isReadingMode ? 'text-base md:text-lg font-serif space-y-6 md:leading-loose' : 'text-xs md:text-sm space-y-4'}`}>
+              <div className={`text-gray-700 dark:text-gray-300 leading-relaxed whitespace-pre-wrap ${
+                isReadingMode 
+                  ? readerFontSize === 'sm' ? 'text-sm font-serif space-y-4 leading-normal sm:leading-relaxed' : readerFontSize === 'lg' ? 'text-lg sm:text-xl font-serif space-y-8 leading-loose' : 'text-base sm:text-lg font-serif space-y-6 sm:leading-loose' 
+                  : 'text-xs md:text-sm space-y-4'
+              }`}>
                 {data.explanation}
               </div>
 
               {data.explanationKhmer && (
-                <div className="mt-8 pt-8 border-t border-gray-100 dark:border-zinc-800 space-y-4">
+                <div className="mt-6 pt-6 sm:mt-8 sm:pt-8 border-t border-gray-100 dark:border-zinc-800 space-y-4">
                   <h3 className="text-base md:text-lg font-bold font-khmer flex items-center gap-2 text-indigo-600 dark:text-indigo-400">
                     <div className="w-1.5 h-6 bg-indigo-500 rounded-full" /> ការពន្យល់ជាភាសាខ្មែរ (Explanation in Khmer)
                   </h3>
-                  <div className={`text-gray-700 dark:text-gray-300 font-khmer leading-relaxed whitespace-pre-wrap ${isReadingMode ? 'text-base md:text-lg space-y-6 md:leading-loose' : 'text-xs md:text-sm'}`}>
+                  <div className={`text-gray-700 dark:text-gray-300 font-khmer leading-relaxed whitespace-pre-wrap ${
+                    isReadingMode 
+                      ? readerFontSize === 'sm' ? 'text-sm space-y-4' : readerFontSize === 'lg' ? 'text-lg sm:text-xl space-y-8' : 'text-base sm:text-lg space-y-6'
+                      : 'text-xs md:text-sm'
+                  }`}>
                     {data.explanationKhmer}
                   </div>
                 </div>
@@ -5611,8 +5717,8 @@ function GrammarLessonView({
                </h3>
                <div className="space-y-3">
                  {data.examples.map((ex: string, i: number) => (
-                   <div key={i} className="p-4 bg-emerald-50/50 dark:bg-emerald-950/10 border border-emerald-100/60 dark:border-emerald-900/30 rounded-2xl font-medium text-xs md:text-sm relative group leading-relaxed">
-                     <span className="absolute -left-2 -top-2 bg-emerald-500 text-white w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-bold shadow-sm">
+                   <div key={i} className="p-3.5 sm:p-4 bg-emerald-50/50 dark:bg-emerald-950/10 border border-emerald-100/60 dark:border-emerald-900/30 rounded-2xl font-medium text-xs sm:text-sm md:text-base relative group leading-relaxed">
+                     <span className="absolute -left-2 -top-2 bg-emerald-500 text-white w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-bold shadow-xs">
                        {i + 1}
                      </span>
                      <ExampleText text={ex} />
@@ -5626,12 +5732,12 @@ function GrammarLessonView({
             <div className="space-y-6 no-print">
                <div className="bg-[#1A1A1A] p-6 rounded-3xl text-white space-y-3 shadow-xl">
                  <h3 className="text-base md:text-lg font-bold">Ready to test?</h3>
-                 <p className="text-gray-400 text-xs">Take the 20-question randomized test for this topic.</p>
+                 <p className="text-gray-400 text-xs">Take the 10-question randomized test for this lesson topic.</p>
                  <button 
                   onClick={onTakeTest}
                   className="w-full py-3 bg-white text-[#1A1A1A] rounded-2xl font-bold hover:scale-[1.02] transition-all flex items-center justify-center gap-2 text-xs md:text-sm"
                  >
-                   Start Quiz <BrainCircuit size={18} />
+                   Start Quiz (10Q) <BrainCircuit size={18} />
                  </button>
                </div>
                
@@ -5649,26 +5755,32 @@ function GrammarLessonView({
       </div>
       
       {isReadingMode ? (
-        <div className="pt-12 border-t border-gray-100 dark:border-zinc-800 text-center max-w-xl mx-auto space-y-6 no-print">
-          <p className="text-gray-500 dark:text-gray-400 font-medium">You have finished reading this lesson! Ready to test your skills?</p>
+        <div className="pt-8 sm:pt-12 border-t border-gray-100 dark:border-zinc-800 text-center max-w-xl mx-auto space-y-6 no-print px-4">
+          <p className="text-gray-500 dark:text-gray-400 font-medium text-sm sm:text-base">You have finished reading this lesson! Ready to test your skills?</p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <button 
               onClick={onTakeDrills}
-              className="px-6 py-3 bg-indigo-50 dark:bg-indigo-950/40 text-indigo-600 dark:text-indigo-400 border border-indigo-100 dark:border-indigo-900/40 rounded-2xl font-bold text-sm hover:bg-indigo-100/60 transition-all flex items-center justify-center gap-2"
+              className="px-6 py-3.5 bg-indigo-50 dark:bg-indigo-950/40 text-indigo-600 dark:text-indigo-400 border border-indigo-100 dark:border-indigo-900/40 rounded-2xl font-bold text-sm hover:bg-indigo-100/60 transition-all flex items-center justify-center gap-2"
             >
               <Shuffle size={16} /> Practice Drills
             </button>
             <button 
               onClick={onTakeTest}
-              className="px-6 py-3 bg-[#1A1A1A] dark:bg-white text-white dark:text-[#1A1A1A] rounded-2xl font-bold text-sm hover:scale-105 transition-all flex items-center justify-center gap-2 shadow-lg"
+              className="px-8 py-3.5 bg-[#1A1A1A] dark:bg-white text-white dark:text-[#1A1A1A] rounded-2xl font-bold hover:scale-105 transition-all shadow-lg flex items-center justify-center gap-2 text-sm"
             >
-              <BrainCircuit size={16} /> Start Final Test
+              Start Lesson Test (10Q) <BrainCircuit size={18} />
+            </button>
+            <button 
+              onClick={() => setIsReadingMode?.(false)}
+              className="px-6 py-3.5 bg-gray-100 dark:bg-zinc-800 text-gray-700 dark:text-gray-200 rounded-2xl font-bold hover:bg-gray-200 dark:hover:bg-zinc-700 transition-all text-sm"
+            >
+              Exit Reading Mode
             </button>
           </div>
         </div>
       ) : (
         <div className="pt-12 border-t border-gray-100 dark:border-zinc-800 text-center no-print">
-          <p className="text-gray-400 mb-6 font-medium">Would you like to see more examples, or are you ready to take the 20-question test for this topic?</p>
+          <p className="text-gray-400 mb-6 font-medium">Ready to test your comprehension with a 10-question test for this lesson topic?</p>
         </div>
       )}
 
@@ -5830,7 +5942,8 @@ function VocabularyStart({ onSelect }: { onSelect: (topic: string) => void }) {
 }
 
 function VocabularyLessonView({ data, onBack, onTakeTest, speak, onRefresh }: { data: VocabularyLesson, onBack: () => void, onTakeTest: () => void, speak: (t: string) => void, onRefresh?: () => void }) {
-  const [practiceMode, setPracticeMode] = useState<'list' | 'flashcards'>('list');
+  const [practiceMode, setPracticeMode] = useState<'list' | 'flashcards' | 'reader'>('list');
+  const [readerFontSize, setReaderFontSize] = useState<'sm' | 'md' | 'lg'>('md');
 
   if (!data || !data.words || !Array.isArray(data.words) || data.words.length === 0) {
     return (
@@ -5841,10 +5954,10 @@ function VocabularyLessonView({ data, onBack, onTakeTest, speak, onRefresh }: { 
     );
   }
   return (
-    <div className="space-y-12 accessibility-content">
-      <div className="flex-col lg:flex-row flex items-start lg:items-center justify-between sticky top-[57px] lg:top-0 bg-[#FDFCFB]/95 backdrop-blur-md py-4 z-10 border-b border-gray-100 -mx-6 md:-mx-12 px-6 md:px-12 transition-all gap-4">
+    <div className="space-y-8 md:space-y-12 accessibility-content">
+      <div className="flex-col lg:flex-row flex items-start lg:items-center justify-between sticky top-[57px] lg:top-0 bg-[#FDFCFB]/95 dark:bg-zinc-950/95 backdrop-blur-md py-4 z-10 border-b border-gray-100 dark:border-zinc-800 -mx-6 md:-mx-12 px-6 md:px-12 transition-all gap-4">
         <div className="flex items-center gap-4 md:gap-8 w-full lg:w-auto">
-          <button onClick={onBack} className="text-gray-400 hover:text-[#1A1A1A] flex-shrink-0"><ArrowLeft /></button>
+          <button onClick={onBack} className="text-gray-400 hover:text-[#1A1A1A] dark:hover:text-white flex-shrink-0"><ArrowLeft /></button>
           <h1 className="text-base md:text-xl lg:text-2xl font-black uppercase tracking-tight truncate max-w-[200px] sm:max-w-md">{data.topic}</h1>
         </div>
         
@@ -5852,32 +5965,66 @@ function VocabularyLessonView({ data, onBack, onTakeTest, speak, onRefresh }: { 
           {onRefresh && (
             <button 
               onClick={onRefresh}
-              className="px-4 py-2.5 bg-white border border-gray-200 text-gray-600 rounded-full font-bold text-xs hover:bg-gray-50 hover:text-[#1A1A1A] transition-all flex items-center gap-1.5 whitespace-nowrap"
+              className="px-4 py-2.5 bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-800 text-gray-600 dark:text-gray-300 rounded-full font-bold text-xs hover:bg-gray-50 dark:hover:bg-zinc-800 transition-all flex items-center gap-1.5 whitespace-nowrap"
               title="Regenerate this lesson with updated models or settings"
             >
               <RotateCcw size={14} />
               Regenerate
             </button>
           )}
-          <div className="flex bg-gray-100 p-1 rounded-xl flex-1 lg:flex-none">
+          <div className="flex bg-gray-100 dark:bg-zinc-900 p-1 rounded-xl flex-1 lg:flex-none border border-gray-200/50 dark:border-zinc-800">
             <button 
               onClick={() => setPracticeMode('list')}
-              className={`flex-1 lg:flex-none px-4 py-2 rounded-lg text-xs font-bold transition-all ${practiceMode === 'list' ? 'bg-white shadow-sm text-[#1A1A1A]' : 'text-gray-400 hover:text-gray-600'}`}
+              className={`flex-1 lg:flex-none px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${practiceMode === 'list' ? 'bg-white dark:bg-zinc-800 shadow-xs text-[#1A1A1A] dark:text-white' : 'text-gray-400 hover:text-gray-600'}`}
             >
               List View
             </button>
             <button 
               onClick={() => setPracticeMode('flashcards')}
-              className={`flex-1 lg:flex-none px-4 py-2 rounded-lg text-xs font-bold transition-all ${practiceMode === 'flashcards' ? 'bg-white shadow-sm text-[#1A1A1A]' : 'text-gray-400 hover:text-gray-600'}`}
+              className={`flex-1 lg:flex-none px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${practiceMode === 'flashcards' ? 'bg-white dark:bg-zinc-800 shadow-xs text-[#1A1A1A] dark:text-white' : 'text-gray-400 hover:text-gray-600'}`}
             >
               Flashcards
             </button>
+            <button 
+              onClick={() => setPracticeMode('reader')}
+              className={`flex-1 lg:flex-none px-3 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center justify-center gap-1 ${practiceMode === 'reader' ? 'bg-white dark:bg-zinc-800 shadow-xs text-indigo-600 dark:text-indigo-400' : 'text-gray-400 hover:text-gray-600'}`}
+              title="Reading Mode: Device-optimized distraction-free reading"
+            >
+              <BookOpen size={12} /> Reading Mode
+            </button>
           </div>
+
+          {practiceMode === 'reader' && (
+            <div className="flex items-center bg-gray-100 dark:bg-zinc-900 p-1 rounded-xl border border-gray-200/60 dark:border-zinc-800">
+              <button 
+                onClick={() => setReaderFontSize('sm')} 
+                className={`px-2 py-1 text-[10px] font-bold rounded-lg transition-colors ${readerFontSize === 'sm' ? 'bg-white dark:bg-zinc-800 text-indigo-600 dark:text-indigo-400' : 'text-gray-500'}`}
+                title="Compact Font (Mobile Phone)"
+              >
+                A-
+              </button>
+              <button 
+                onClick={() => setReaderFontSize('md')} 
+                className={`px-2 py-1 text-[10px] font-bold rounded-lg transition-colors ${readerFontSize === 'md' ? 'bg-white dark:bg-zinc-800 text-indigo-600 dark:text-indigo-400' : 'text-gray-500'}`}
+                title="Standard Font (Tablet)"
+              >
+                A
+              </button>
+              <button 
+                onClick={() => setReaderFontSize('lg')} 
+                className={`px-2 py-1 text-[10px] font-bold rounded-lg transition-colors ${readerFontSize === 'lg' ? 'bg-white dark:bg-zinc-800 text-indigo-600 dark:text-indigo-400' : 'text-gray-500'}`}
+                title="Large Font (Desktop)"
+              >
+                A+
+              </button>
+            </div>
+          )}
+
           <button 
             onClick={onTakeTest}
-            className="flex-1 lg:flex-none px-6 py-2.5 bg-[#1A1A1A] text-white rounded-full font-bold text-sm hover:scale-105 transition-transform shadow-lg whitespace-nowrap"
+            className="flex-1 lg:flex-none px-5 py-2.5 bg-[#1A1A1A] dark:bg-white text-white dark:text-[#1A1A1A] rounded-full font-bold text-xs sm:text-sm hover:scale-105 transition-transform shadow-lg whitespace-nowrap"
           >
-            Take Quiz
+            Take Quiz (10Q)
           </button>
         </div>
       </div>
@@ -5907,40 +6054,40 @@ function VocabularyLessonView({ data, onBack, onTakeTest, speak, onRefresh }: { 
                   hidden: { opacity: 0, y: 15 },
                   visible: { opacity: 1, y: 0, transition: { type: 'spring', stiffness: 100, damping: 15 } }
                 }}
-                className="p-5 md:p-6 lg:p-8 bg-white border border-gray-200 rounded-3xl shadow-sm hover:shadow-xl hover:border-[#1A1A1A] transition-all group"
+                className="p-5 md:p-6 lg:p-8 bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-800 rounded-3xl shadow-sm hover:shadow-xl hover:border-[#1A1A1A] dark:hover:border-zinc-600 transition-all group"
               >
                 <div className="flex justify-between items-start mb-4">
                   <div>
                     <div className="flex items-center gap-2 mb-1">
-                      <h3 className="text-lg md:text-xl font-black">
+                      <h3 className="text-lg md:text-xl font-black dark:text-white">
                         {word.word}
                         {word.translationKhmer && (
                           <span className="font-normal text-indigo-600 dark:text-indigo-400 font-khmer"> - {word.translationKhmer}</span>
                         )}
                       </h3>
-                      <span className="text-[10px] uppercase font-black tracking-widest text-emerald-500 bg-emerald-50 px-2 py-0.5 rounded-lg border border-emerald-100">
+                      <span className="text-[10px] uppercase font-black tracking-widest text-emerald-500 bg-emerald-50 dark:bg-emerald-950/40 px-2 py-0.5 rounded-lg border border-emerald-100 dark:border-emerald-900/40">
                         {word.partOfSpeech}
                       </span>
                     </div>
-                    <code className="text-gray-400 font-mono text-xs md:text-sm bg-gray-50 px-2 py-0.5 rounded">{word.ipa}</code>
+                    <code className="text-gray-400 font-mono text-xs md:text-sm bg-gray-50 dark:bg-zinc-800 px-2 py-0.5 rounded">{word.ipa}</code>
                   </div>
                   <button 
                     onClick={() => speak(word.word)}
-                    className="p-2 md:p-3 bg-gray-50 rounded-2xl text-gray-400 hover:bg-[#1A1A1A] hover:text-white transition-all shadow-sm"
+                    className="p-2 md:p-3 bg-gray-50 dark:bg-zinc-800 rounded-2xl text-gray-400 hover:bg-[#1A1A1A] dark:hover:bg-white hover:text-white dark:hover:text-[#1A1A1A] transition-all shadow-xs"
                     title="Listen to pronunciation"
                   >
-                    <Volume2 size={20} md:size={24} />
+                    <Volume2 size={20} />
                   </button>
                 </div>
                 
-                <p className="text-xs md:text-sm text-gray-600 leading-relaxed mb-4 border-l-2 border-gray-100 pl-4 py-1 italic">
+                <p className="text-xs md:text-sm text-gray-600 dark:text-gray-300 leading-relaxed mb-4 border-l-2 border-gray-100 dark:border-zinc-800 pl-4 py-1 italic">
                   {word.definition}
                 </p>
 
                 {word.origin && (
-                  <div className="mb-6 bg-amber-50/50 p-4 rounded-2xl border border-amber-100/50">
-                    <p className="text-[10px] font-bold uppercase tracking-widest text-amber-600 mb-1">Origin</p>
-                    <p className="text-xs text-amber-900/70 leading-relaxed">{word.origin}</p>
+                  <div className="mb-6 bg-amber-50/50 dark:bg-amber-950/20 p-4 rounded-2xl border border-amber-100/50 dark:border-amber-900/30">
+                    <p className="text-[10px] font-bold uppercase tracking-widest text-amber-600 dark:text-amber-400 mb-1">Origin</p>
+                    <p className="text-xs text-amber-900/70 dark:text-amber-200/80 leading-relaxed">{word.origin}</p>
                   </div>
                 )}
 
@@ -5948,7 +6095,7 @@ function VocabularyLessonView({ data, onBack, onTakeTest, speak, onRefresh }: { 
                   <p className="text-[10px] font-bold uppercase tracking-widest text-gray-400">Example Usage</p>
                   <div className="space-y-3">
                     {word.examples.slice(0, 3).map((ex: string, j: number) => (
-                      <div key={j} className="text-xs md:text-sm text-gray-500 font-medium leading-relaxed group-hover:text-gray-700 transition-colors flex gap-2">
+                      <div key={j} className="text-xs md:text-sm text-gray-500 dark:text-gray-400 font-medium leading-relaxed group-hover:text-gray-700 dark:group-hover:text-gray-200 transition-colors flex gap-2">
                         <span className="text-emerald-500">•</span>
                         <ExampleText text={ex} />
                       </div>
@@ -5958,13 +6105,78 @@ function VocabularyLessonView({ data, onBack, onTakeTest, speak, onRefresh }: { 
               </motion.div>
             ))}
           </motion.div>
-        ) : (
+        ) : practiceMode === 'flashcards' ? (
           <VocabularyFlashcards data={data} speak={speak} />
+        ) : (
+          /* Reader View: Device-adapted structured article mode */
+          <motion.div 
+            key="reader"
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -10 }}
+            className="max-w-full sm:max-w-2xl md:max-w-3xl lg:max-w-4xl mx-auto space-y-8 sm:space-y-12 py-2"
+          >
+            <div className="text-center space-y-2 border-b border-gray-100 dark:border-zinc-800 pb-6">
+              <span className="text-[10px] uppercase font-bold tracking-widest text-indigo-500 bg-indigo-50 dark:bg-indigo-950/40 px-3 py-1 rounded-full border border-indigo-100/60 dark:border-indigo-900/40">
+                Reading Mode Active
+              </span>
+              <h2 className="text-2xl sm:text-3xl md:text-4xl font-black tracking-tight dark:text-white pt-2">{data.topic}</h2>
+              <p className="text-gray-500 dark:text-gray-400 text-xs sm:text-sm">Exhaustive vocabulary study guide formatted for comfortable reading on any device.</p>
+            </div>
+
+            <div className="space-y-8 divide-y divide-gray-100 dark:divide-zinc-800/80">
+              {data.words.map((word: VocabularyWord, i: number) => (
+                <div key={i} className={`${i > 0 ? 'pt-8' : ''} space-y-4`}>
+                  <div className="flex flex-wrap items-baseline justify-between gap-2">
+                    <div className="flex items-center gap-3 flex-wrap">
+                      <span className="w-6 h-6 rounded-full bg-indigo-100 dark:bg-indigo-950 text-indigo-700 dark:text-indigo-300 text-xs font-mono font-bold flex items-center justify-center shrink-0">
+                        {i + 1}
+                      </span>
+                      <h3 className="text-xl sm:text-2xl font-black dark:text-white">
+                        {word.word}
+                        {word.translationKhmer && (
+                          <span className="font-normal text-indigo-600 dark:text-indigo-400 font-khmer text-lg sm:text-xl"> - {word.translationKhmer}</span>
+                        )}
+                      </h3>
+                      <span className="text-[10px] uppercase font-bold text-emerald-600 bg-emerald-50 dark:bg-emerald-950/40 px-2 py-0.5 rounded-md border border-emerald-100 dark:border-emerald-900/40">
+                        {word.partOfSpeech}
+                      </span>
+                      <code className="text-gray-400 font-mono text-xs bg-gray-50 dark:bg-zinc-800 px-2 py-0.5 rounded">{word.ipa}</code>
+                    </div>
+
+                    <button 
+                      onClick={() => speak(word.word)}
+                      className="p-2 text-gray-400 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors flex items-center gap-1 text-xs font-bold"
+                    >
+                      <Volume2 size={16} /> Listen
+                    </button>
+                  </div>
+
+                  <div className={`text-gray-700 dark:text-gray-300 font-serif leading-relaxed ${
+                    readerFontSize === 'sm' ? 'text-sm sm:text-base' : readerFontSize === 'lg' ? 'text-lg sm:text-xl' : 'text-base sm:text-lg'
+                  }`}>
+                    {word.definition}
+                  </div>
+
+                  <div className="space-y-2 pt-2">
+                    <p className="text-[10px] font-bold uppercase tracking-widest text-gray-400">Contextual Sentence Examples</p>
+                    <div className="space-y-2">
+                      {word.examples.map((ex: string, j: number) => (
+                        <div key={j} className="p-3 bg-gray-50/70 dark:bg-zinc-900/60 rounded-xl text-xs sm:text-sm text-gray-700 dark:text-gray-300 leading-relaxed border border-gray-100 dark:border-zinc-800/60">
+                          <ExampleText text={ex} />
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </motion.div>
         )}
       </AnimatePresence>
 
-      <div className="pt-24 pb-12 border-t border-gray-100 text-center">
-        <p className="text-gray-400 font-medium">Would you like to explore another topic, or are you ready for the 20-question test?</p>
+      <div className="pt-16 pb-12 border-t border-gray-100 dark:border-zinc-800 text-center">
+        <p className="text-gray-400 font-medium text-sm">Would you like to explore another topic, or are you ready for the 10-question test?</p>
       </div>
     </div>
   );
@@ -6247,6 +6459,14 @@ function QuizView({ data, onBack, onComplete, onRetake }: { data: Quiz, onBack: 
   const [analysis, setAnalysis] = useState<QuizAnalysisResult | null>(null);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [analysisError, setAnalysisError] = useState<string | null>(null);
+  const [isMuted, setIsMuted] = useState(audioHelper.getMuted());
+
+  useEffect(() => {
+    audioHelper.playBGM();
+    return () => {
+      audioHelper.stopBGM();
+    };
+  }, []);
 
   useEffect(() => {
     if (showResult && onComplete && data && data.questions && data.questions.length > 0) {
@@ -6298,6 +6518,9 @@ function QuizView({ data, onBack, onComplete, onRetake }: { data: Quiz, onBack: 
     const isCorrect = option === currentQuestion.correctAnswer;
     if (isCorrect) {
       setScore(s => s + 1);
+      audioHelper.playCorrect();
+    } else {
+      audioHelper.playIncorrect();
     }
     setUserAnswers(prev => [...prev, { questionIndex: currentIndex, selected: option, isCorrect }]);
   };
@@ -6508,7 +6731,7 @@ function QuizView({ data, onBack, onComplete, onRetake }: { data: Quiz, onBack: 
   return (
     <div className="max-w-3xl mx-auto space-y-12">
       <div className="flex items-center justify-between">
-        <div className="space-y-1">
+        <div className="space-y-1 flex-1 mr-4">
           <p className="text-sm font-bold uppercase tracking-widest text-emerald-600">Question {currentIndex + 1} of {data.questions.length}</p>
           <div className="w-full h-1 bg-gray-100 rounded-full overflow-hidden">
             <motion.div 
@@ -6518,7 +6741,20 @@ function QuizView({ data, onBack, onComplete, onRetake }: { data: Quiz, onBack: 
             />
           </div>
         </div>
-        <button onClick={onBack} className="p-2 text-gray-400 hover:text-red-500 transition-colors"><ChevronRight className="rotate-180" /></button>
+        <div className="flex items-center gap-2">
+          <button 
+            onClick={() => {
+              const nextMute = !isMuted;
+              audioHelper.setMute(nextMute);
+              setIsMuted(nextMute);
+            }}
+            title={isMuted ? "Unmute Background Music" : "Mute Background Music"}
+            className="p-2 bg-gray-50 border border-gray-200 text-gray-500 hover:text-[#1A1A1A] hover:bg-gray-100 rounded-full transition-all flex items-center justify-center shadow-xs"
+          >
+            {isMuted ? <VolumeX size={18} /> : <Volume2 size={18} />}
+          </button>
+          <button onClick={onBack} className="p-2 text-gray-400 hover:text-red-500 transition-colors"><ChevronRight className="rotate-180" /></button>
+        </div>
       </div>
 
       <div className="space-y-8">
@@ -7129,6 +7365,15 @@ function DrillView({ data, onBack, onComplete }: { data: DrillSet, onBack: () =>
   const [wordBank, setWordBank] = useState<{ id: string; text: string; isUsed: boolean }[]>([]);
   const [answerWords, setAnswerWords] = useState<{ id: string; text: string }[]>([]);
 
+  const [isMuted, setIsMuted] = useState(audioHelper.getMuted());
+
+  useEffect(() => {
+    audioHelper.playBGM();
+    return () => {
+      audioHelper.stopBGM();
+    };
+  }, []);
+
   const hasDrills = data && data.drills && Array.isArray(data.drills) && data.drills.length > 0;
   const currentDrill = hasDrills ? data.drills[currentIndex] : null;
 
@@ -7245,6 +7490,11 @@ function DrillView({ data, onBack, onComplete }: { data: DrillSet, onBack: () =>
     setIsCorrect(correct);
     setShowFeedback(true);
     setScores(prev => [...prev, correct]);
+    if (correct) {
+      audioHelper.playCorrect();
+    } else {
+      audioHelper.playIncorrect();
+    }
   };
 
   const next = () => {
@@ -7302,10 +7552,23 @@ function DrillView({ data, onBack, onComplete }: { data: DrillSet, onBack: () =>
   return (
     <div className="max-w-4xl mx-auto space-y-8">
       <div className="flex items-center justify-between">
-        <button onClick={onBack} className="flex items-center gap-2 text-gray-400 hover:text-[#1A1A1A] font-medium transition-colors">
-          <ArrowLeft size={16} /> Exit Drills
-        </button>
-        <div className="flex gap-1.5">
+        <div className="flex items-center gap-4">
+          <button onClick={onBack} className="flex items-center gap-2 text-gray-400 hover:text-[#1A1A1A] font-medium transition-colors">
+            <ArrowLeft size={16} /> Exit Drills
+          </button>
+          <button 
+            onClick={() => {
+              const nextMute = !isMuted;
+              audioHelper.setMute(nextMute);
+              setIsMuted(nextMute);
+            }}
+            title={isMuted ? "Unmute Background Music" : "Mute Background Music"}
+            className="p-1.5 bg-gray-50 border border-gray-200 text-gray-500 hover:text-[#1A1A1A] hover:bg-gray-100 rounded-full transition-all flex items-center justify-center shadow-xs"
+          >
+            {isMuted ? <VolumeX size={14} /> : <Volume2 size={14} />}
+          </button>
+        </div>
+        <div className="flex gap-1.5 items-center">
           {data.drills.map((_, i) => (
             <div key={i} className={`w-8 h-1.5 rounded-full transition-all ${i === currentIndex ? 'bg-[#1A1A1A] w-12' : i < currentIndex ? (scores[i] ? 'bg-emerald-500' : 'bg-orange-400') : 'bg-gray-100'}`} />
           ))}
