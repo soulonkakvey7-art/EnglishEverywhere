@@ -115,7 +115,8 @@ import {
   initLessonVersioning,
   getSavedLessonDirectly,
   saveLessonToLocalStorage,
-  saveAllLessonsToLocalStorage
+  saveAllLessonsToLocalStorage,
+  isLessonContentMatchingTopic
 } from './services/lessonVersionService';
 
 // Content versioning constant for lessons cache control
@@ -1145,7 +1146,16 @@ export default function App() {
     }
 
     // If version matches, load saved lesson directly from memory or localStorage
-    const savedLesson = !forceRefresh ? (contentCache[cacheKey] || getSavedLessonDirectly(cacheKey)) : null;
+    let savedLesson = !forceRefresh ? (contentCache[cacheKey] || getSavedLessonDirectly(cacheKey)) : null;
+    if (savedLesson && !isLessonContentMatchingTopic(cacheKey, savedLesson)) {
+      // Discard mismatched/poisoned cache entry
+      savedLesson = null;
+      setContentCache(prev => {
+        const next = { ...prev };
+        delete next[cacheKey];
+        return next;
+      });
+    }
     if (savedLesson) {
       setContent(savedLesson);
       setView({ type: 'grammar_lesson', topic, category, level });
@@ -1157,7 +1167,10 @@ export default function App() {
     try {
       let res = null;
       if (!forceRefresh) {
-        res = await getCachedLesson(cacheKey);
+        const cached = await getCachedLesson(cacheKey);
+        if (cached && isLessonContentMatchingTopic(cacheKey, cached)) {
+          res = cached;
+        }
       }
       if (res) {
         console.log(`Loaded lesson from shared Firestore cache: ${cacheKey}`);

@@ -1017,32 +1017,73 @@ export function buildEnrichedExplanationKhmer(item: LessonContent): string {
  */
 export function getTenseDetailedData(topicOrTitle: string): LessonContent | null {
   if (!topicOrTitle) return null;
-  const clean = topicOrTitle.trim().toLowerCase();
+
+  let raw = topicOrTitle.trim();
+
+  // If this is a lesson cache key, check if category is Tenses
+  if (raw.startsWith('lesson_')) {
+    const parts = raw.split('_');
+    const category = parts[1];
+    // If category is explicitly given and is NOT Tenses, this is NOT a tense lesson!
+    if (category && category !== 'Tenses' && category !== '') {
+      return null;
+    }
+    raw = parts[parts.length - 1];
+  }
+
+  const clean = raw.trim().toLowerCase();
+
+  // Check if this is a specific conditional that belongs to Grammar Levels (B1, B2, C1)
+  const isSpecificGrammarConditional = 
+    clean.includes('mixed') || 
+    clean.includes('zero') || 
+    clean.includes('first') || 
+    clean.includes('second') || 
+    clean.includes('third') || 
+    clean.includes('invert') || 
+    clean.includes('advanced conditional') || 
+    clean.includes('unless') || 
+    clean.includes('alternative');
+
+  if (isSpecificGrammarConditional) {
+    return null;
+  }
 
   let matched: LessonContent | null = null;
 
   for (const [key, data] of Object.entries(COMPREHENSIVE_TENSES_DATA)) {
     const keyClean = key.toLowerCase();
-    if (clean === keyClean || clean.includes(keyClean) || keyClean.includes(clean)) {
+    if (clean === keyClean) {
       matched = data;
       break;
     }
   }
 
-  // Check aliases like "Simple Past" for "Past Simple"
+  // Check aliases
   if (!matched) {
-    if (clean.includes('simple past')) {
+    if (clean === 'simple past' || clean === 'past simple tense') {
       matched = COMPREHENSIVE_TENSES_DATA['Past Simple'];
-    } else if (clean.includes('present progressive')) {
+    } else if (clean === 'present progressive' || clean === 'present continuous tense') {
       matched = COMPREHENSIVE_TENSES_DATA['Present Continuous'];
-    } else if (clean.includes('past progressive')) {
+    } else if (clean === 'past progressive' || clean === 'past continuous tense') {
       matched = COMPREHENSIVE_TENSES_DATA['Past Continuous'];
-    } else if (clean.includes('future progressive')) {
+    } else if (clean === 'future progressive' || clean === 'future continuous tense') {
       matched = COMPREHENSIVE_TENSES_DATA['Future Continuous'];
-    } else if (clean.includes('conditional')) {
+    } else if (clean === 'conditional sentences' || clean === 'conditional sentence' || clean === 'conditionals overview' || clean === '4 conditionals' || clean === 'four conditionals') {
       matched = COMPREHENSIVE_TENSES_DATA['Conditional Sentences'];
     } else if (clean.includes('going to') || clean.includes('will vs')) {
       matched = COMPREHENSIVE_TENSES_DATA['Future with Going To & Will'];
+    }
+  }
+
+  // Exact fallback if string contains the full tense name verbatim
+  if (!matched) {
+    for (const [key, data] of Object.entries(COMPREHENSIVE_TENSES_DATA)) {
+      const keyClean = key.toLowerCase();
+      if (clean.includes(keyClean)) {
+        matched = data;
+        break;
+      }
     }
   }
 

@@ -58,6 +58,32 @@ export const PRE_GENERATED_LESSONS: Record<string, LessonContent | VocabularyLes
   'lesson_Levels_B1_Reported Speech': COMPREHENSIVE_GRAMMAR_TOPICS['Reported Speech'],
   'lesson_Levels_B2_Gerunds vs Infinitives': COMPREHENSIVE_GRAMMAR_TOPICS['Gerunds vs Infinitives'],
 
+  // === CONDITIONALS (Zero, First, Second, Third, Mixed, Inverted) ===
+  'Mixed Conditionals': COMPREHENSIVE_GRAMMAR_TOPICS['Mixed Conditionals'],
+  'lesson_Levels_C1_Mixed Conditionals': COMPREHENSIVE_GRAMMAR_TOPICS['Mixed Conditionals'],
+  'lesson_Levels_B2_Mixed Conditionals Introduction': COMPREHENSIVE_GRAMMAR_TOPICS['Mixed Conditionals'],
+  'lesson_Levels_B2_Mixed Conditionals in Full': COMPREHENSIVE_GRAMMAR_TOPICS['Mixed Conditionals'],
+
+  'Zero Conditional': COMPREHENSIVE_GRAMMAR_TOPICS['Zero Conditional'],
+  'lesson_Levels_B1_Zero Conditional': COMPREHENSIVE_GRAMMAR_TOPICS['Zero Conditional'],
+
+  'First Conditional': COMPREHENSIVE_GRAMMAR_TOPICS['First Conditional'],
+  'lesson_Levels_B1_First Conditional': COMPREHENSIVE_GRAMMAR_TOPICS['First Conditional'],
+
+  'Second Conditional': COMPREHENSIVE_GRAMMAR_TOPICS['Second Conditional'],
+  'lesson_Levels_B1_Second Conditional Introduction': COMPREHENSIVE_GRAMMAR_TOPICS['Second Conditional'],
+  'lesson_Levels_B2_Second Conditional': COMPREHENSIVE_GRAMMAR_TOPICS['Second Conditional'],
+
+  'Third Conditional': COMPREHENSIVE_GRAMMAR_TOPICS['Third Conditional'],
+  'lesson_Levels_B1_Third Conditional Introduction': COMPREHENSIVE_GRAMMAR_TOPICS['Third Conditional'],
+  'lesson_Levels_B2_Third Conditional': COMPREHENSIVE_GRAMMAR_TOPICS['Third Conditional'],
+
+  'Inverted Conditionals': COMPREHENSIVE_GRAMMAR_TOPICS['Inverted Conditionals'],
+  'lesson_Levels_B2_Inverted Conditionals (Had I known, Should you need)': COMPREHENSIVE_GRAMMAR_TOPICS['Inverted Conditionals'],
+  'lesson_Levels_C1_Inversion in Conditionals': COMPREHENSIVE_GRAMMAR_TOPICS['Inverted Conditionals'],
+  'lesson_Levels_C1_Inverted Conditional Structures without If': COMPREHENSIVE_GRAMMAR_TOPICS['Inverted Conditionals'],
+  'lesson_Levels_C1_Advanced Conditionals (but for, had it not been for, should you need)': COMPREHENSIVE_GRAMMAR_TOPICS['Inverted Conditionals'],
+
   'lesson_Levels_A1_Present Simple': {
     title: 'A1 Present Simple Tense',
     explanation: 'At the A1 level, Present Simple is taught to help you express daily routines, facts, and permanent situations.',
@@ -224,6 +250,22 @@ export function getLocalFallbackLesson(key: string): any | null {
   for (const k of Object.keys(PRE_GENERATED_LESSONS)) {
     if (k.toLowerCase().trim() === normalizedKey) {
       return PRE_GENERATED_LESSONS[k];
+    }
+  }
+
+  // If the key is specifically for Grammar Levels or Parts of Speech, check grammar topics first!
+  const isGrammarKey = 
+    key.includes('Levels_') || 
+    key.includes('PartsOfSpeech_') ||
+    normalizedKey.includes('conditional') ||
+    normalizedKey.includes('clause') ||
+    normalizedKey.includes('voice') ||
+    normalizedKey.includes('speech');
+
+  if (isGrammarKey) {
+    const grammarMatch = getGrammarTopicData(key);
+    if (grammarMatch) {
+      return grammarMatch;
     }
   }
 

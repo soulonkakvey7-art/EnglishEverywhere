@@ -2171,6 +2171,339 @@ Subject-Verb Agreement គឺជាច្បាប់គ្រឹះនៃទម
       'Physics **is** a demanding yet profoundly illuminating scientific discipline.',
       'The quality of these handcrafted artisanal textiles **exceeds** all export standards.'
     ]
+  },
+
+  // ==========================================
+  // 13. MIXED CONDITIONALS (C1 / B2 Advanced)
+  // ==========================================
+  'Mixed Conditionals': {
+    title: 'Mixed Conditionals',
+    structure: {
+      affirmative: 'Type 1 (Past Condition → Present Result): If + had(n\'t) + V3, Subject + would/could/might + V1 | Type 2 (Present Trait/State → Past Result): If + Past Simple (were/did), Subject + would/could/might have + V3',
+      negative: 'Type 1: If we hadn\'t missed the flight, we wouldn\'t be stuck in transit today. | Type 2: If he weren\'t so careless, he wouldn\'t have forgotten his passport yesterday.',
+      question: 'Type 1: Would you be working in Tokyo today if you hadn\'t studied Japanese? | Type 2: Would they have offered you the job if you weren\'t fluent in French?'
+    },
+    explanation: `WHAT ARE MIXED CONDITIONALS?
+In standard English conditionals, the "if-clause" and the "main result clause" inhabit the same timeframe:
+• Second Conditional: Unreal Present Condition → Unreal Present Result (e.g., "If I had money now, I would buy it now").
+• Third Conditional: Unreal Past Condition → Unreal Past Result (e.g., "If I had studied harder last year, I would have passed the exam last year").
+
+However, real life is rarely neatly confined to a single timeframe! Actions taken in the past frequently shape who we are and what we experience today, while ongoing traits, habits, and permanent realities have constantly shaped our past outcomes. Mixed Conditionals exist specifically to bridge two different time zones across the condition and the result.
+
+THE TWO MAJOR TYPES OF MIXED CONDITIONALS:
+
+1. TYPE 1: PAST ACTION/CONDITION → PRESENT CONSEQUENCE (Third Conditional IF + Second Conditional RESULT)
+   • Formula: If + Past Perfect (had + V3), Subject + would / could / might + Base Verb (V1)
+   • Communication Purpose: We look back at an unchangeable event or decision in the past and express its ongoing, observable consequence right now in the present.
+   • Conceptual Logic: "Because X didn't happen in the past, Y is not true today."
+   • Examples:
+     - "If I had accepted that overseas scholarship five years ago, I would be living in Cambridge today." (Past decision -> Present residency)
+     - "If they had installed solar panels last winter, their electricity bill would be substantially lower this month."
+
+2. TYPE 2: PRESENT/PERMANENT TRAIT → PAST CONSEQUENCE (Second Conditional IF + Third Conditional RESULT)
+   • Formula: If + Past Simple (were / did / didn't), Subject + would / could / might have + Past Participle (V3)
+   • Communication Purpose: We state a permanent personality trait, general ability, or enduring current state of affairs, and explain how it influenced a specific event or outcome in the past.
+   • Conceptual Logic: "Because I am inherently this type of person right now, I acted or succeeded/failed that way back then."
+   • Examples:
+     - "If she were more patient with clients, she wouldn't have lost that major account last Tuesday." (She is not patient in general -> lost account in the past)
+     - "If I spoke conversational German, I would have translated the contract for the board yesterday." (I don't speak German -> couldn't translate yesterday)
+
+SUBTLE NUANCES WITH MODALS:
+• WOULD: Expresses a definite hypothetical outcome ("would be", "would have been").
+• COULD: Expresses hypothetical ability or capacity ("could be leading", "could have won").
+• MIGHT: Expresses hypothetical possibility, uncertainty, or probability ("might be living", "might have attended").
+
+CRITICAL LEARNING PITFALLS TO AVOID:
+1. Never use "would" inside the if-clause. Say "If I had known" (NOT "If I would have known").
+2. In formal English (especially at C1/C2 levels), use the subjunctive "were" for all subjects: "If he were more diligent" (preferable to "was").
+3. Make sure the timeline contrast is clear by using explicit time markers when needed (e.g., "now", "today", "yesterday", "last year").`,
+    explanationKhmer: `សេចក្តីផ្តើមអំពី MIXED CONDITIONALS (ប្រយោគលក្ខខណ្ឌចម្រុះពេលវេលា)៖
+នៅក្នុងវេយ្យាករណ៍ភាសាអង់គ្លេសធម្មតា លក្ខខណ្ឌ និងលទ្ធផលតែងតែស្ថិតនៅក្នុងពេលវេលាតែមួយ (Second Conditional សម្រាប់បច្ចុប្បន្ន និង Third Conditional សម្រាប់អតីតកាល)។ ប៉ុន្តែក្នុងជីវិតពិត ព្រឹត្តិការណ៍ក្នុងអតីតកាលតែងតែជះឥទ្ធិពលដល់បច្ចុប្បន្ន ឬចរិតលក្ខណៈអចិន្ត្រៃយ៍ក្នុងបច្ចុប្បន្នបានកំណត់លទ្ធផលកាលពីអតីតកាល។ ហេតុនេះហើយទើបគេប្រើ "Mixed Conditionals" ដើម្បីតភ្ជាប់ពេលវេលាពីរខុសគ្នា!
+
+ប្រភេទចម្បងទាំងពីរនៃ MIXED CONDITIONALS៖
+
+១. ប្រភេទទី ១៖ អតីតកាលប៉ះពាល់បច្ចុប្បន្ន (Past Condition → Present Result)
+   • រូបមន្ត៖ If + Past Perfect (had + V3), Subject + would/could/might + Base Verb (V1)
+   • គោលបំណង៖ ស្រមើស្រមៃអំពីសកម្មភាពក្នុងអតីតកាលដែលមិនបានកើតឡើង ហើយបង្ហាញពីផលវិបាកដែលកំពុងកើតមាននៅពេលបច្ចុប្បន្ននេះ។
+   • ឧទាហរណ៍៖ "If I had studied medicine, I would be a doctor now." (កាលពីមុនមិនបានរៀនពេទ្យ ដូច្នេះឥឡូវនេះមិនមែនជាវេជ្ជបណ្ឌិតទេ)។
+
+២. ប្រភេទទី ២៖ ស្ថានភាព/ចរិតបច្ចុប្បន្នប៉ះពាល់អតីតកាល (Present State → Past Result)
+   • រូបមន្ត៖ If + Past Simple (were/V2), Subject + would/could/might have + Past Participle (V3)
+   • គោលបំណង៖ បង្ហាញពីចរិតលក្ខណៈ ឬស្ថានភាពអចិន្ត្រៃយ៍របស់មនុស្សម្នាក់ក្នុងពេលបច្ចុប្បន្ន ដែលជាហេតុធ្វើឱ្យមានលទ្ធផលណាមួយកាលពីអតីតកាល។
+   • ឧទាហរណ៍៖ "If she were braver, she would have applied for that job last week." (គាត់មិនសូវក្លាហានជាទូទៅ ទើបសប្តាហ៍មុនមិនបានដាក់ពាក្យ)។
+
+ចំណុចសំខាន់ៗដែលត្រូវប្រយ័ត្ន៖
+• ហាមប្រើ "would" នៅខាងក្នុងឃ្លា If-clause ជាដាច់ខាត។
+• ក្នុងកម្រិតផ្លូវការ (C1) គួរបន្តប្រើ "were" សម្រាប់គ្រប់ប្រធានទាំងអស់ (If I were, If he were, If it were)។
+• អាចប្រើ could ឬ might ជំនួស would ដើម្បីបញ្ជាក់ពីសមត្ថភាព ឬលទ្ធភាព។`,
+    examples: [
+      'If she **had accepted** the scholarship in Boston, she **would be working** at MIT right now.',
+      'If I **hadn\'t missed** my morning flight, I **would be attending** the keynote conference today.',
+      'If he **were** more fluent in English, he **would have aced** the diplomatic interview yesterday.',
+      'If we **had backed up** the database servers yesterday, we **would not be facing** this catastrophic outage now.',
+      'If they **had known** about the severe tropical storm, they **would not be stranded** on the island right now.',
+      'If I **were not** allergic to seafood, I **would have ordered** the grilled lobster dinner last night.',
+      'If she **had trained** with Olympic coaches during her youth, she **would be** a world champion today.',
+      'If you **had listened** to my architectural advice, the foundations **would not be cracking** now.',
+      'If he **had not resigned** from the executive board, he **would be leading** the new artificial intelligence division today.',
+      'If the team **possessed** stronger crisis management skills, they **would have diffused** the scandal much faster last week.',
+      'If I **had bought** those shares five years ago, I **would be** financially independent today.',
+      'If she **loved** classical music, she **would have attended** the philharmonic symphony concert last weekend.'
+    ]
+  },
+
+  // ==========================================
+  // 14. ZERO CONDITIONAL (B1 / Core)
+  // ==========================================
+  'Zero Conditional': {
+    title: 'Zero Conditional',
+    structure: {
+      affirmative: 'If/When + Present Simple, Subject + Present Simple (Cause and natural/automatic effect)',
+      negative: 'If you don\'t water these desert plants regularly, their foliage doesn\'t thrive.',
+      question: 'What happens to sea water if the atmospheric temperature drops below freezing?'
+    },
+    explanation: `WHAT IS THE ZERO CONDITIONAL?
+The Zero Conditional is used to express general truths, scientific facts, immutable laws of nature, automatic cause-and-effect relationships, and habitual routines. In the Zero Conditional, the outcome is 100% guaranteed to happen every time the condition is met.
+
+KEY RULES & PATTERNS:
+1. Tenses: Both the condition clause (if-clause) and the result clause use the PRESENT SIMPLE tense.
+2. "If" vs. "When": Because the outcome is universally true and invariable, "if" and "when" can almost always be used interchangeably with no change in meaning:
+   - "If you heat water to 100°C, it boils." = "When you heat water to 100°C, it boils."
+3. Imperatives in Results: The main clause can also be an imperative (command or instruction):
+   - "If the alarm sounds, evacuate the building immediately."`,
+    explanationKhmer: `សេចក្តីផ្តើមអំពី ZERO CONDITIONAL (លក្ខខណ្ឌប្រភេទសូន្យ)៖
+Zero Conditional ត្រូវបានប្រើប្រាស់សម្រាប់បង្ហាញពីការពិតទូទៅ ការពិតបែបវិទ្យាសាស្ត្រ ច្បាប់ធម្មជាតិ ឬទម្លាប់ដែលតែងតែកើតឡើងជានិច្ចនៅពេលដែលលក្ខខណ្ឌមួយត្រូវបានបំពេញ (លទ្ធផលកើតឡើង ១០០%)។
+
+ទម្រង់វេយ្យាករណ៍៖
+• If / When + Present Simple, Subject + Present Simple
+• ដោយសារលទ្ធផលជាការពិតឥតប្រែប្រួល អ្នកអាចប្រើពាក្យ "when" ជំនួស "if" បានដោយអត្ថន័យនៅដដែល។
+• អាចប្រើឃ្លាបញ្ជា (Imperatives) ក្នុងផ្នែកលទ្ធផល៖ "If you have any questions, contact our support team."`,
+    examples: [
+      'If water **reaches** 100 degrees Celsius at sea level, it **boils** rapidly.',
+      'When the sun **sets** over the horizon, the temperature in the valley **drops** noticeably.',
+      'If you **press** this red emergency button, the production line **stops** instantly.',
+      'Plants **wither** and die if they **do not receive** sufficient sunlight and hydration.',
+      'If iron **is exposed** to oxygen and moisture, it **rusts** over time.',
+      'When people **exercise** consistently, their cardiovascular endurance **improves**.',
+      'If you **mix** yellow and blue pigments, you **obtain** green.',
+      'Ice **melts** quickly when you **leave** it on the heated kitchen counter.',
+      'If employees **work** overtime on national holidays, the company **pays** them double wages.',
+      'When the atmospheric pressure **decreases**, rain clouds **form** more rapidly.',
+      'If you **store** dairy products at room temperature, they **spoil** within hours.',
+      'If you **have** any doubts about medication dosages, **consult** your physician immediately.'
+    ]
+  },
+
+  // ==========================================
+  // 15. FIRST CONDITIONAL (B1 / Core)
+  // ==========================================
+  'First Conditional': {
+    title: 'First Conditional',
+    structure: {
+      affirmative: 'If + Present Simple, Subject + will/can/may/should + Base Verb (V1)',
+      negative: 'If the weather forecast doesn\'t improve by morning, we won\'t embark on the mountain trail.',
+      question: 'Will you accept the job offer in Singapore if the salary meets your expectations?'
+    },
+    explanation: `WHAT IS THE FIRST CONDITIONAL?
+The First Conditional talks about real, possible, and probable future situations and their realistic consequences. Unlike the Zero Conditional (which describes universal facts), the First Conditional addresses specific real-world events that have a high likelihood of occurring in the near future.
+
+KEY RULES & PATTERNS:
+1. Sentence Structure:
+   - Condition Clause: If + Present Simple (e.g., "If it rains tomorrow...")
+   - Result Clause: Subject + will / won't + Base Verb (e.g., "...we will cancel the picnic.")
+2. NEVER use "will" in the If-Clause: A very common learner mistake is saying "If it will rain...". Always use the Present Simple after "if"!
+3. Modal Alternatives to "Will":
+   - CAN: Expresses ability ("If you finish early, you can join us.")
+   - MAY / MIGHT: Expresses possibility ("If the train is delayed, we might miss the introductory session.")
+   - SHOULD: Expresses advice ("If you feel dizzy, you should sit down.")
+4. Alternatives to "If": "Unless" (meaning "if not"), "Provided that", "As long as", "In case".`,
+    explanationKhmer: `សេចក្តីផ្តើមអំពី FIRST CONDITIONAL (លក្ខខណ្ឌប្រភេទទីមួយ)៖
+First Conditional ត្រូវបានប្រើដើម្បីនិយាយអំពីស្ថានភាពពិតប្រាកដ ឬមានលទ្ធភាពខ្ពស់ក្នុងការកើតឡើងនៅពេលអនាគត និងលទ្ធផលជាក់ស្តែងរបស់វា។
+
+ទម្រង់វេយ្យាករណ៍៖
+• If + Present Simple, Subject + will / can / may / should + Base Verb (V1)
+• ចំណាំសំខាន់បំផុត៖ ហាមប្រើ "will" នៅខាងក្នុងឃ្លា If-clause ជាដាច់ខាត (និយាយ "If it rains" មិនមែន "If it will rain" ទេ)។
+• អាចប្រើពាក្យជំនួស "If" ដូចជា៖ Unless (ប្រសិនបើ...មិន), Provided that (លុះត្រាតែ), As long as (ឱ្យតែ)។`,
+    examples: [
+      'If the client **approves** the architectural blueprint tomorrow, we **will begin** construction next week.',
+      'If you **study** consistently for the IELTS exam, you **will achieve** your target band score.',
+      'We **will cancel** the outdoor music festival if the thunderstorm **intensifies**.',
+      'If she **submits** her doctoral application before the deadline, the committee **will review** it favorably.',
+      'You **can borrow** my company laptop if you **handle** it with care.',
+      'If the shipment **does not arrive** by Friday, we **will request** a full commercial refund.',
+      'Unless they **lower** their wholesale prices, we **will switch** to a domestic supplier.',
+      'If the flight **lands** on schedule, I **will meet** you at the international arrivals terminal.',
+      'You **should consult** a financial advisor if you **plan** to invest in overseas real estate.',
+      'If the software update **fails**, our IT engineers **will restore** the previous stable version.',
+      'Provided that everyone **cooperates**, we **will conclude** this quarterly audit within two days.',
+      'If interest rates **rise** further, commercial borrowing **will slow** down noticeably.'
+    ]
+  },
+
+  // ==========================================
+  // 16. SECOND CONDITIONAL (B1 / B2)
+  // ==========================================
+  'Second Conditional': {
+    title: 'Second Conditional',
+    structure: {
+      affirmative: 'If + Past Simple (were/did), Subject + would/could/might + Base Verb (V1)',
+      negative: 'If I didn\'t have so many clinical commitments, I would spend more time writing research papers.',
+      question: 'Where would you choose to live if you had the freedom to work remotely anywhere on earth?'
+    },
+    explanation: `WHAT IS THE SECOND CONDITIONAL?
+The Second Conditional is used to imagine hypothetical, counterfactual, or highly unlikely scenarios in the present or future, along with their imagined consequences. We use it when the condition is either impossible or contrary to current reality.
+
+KEY RULES & PATTERNS:
+1. Structure: If + Past Simple, Subject + would + Base Verb (V1).
+   - Although the verb in the if-clause is in the past tense form, the meaning is strictly PRESENT or FUTURE!
+2. The Subjunctive "Were":
+   - In formal and standard English, "were" is preferred over "was" for all persons (I, he, she, it):
+   - "If I were you, I would take that opportunity." (Giving advice)
+   - "If he were honest, he would admit the mistake."
+3. Nuanced Modal Variations:
+   - "Would" indicates a definite hypothetical consequence.
+   - "Could" means "would be able to" (hypothetical capability).
+   - "Might" means "would perhaps" (hypothetical possibility).`,
+    explanationKhmer: `សេចក្តីផ្តើមអំពី SECOND CONDITIONAL (លក្ខខណ្ឌប្រភេទទីពីរ)៖
+Second Conditional ត្រូវបានប្រើដើម្បីស្រមើស្រមៃអំពីស្ថានភាពដែលផ្ទុយពីការពិតក្នុងពេលបច្ចុប្បន្ន ឬស្ទើរតែមិនអាចកើតឡើងបានក្នុងពេលអនាគត និងលទ្ធផលដែលកើតចេញពីការស្រមើស្រមៃនោះ។
+
+ទម្រង់វេយ្យាករណ៍៖
+• If + Past Simple (were/V2), Subject + would / could / might + Base Verb (V1)
+• ទោះបីជាកិរិយាសព្ទក្នុង If-clause ជាទម្រង់ Past Simple ក៏ដោយ ក៏អត្ថន័យរបស់វាគឺសម្រាប់ "បច្ចុប្បន្ន ឬ អនាគត" ប៉ុណ្ណោះ។
+• ក្នុងភាសាផ្លូវការ គេនិយមប្រើ "were" សម្រាប់គ្រប់ប្រធានទាំងអស់៖ "If I were you..." (ប្រសិនបើខ្ញុំជាអ្នក)។`,
+    examples: [
+      'If I **won** the national innovation grant, I **would establish** a renewable energy laboratory.',
+      'If she **lived** closer to the downtown hospital, she **would walk** to work every morning.',
+      'If I **were** in your executive position, I **would negotiate** more favorable contract terms.',
+      'He **would travel** around the globe if he **possessed** unlimited financial resources.',
+      'If we **didn\'t have** this urgent project deadline, we **could attend** the seminar this afternoon.',
+      'What **would you do** if someone **handed** you a million dollars with no strings attached?',
+      'If they **were** more collaborative, the entire division **would achieve** significantly better results.',
+      'She **might accept** the fellowship if the university **offered** on-campus housing.',
+      'If I **knew** how to pilot a helicopter, I **would fly** across the Grand Canyon.',
+      'If the climate **were** less humid here, tourism **would flourish** even more in the summer.',
+      'I **would not hesitate** to resign if management **compromised** our ethical standards.',
+      'If you **exercised** more discipline with your schedule, you **would feel** far less overwhelmed.'
+    ]
+  },
+
+  // ==========================================
+  // 17. THIRD CONDITIONAL (B2 / Advanced)
+  // ==========================================
+  'Third Conditional': {
+    title: 'Third Conditional',
+    structure: {
+      affirmative: 'If + Past Perfect (had + V3), Subject + would/could/might have + Past Participle (V3)',
+      negative: 'If the navigator hadn\'t double-checked the coordinates, the vessel wouldn\'t have avoided the reef.',
+      question: 'Would you have accepted the transfer to Sydney if the company had covered all relocation expenses?'
+    },
+    explanation: `WHAT IS THE THIRD CONDITIONAL?
+The Third Conditional deals entirely with the PAST. It is used to describe counterfactual past events—situations that DID NOT happen—and to imagine what the past outcome would have been if things had gone differently. It is the language of regret, relief, hindsight, and historical analysis.
+
+KEY RULES & PATTERNS:
+1. Structure: If + Past Perfect (had + V3), Subject + would have + Past Participle (V3).
+2. Timeframe: 100% in the past. It is too late to change anything because the events are already finalized.
+3. Expressing Regret and Relief:
+   - Regret: "If I had studied harder, I would have passed." (Reality: I didn't study, so I failed).
+   - Relief: "If we hadn't caught that cab, we would have missed the flight." (Reality: We caught it, so we didn't miss it).
+4. Modals:
+   - "Could have + V3" (would have had the ability/opportunity).
+   - "Might have + V3" (perhaps would have happened).`,
+    explanationKhmer: `សេចក្តីផ្តើមអំពី THIRD CONDITIONAL (លក្ខខណ្ឌប្រភេទទីបី)៖
+Third Conditional ត្រូវបានប្រើប្រាស់សម្រាប់និយាយអំពីព្រឹត្តិការណ៍ក្នុង "អតីតកាល" សុទ្ធសាធ ដែលមិនបានកើតឡើងពិតប្រាកដ (ផ្ទុយពីការពិតក្នុងអតីតកាល)។ គេប្រើវាជាញឹកញាប់ដើម្បីបង្ហាញពីការសោកស្តាយ (Regret) ការធូរទ្រូង (Relief) ឬការវិភាគឡើងវិញនូវប្រវត្តិសាស្ត្រ។
+
+ទម្រង់វេយ្យាករណ៍៖
+• If + Past Perfect (had + V3), Subject + would / could / might have + Past Participle (V3)
+• សកម្មភាពទាំងពីរបានបញ្ចប់សព្វគ្រប់ក្នុងអតីតកាល ហើយមិនអាចកែប្រែបានឡើយ។
+• ឧទាហរណ៍៖ "If I had known, I would have helped." (ការពិតគឺកាលនោះខ្ញុំមិនបានដឹង ទើបខ្ញុំមិនបានជួយ)។`,
+    examples: [
+      'If the surgeon **had arrived** ten minutes earlier, the patient **would have suffered** fewer complications.',
+      'If we **had booked** our flight reservations in advance, we **would have saved** hundreds of dollars.',
+      'She **would have graduated** with highest honors if she **had not fallen** severely ill during finals.',
+      'If the emergency brakes **had failed**, the train **would have collided** with the stationary carriage.',
+      'They **could have prevented** the data breach if they **had updated** their cybersecurity firewall.',
+      'If you **had informed** me about the venue change, I **would not have driven** to the wrong address.',
+      'The company **might have avoided** bankruptcy if the board **had diversified** their product line.',
+      'If he **had listened** to his mentor\'s advice, he **would not have made** such a reckless investment.',
+      'We **would have visited** the Louvre Museum if the queues **had not been** so overwhelming.',
+      'If the weather **had cooperated** last weekend, our botanical expedition **would have succeeded**.',
+      'She **would have been promoted** to senior partner if she **had won** that international arbitration case.',
+      'If they **had installed** backup generators, the factory **would not have lost** a full week of production.'
+    ]
+  },
+
+  // ==========================================
+  // 18. INVERTED CONDITIONALS (B2 / C1 / C2)
+  // ==========================================
+  'Inverted Conditionals': {
+    title: 'Inverted Conditionals',
+    structure: {
+      affirmative: 'Type 1: Should you require... | Type 2: Were I in your position... | Type 3: Had we known the risks...',
+      negative: 'Should you not wish to participate... | Were it not for your help... | Had it not been for their intervention...',
+      question: 'Should the board reject the proposal, what contingency measures will you initiate?'
+    },
+    explanation: `WHAT ARE INVERTED CONDITIONALS?
+Inverted Conditionals (also known as "Conditionals without IF") are sophisticated, formal grammatical structures where the word "if" is omitted, and the auxiliary verb is moved BEFORE the subject (subject-auxiliary inversion). They are hallmarks of advanced academic, legal, and professional English (CEFR B2, C1, and C2).
+
+THE THREE CLASSIC INVERSIONS:
+
+1. FIRST CONDITIONAL INVERSION (With "Should"):
+   • Standard: "If you need any further information, please let me know."
+   • Inverted: "Should you need any further information, please let me know."
+   • Rule: Replace "If + Subject + Verb" with "Should + Subject + Base Verb". Adds polite formality and reduces the perceived likelihood slightly.
+
+2. SECOND CONDITIONAL INVERSION (With "Were"):
+   • With Verb "To Be":
+     - Standard: "If I were in your place, I would accept."
+     - Inverted: "Were I in your place, I would accept."
+   • With Action Verbs (Were + Subject + to + Base Verb):
+     - Standard: "If the government raised taxes, citizens would protest."
+     - Inverted: "Were the government to raise taxes, citizens would protest."
+
+3. THIRD CONDITIONAL INVERSION (With "Had"):
+   • Standard: "If we had realized the implications, we would have acted differently."
+   • Inverted: "Had we realized the implications, we would have acted differently."
+   • Rule: Drop "If" and invert "Had" and the Subject: "Had + Subject + Past Participle (V3)".
+
+SPECIAL ADVANCED CONSTRUCTIONS:
+• "Had it not been for..." (meaning "without" / "if not for" in the past):
+  - "Had it not been for your guidance, we would have failed."
+• "Were it not for..." (meaning "without" in the present):
+  - "Were it not for your dedication, our team would not be so cohesive."`,
+    explanationKhmer: `សេចក្តីផ្តើមអំពី INVERTED CONDITIONALS (ប្រយោគលក្ខខណ្ឌទម្រង់បញ្ច្រាស ដោយគ្មាន IF)៖
+Inverted Conditionals គឺជាទម្រង់វេយ្យាករណ៍កម្រិតខ្ពស់ (B2, C1, C2) ដែលលុបពាក្យ "If" ចោល ហើយរុញកិរិយាសព្ទជំនួយ (Auxiliary Verb) មកដាក់មុខប្រធាន (Subject)។ ទម្រង់នេះត្រូវបានប្រើប្រាស់យ៉ាងទូលំទូលាយក្នុងអត្ថបទផ្លូវការ ការទូត ឯកសារច្បាប់ និងការសរសេរបែបសិក្សាស្រាវជ្រាវ។
+
+ទម្រង់បញ្ច្រាសសំខាន់ៗទាំង ៣ ប្រភេទ៖
+
+១. ជំនួស First Conditional ដោយប្រើ "Should"៖
+   • ទម្រង់ធម្មតា៖ "If you require assistance..."
+   • ទម្រង់បញ្ច្រាស៖ "Should you require assistance..." (បង្កើនភាពគួរសម និងផ្លូវការ)។
+
+២. ជំនួស Second Conditional ដោយប្រើ "Were"៖
+   • ជាមួយកិរិយាសព្ទ To Be៖ "Were I in your shoes, I would..."
+   • ជាមួយកិរិយាសព្ទសកម្មភាព (Were + Subj + to + V1)៖ "Were they to discover the truth, they would..."
+
+៣. ជំនួស Third Conditional ដោយប្រើ "Had"៖
+   • ទម្រង់ធម្មតា៖ "If we had known..."
+   • ទម្រង់បញ្ច្រាស៖ "Had we known..." (រុញ Had មកមុខប្រធាន)។
+
+ទម្រង់ពិសេសកម្រិត C1/C2៖
+• "Had it not been for..." (ប្រសិនបើកាលនោះកុំតែបាន...): "Had it not been for your financial support, the clinic would have closed."
+• "Were it not for..." (ប្រសិនបើកុំតែមាន... ក្នុងបច្ចុប្បន្ន): "Were it not for his leadership, our company would be lost."`,
+    examples: [
+      '**Should you require** any additional documentation, please contact our administrative desk.',
+      '**Were I** in your executive position, I would reconsider the acquisition timeline.',
+      '**Had we anticipated** this severe market downturn, we would have liquidated our high-risk assets.',
+      '**Should any discrepancies arise** during the financial audit, report them directly to the committee.',
+      '**Were the company to expand** into Southeast Asian markets, significant capital would be required.',
+      '**Had she not intervened** so decisively, the diplomatic crisis would have escalated drastically.',
+      '**Had it not been for** your exceptional mentorship, I would never have achieved this promotion.',
+      '**Were it not for** persistent international pressure, the cease-fire would not hold today.',
+      '**Should the temperature exceed** 40 degrees, the sensitive manufacturing equipment automatically shuts down.',
+      '**Were he to resign** unexpectedly, the board of directors would name an interim CEO immediately.',
+      '**Had the structural engineers inspected** the bridge earlier, the catastrophic collapse would have been averted.',
+      '**Had I known** about your flight delay, I would have rescheduled our dinner reservation.'
+    ]
   }
 };
 
@@ -2187,7 +2520,14 @@ export function getGrammarTopicData(topicOrKey: string): LessonContent | null {
     return COMPREHENSIVE_GRAMMAR_TOPICS[clean];
   }
 
-  // 2. Case-insensitive match
+  // 2. Extract core topic from cache keys like 'lesson_Levels_C1_Mixed Conditionals' or 'lesson_PartsOfSpeech__Noun'
+  const keyParts = clean.split('_');
+  const lastPart = keyParts[keyParts.length - 1]?.trim();
+  if (lastPart && COMPREHENSIVE_GRAMMAR_TOPICS[lastPart]) {
+    return COMPREHENSIVE_GRAMMAR_TOPICS[lastPart];
+  }
+
+  // 3. Case-insensitive match
   const lower = clean.toLowerCase();
   for (const key of Object.keys(COMPREHENSIVE_GRAMMAR_TOPICS)) {
     if (key.toLowerCase() === lower) {
@@ -2195,19 +2535,43 @@ export function getGrammarTopicData(topicOrKey: string): LessonContent | null {
     }
   }
 
-  // 3. Extract core topic from cache keys like 'lesson_PartsOfSpeech__Noun' or 'lesson_Levels_A1_Subject Pronouns'
-  const keyParts = clean.split('_');
-  const lastPart = keyParts[keyParts.length - 1];
-  if (lastPart && COMPREHENSIVE_GRAMMAR_TOPICS[lastPart]) {
-    return COMPREHENSIVE_GRAMMAR_TOPICS[lastPart];
-  }
-  for (const key of Object.keys(COMPREHENSIVE_GRAMMAR_TOPICS)) {
-    if (key.toLowerCase() === lastPart.toLowerCase()) {
-      return COMPREHENSIVE_GRAMMAR_TOPICS[key];
+  if (lastPart) {
+    const lastPartLower = lastPart.toLowerCase();
+    for (const key of Object.keys(COMPREHENSIVE_GRAMMAR_TOPICS)) {
+      if (key.toLowerCase() === lastPartLower) {
+        return COMPREHENSIVE_GRAMMAR_TOPICS[key];
+      }
     }
   }
 
-  // 4. Normalized topic matching (e.g., 'Nouns' -> 'Noun', 'Pronouns' -> 'Pronoun')
+  // 4. Targeted smart alias mapping for conditionals and advanced grammar
+  if (lower.includes('mixed conditional')) {
+    return COMPREHENSIVE_GRAMMAR_TOPICS['Mixed Conditionals'];
+  }
+  if (lower.includes('zero conditional')) {
+    return COMPREHENSIVE_GRAMMAR_TOPICS['Zero Conditional'];
+  }
+  if (lower.includes('first conditional')) {
+    return COMPREHENSIVE_GRAMMAR_TOPICS['First Conditional'];
+  }
+  if (lower.includes('second conditional')) {
+    return COMPREHENSIVE_GRAMMAR_TOPICS['Second Conditional'];
+  }
+  if (lower.includes('third conditional')) {
+    return COMPREHENSIVE_GRAMMAR_TOPICS['Third Conditional'];
+  }
+  if (
+    lower.includes('inverted conditional') || 
+    lower.includes('inversion in conditional') || 
+    lower.includes('inversion in conditionals') || 
+    lower.includes('without if') ||
+    lower.includes('had i known') ||
+    lower.includes('advanced conditional')
+  ) {
+    return COMPREHENSIVE_GRAMMAR_TOPICS['Inverted Conditionals'];
+  }
+
+  // 5. Normalized topic matching (e.g., 'Nouns' -> 'Noun', 'Pronouns' -> 'Pronoun')
   const singularCandidates = [
     clean.replace(/s$/i, ''),
     clean.replace(/\b(basics|topic|lesson|grammar)\b/gi, '').trim()

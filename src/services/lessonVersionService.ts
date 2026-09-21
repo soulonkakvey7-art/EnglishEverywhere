@@ -1,9 +1,37 @@
 import { PRE_GENERATED_LESSONS, getLocalFallbackLesson } from '../data/preGeneratedLessons';
 import { clearAllLocalLessons, saveLocalCachedLesson } from './localDb';
 
-export const LESSON_VERSION = '2.0';
+export const LESSON_VERSION = '2.1';
 export const LESSON_VERSION_KEY = 'app_lesson_version';
 export const SAVED_LESSONS_KEY = 'app_saved_lessons';
+
+/**
+ * Validates that cached lesson content corresponds to the expected topic in the cache key.
+ * Protects against accidental mismatched fallbacks (e.g. Mixed Conditionals mapped to Conditional Sentences).
+ */
+export function isLessonContentMatchingTopic(cacheKey: string, lessonContent: any): boolean {
+  if (!lessonContent || typeof lessonContent !== 'object') return false;
+  const title = (lessonContent.title || '').trim().toLowerCase();
+  if (!title) return false;
+
+  const keyLower = cacheKey.toLowerCase();
+
+  // Strict check: if key is for a specific conditional (mixed, zero, first, second, third, inverted),
+  // it MUST NOT have the generic title "Conditional Sentences"
+  const isSpecificConditionalKey = 
+    keyLower.includes('mixed') ||
+    keyLower.includes('zero') ||
+    keyLower.includes('first') ||
+    keyLower.includes('second') ||
+    keyLower.includes('third') ||
+    keyLower.includes('invert');
+
+  if (isSpecificConditionalKey && (title === 'conditional sentences' || title === 'conditionals sentences' || title === 'conditional sentence')) {
+    return false;
+  }
+
+  return true;
+}
 
 /**
  * Checks whether the stored lesson version in localStorage matches the current LESSON_VERSION.
@@ -82,11 +110,19 @@ export function getSavedLessonDirectly(cacheKey: string): any | null {
   try {
     const saved = getSavedLessonsFromLocalStorage();
     if (saved[cacheKey]) {
-      return saved[cacheKey];
+      if (isLessonContentMatchingTopic(cacheKey, saved[cacheKey])) {
+        return saved[cacheKey];
+      } else {
+        // Discard poisoned / mismatched cache entry immediately
+        delete saved[cacheKey];
+        try {
+          localStorage.setItem(SAVED_LESSONS_KEY, JSON.stringify(saved));
+        } catch { /* ignore */ }
+      }
     }
     // Also check if available in fresh pre-generated library
     const fallback = getLocalFallbackLesson(cacheKey);
-    if (fallback) {
+    if (fallback && isLessonContentMatchingTopic(cacheKey, fallback)) {
       // Save it to localStorage so future reads are instantaneous
       saveLessonToLocalStorage(cacheKey, fallback);
       return fallback;
