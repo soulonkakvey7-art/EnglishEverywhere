@@ -123,3 +123,18 @@ export async function getAllLocalLessons(): Promise<Record<string, any>> {
     return {};
   }
 }
+
+export async function clearAllLocalLessons(): Promise<void> {
+  try {
+    const db = await initDB();
+    return new Promise((resolve, reject) => {
+      const transaction = db.transaction(STORE_NAME, 'readwrite');
+      const store = transaction.objectStore(STORE_NAME);
+      const request = store.clear();
+      request.onsuccess = () => resolve();
+      request.onerror = () => reject(request.error);
+    });
+  } catch (error) {
+    console.error('Error clearing local lessons from IndexedDB:', error);
+  }
+}

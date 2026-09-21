@@ -1,275 +1,62 @@
 import { LessonContent, VocabularyLesson, Quiz } from '../types';
+import { COMPREHENSIVE_TENSES_DATA, getTenseDetailedData } from './tensesData';
+import { COMPREHENSIVE_GRAMMAR_TOPICS, getGrammarTopicData } from './grammarTopicsData';
 
 export const PRE_GENERATED_LESSONS: Record<string, LessonContent | VocabularyLesson | Quiz> = {
-  // === ALL 14 TENSES ===
-  'lesson_Tenses__Present Simple': {
-    title: 'Present Simple Tense',
-    explanation: 'The Present Simple tense is used to describe habits, unchanging situations, general truths, fixed arrangements, and repeating actions. It is one of the most fundamental structures in English and is essential for daily conversation.',
-    structure: {
-      affirmative: 'Subject + Verb (s/es for 3rd person singular)',
-      negative: 'Subject + do/does not + Verb (base form)',
-      question: 'Do/Does + Subject + Verb (base form)?'
-    },
-    examples: [
-      'She **runs** in the park every single morning to stay healthy.',
-      'We **do not live** in London; we reside in Manchester.',
-      '**Does he speak** French fluently after studying abroad?',
-      'Water **boils** at 100 degrees Celsius under normal pressure.',
-      'The train **leaves** at exactly 8:00 AM tomorrow morning.',
-      'They usually **play** soccer on Saturday afternoons.'
-    ]
-  } as LessonContent,
+  // === ALL 14 COMPREHENSIVE TENSES ===
+  'lesson_Tenses__Present Simple': COMPREHENSIVE_TENSES_DATA['Present Simple'],
+  'lesson_Tenses__Present Continuous': COMPREHENSIVE_TENSES_DATA['Present Continuous'],
+  'lesson_Tenses__Present Perfect': COMPREHENSIVE_TENSES_DATA['Present Perfect'],
+  'lesson_Tenses__Present Perfect Continuous': COMPREHENSIVE_TENSES_DATA['Present Perfect Continuous'],
+  'lesson_Tenses__Past Simple': COMPREHENSIVE_TENSES_DATA['Past Simple'],
+  'lesson_Tenses__Past Continuous': COMPREHENSIVE_TENSES_DATA['Past Continuous'],
+  'lesson_Tenses__Past Perfect': COMPREHENSIVE_TENSES_DATA['Past Perfect'],
+  'lesson_Tenses__Past Perfect Continuous': COMPREHENSIVE_TENSES_DATA['Past Perfect Continuous'],
+  'lesson_Tenses__Future Simple': COMPREHENSIVE_TENSES_DATA['Future Simple'],
+  'lesson_Tenses__Future Continuous': COMPREHENSIVE_TENSES_DATA['Future Continuous'],
+  'lesson_Tenses__Future Perfect': COMPREHENSIVE_TENSES_DATA['Future Perfect'],
+  'lesson_Tenses__Future Perfect Continuous': COMPREHENSIVE_TENSES_DATA['Future Perfect Continuous'],
+  'lesson_Tenses__Conditional Sentences': COMPREHENSIVE_TENSES_DATA['Conditional Sentences'],
+  'lesson_Tenses__Future with Going To & Will': COMPREHENSIVE_TENSES_DATA['Future with Going To & Will'],
 
-  'lesson_Tenses__Present Continuous': {
-    title: 'Present Continuous Tense',
-    explanation: 'The Present Continuous tense (also known as Present Progressive) describes actions happening right now, at this exact moment, or temporary situations that are currently in progress.',
-    structure: {
-      affirmative: 'Subject + am/is/are + Verb-ing',
-      negative: 'Subject + am/is/are not + Verb-ing',
-      question: 'Am/Is/Are + Subject + Verb-ing?'
-    },
-    examples: [
-      'He **is studying** English for his exam at the library right now.',
-      'They **are not watching** television; they are playing cards.',
-      '**Are you listening** to the teacher during this presentation?',
-      'She **is living** with her aunt until she finds a new apartment.',
-      'The company **is growing** rapidly this quarter.'
-    ]
-  } as LessonContent,
+  // === ALL 8 PARTS OF SPEECH ===
+  'lesson_PartsOfSpeech__Noun': COMPREHENSIVE_GRAMMAR_TOPICS['Noun'],
+  'lesson_PartsOfSpeech__Pronoun': COMPREHENSIVE_GRAMMAR_TOPICS['Pronoun'],
+  'lesson_PartsOfSpeech__Verb': COMPREHENSIVE_GRAMMAR_TOPICS['Verb'],
+  'lesson_PartsOfSpeech__Adjective': COMPREHENSIVE_GRAMMAR_TOPICS['Adjective'],
+  'lesson_PartsOfSpeech__Adverb': COMPREHENSIVE_GRAMMAR_TOPICS['Adverb'],
+  'lesson_PartsOfSpeech__Preposition': COMPREHENSIVE_GRAMMAR_TOPICS['Preposition'],
+  'lesson_PartsOfSpeech__Conjunction': COMPREHENSIVE_GRAMMAR_TOPICS['Conjunction'],
+  'lesson_PartsOfSpeech__Interjection': COMPREHENSIVE_GRAMMAR_TOPICS['Interjection'],
 
-  'lesson_Tenses__Present Perfect': {
-    title: 'Present Perfect Tense',
-    explanation: 'The Present Perfect connects the past to the present. It describes experiences, actions that occurred at an unspecified time in the past, or actions that started in the past and continue into the present.',
-    structure: {
-      affirmative: 'Subject + have/has + Past Participle',
-      negative: 'Subject + have/has not + Past Participle',
-      question: 'Have/Has + Subject + Past Participle?'
-    },
-    examples: [
-      'I **have visited** Paris three times in my life.',
-      'She **has not finished** her homework assignment yet.',
-      '**Have they ever tried** authentic Italian pasta?',
-      'We **have lived** in this cozy house since 2015.',
-      'He **has lost** his keys and cannot enter his apartment.'
-    ]
-  } as LessonContent,
-
-  'lesson_Tenses__Present Perfect Continuous': {
-    title: 'Present Perfect Continuous Tense',
-    explanation: 'The Present Perfect Continuous tense emphasizes the duration or ongoing nature of an action that began in the past and continues in the present, or has just finished with clear results.',
-    structure: {
-      affirmative: 'Subject + have/has + been + Verb-ing',
-      negative: 'Subject + have/has not + been + Verb-ing',
-      question: 'Have/Has + Subject + been + Verb-ing?'
-    },
-    examples: [
-      'It **has been raining** heavily for three consecutive hours.',
-      'They **have not been practicing** their music lessons lately.',
-      '**Have you been waiting** in the cold queue for a long time?',
-      'She **has been working** on this complex software project all day.',
-      'My hands are dirty because I **have been gardening**.'
-    ]
-  } as LessonContent,
-
-  'lesson_Tenses__Past Simple': {
-    title: 'Past Simple Tense',
-    explanation: 'The Past Simple tense is used to describe completed actions that occurred at a specific, finished time in the past.',
-    structure: {
-      affirmative: 'Subject + Verb-ed (or irregular past form)',
-      negative: 'Subject + did not + Verb (base form)',
-      question: 'Did + Subject + Verb (base form)?'
-    },
-    examples: [
-      'We **watched** an incredible science-fiction film last night.',
-      'He **did not attend** the corporate meeting yesterday.',
-      '**Did you buy** the groceries from the local supermarket?',
-      'They **built** this famous bridge back in the nineteenth century.',
-      'She **left** the office early to catch her evening flight.'
-    ]
-  } as LessonContent,
-
-  'lesson_Tenses__Past Continuous': {
-    title: 'Past Continuous Tense',
-    explanation: 'The Past Continuous tense describes an ongoing action that was in progress at a specific moment in the past, often interrupted by another shorter action.',
-    structure: {
-      affirmative: 'Subject + was/were + Verb-ing',
-      negative: 'Subject + was/were not + Verb-ing',
-      question: 'Was/Were + Subject + Verb-ing?'
-    },
-    examples: [
-      'I **was reading** an engaging novel when the lights suddenly went out.',
-      'They **were not sleeping** during the loud midnight thunderstorm.',
-      '**Was she cooking** dinner when you arrived at her house?',
-      'At noon yesterday, we **were traveling** through the mountains.',
-      'He **was talking** on his phone while driving the car.'
-    ]
-  } as LessonContent,
-
-  'lesson_Tenses__Past Perfect': {
-    title: 'Past Perfect Tense',
-    explanation: 'The Past Perfect refers to an action completed before another specific action or point in the past. It is often called the "past of the past."',
-    structure: {
-      affirmative: 'Subject + had + Past Participle',
-      negative: 'Subject + had not + Past Participle',
-      question: 'Had + Subject + Past Participle?'
-    },
-    examples: [
-      'The train **had already left** before we reached the platform.',
-      'She realized she **had not locked** the front door of her house.',
-      '**Had you met** him before he joined our corporate team?',
-      'By the time the guest arrived, we **had prepared** the meal.',
-      'He **had saved** enough money before purchasing his new car.'
-    ]
-  } as LessonContent,
-
-  'lesson_Tenses__Past Perfect Continuous': {
-    title: 'Past Perfect Continuous Tense',
-    explanation: 'The Past Perfect Continuous tense is used to show that an action started in the past and continued up until another point in the past, emphasizing duration.',
-    structure: {
-      affirmative: 'Subject + had been + Verb-ing',
-      negative: 'Subject + had not been + Verb-ing',
-      question: 'Had + Subject + been + Verb-ing?'
-    },
-    examples: [
-      'He **had been working** at the company for five years before he got promoted.',
-      'They **had not been sleeping** well for weeks, which made them exhausted.',
-      '**Had she been practicing** the piano for hours before the concert started?',
-      'The ground was wet because it **had been raining** all afternoon.',
-      'We **had been driving** in circles before finding the correct highway.'
-    ]
-  } as LessonContent,
-
-  'lesson_Tenses__Future Simple': {
-    title: 'Future Simple Tense',
-    explanation: 'The Future Simple tense is used to express beliefs, predictions, instant decisions, promises, or offers about the future, typically using "will" or "shall".',
-    structure: {
-      affirmative: 'Subject + will + Verb (base form)',
-      negative: 'Subject + will not (won\'t) + Verb (base form)',
-      question: 'Will + Subject + Verb (base form)?'
-    },
-    examples: [
-      'I think technology **will change** our lives dramatically.',
-      'They **will not attend** the exhibition tomorrow afternoon.',
-      '**Will you help** me carry these heavy boxes upstairs?',
-      'I **will call** you as soon as I arrive at the hotel.',
-      'The sun **will rise** tomorrow at 6:00 AM as usual.'
-    ]
-  } as LessonContent,
-
-  'lesson_Tenses__Future Continuous': {
-    title: 'Future Continuous Tense',
-    explanation: 'The Future Continuous tense describes an action that will be in progress at a specific time or over a period in the future.',
-    structure: {
-      affirmative: 'Subject + will be + Verb-ing',
-      negative: 'Subject + will not be + Verb-ing',
-      question: 'Will + Subject + be + Verb-ing?'
-    },
-    examples: [
-      'At this time tomorrow, I **will be flying** over the Atlantic Ocean.',
-      'They **will not be playing** tennis if it rains tomorrow.',
-      '**Will you be using** your laptop this evening?',
-      'She **will be studying** in the library all day next Saturday.',
-      'We **will be celebrating** our anniversary next week.'
-    ]
-  } as LessonContent,
-
-  'lesson_Tenses__Future Perfect': {
-    title: 'Future Perfect Tense',
-    explanation: 'The Future Perfect tense expresses an action that will be completed before a specific point of time in the future, often used with "by" or "by the time".',
-    structure: {
-      affirmative: 'Subject + will have + Past Participle',
-      negative: 'Subject + will not have + Past Participle',
-      question: 'Will + Subject + have + Past Participle?'
-    },
-    examples: [
-      'By next year, they **will have built** the new office complex.',
-      'I **will not have finished** writing the report by 5:00 PM.',
-      '**Will you have completed** your degree by next summer?',
-      'She **will have retired** by the time she turns sixty-five.',
-      'By next Tuesday, we **will have lived** here for a decade.'
-    ]
-  } as LessonContent,
-
-  'lesson_Tenses__Future Perfect Continuous': {
-    title: 'Future Perfect Continuous Tense',
-    explanation: 'The Future Perfect Continuous tense is used to describe an ongoing action that will continue up until a specific point of time in the future, emphasizing duration.',
-    structure: {
-      affirmative: 'Subject + will have been + Verb-ing',
-      negative: 'Subject + will not have been + Verb-ing',
-      question: 'Will + Subject + have been + Verb-ing?'
-    },
-    examples: [
-      'By next month, I **will have been studying** English for five full years.',
-      'He **will not have been working** there long enough to get the bonus.',
-      '**Will they have been traveling** for more than twenty hours by tomorrow?',
-      'By midnight, we **will have been driving** through three states.',
-      'She **will have been teaching** at this school for twenty-five years when she retires.'
-    ]
-  } as LessonContent,
-
-  'lesson_Tenses__Conditional Sentences': {
-    title: 'Conditional Sentences',
-    explanation: 'Conditional sentences describe situations where one thing depends on another. They include Zero, First, Second, and Third conditionals.',
-    structure: {
-      affirmative: 'If + Condition, + Result Clause',
-      negative: 'If + Negative Condition, + Negative Result Clause',
-      question: 'What + modal + Subject + do + if + condition?'
-    },
-    examples: [
-      'If you heat ice, it **melts** quickly.',
-      'If it rains tomorrow, we **will cancel** our picnic.',
-      'If I won the lottery, I **would travel** around the world.',
-      'If they had studied harder, they **would have passed** the test.',
-      'What **would you do** if you lost your passport?'
-    ]
-  } as LessonContent,
-
-  'lesson_Tenses__Future with Going To & Will': {
-    title: 'Future with Going To & Will',
-    explanation: 'Use "will" for spontaneous decisions, predictions, offers, and promises. Use "be going to" for pre-existing plans, intentions, and predictions based on present evidence.',
-    structure: {
-      affirmative: 'Subject + will + Verb OR Subject + am/is/are + going to + Verb',
-      negative: 'Subject + won\'t + Verb OR Subject + am/is/are not + going to + Verb',
-      question: 'Will + Subject + Verb? OR Am/Is/Are + Subject + going to + Verb?'
-    },
-    examples: [
-      'Look at those dark clouds! It **is going to rain** very soon.',
-      'I **will carry** those heavy groceries for you.',
-      'We **are going to visit** our grandparents in Canada next month.',
-      'I promise I **will not forget** to mail this letter.',
-      'What **are you going to do** after graduation?'
-    ]
-  } as LessonContent,
+  // Direct Parts of Speech Keys
+  'Noun': COMPREHENSIVE_GRAMMAR_TOPICS['Noun'],
+  'Pronoun': COMPREHENSIVE_GRAMMAR_TOPICS['Pronoun'],
+  'Verb': COMPREHENSIVE_GRAMMAR_TOPICS['Verb'],
+  'Adjective': COMPREHENSIVE_GRAMMAR_TOPICS['Adjective'],
+  'Adverb': COMPREHENSIVE_GRAMMAR_TOPICS['Adverb'],
+  'Preposition': COMPREHENSIVE_GRAMMAR_TOPICS['Preposition'],
+  'Conjunction': COMPREHENSIVE_GRAMMAR_TOPICS['Conjunction'],
+  'Interjection': COMPREHENSIVE_GRAMMAR_TOPICS['Interjection'],
 
   // === CORE GRAMMAR BY LEVELS ===
-  'lesson_Levels_A1_Subject Pronouns': {
-    title: 'Subject Pronouns (I, you, he, she, it, we, they)',
-    explanation: 'Subject pronouns replace nouns that act as the subject of a sentence (the person or thing performing the action). They are essential for simple, clear sentence construction.',
-    examples: [
-      '**I** am a student studying English at school.',
-      '**They** live in a beautiful house in San Francisco.',
-      '**She** works as a dedicated nurse at the city hospital.',
-      '**It** is a lovely day to take a walk outside.',
-      '**We** play football together every weekend.'
-    ]
-  } as LessonContent,
+  'lesson_Levels_A1_Subject Pronouns': COMPREHENSIVE_GRAMMAR_TOPICS['Subject Pronouns'],
+  'lesson_Levels_A1_To Be (am, is, are)': COMPREHENSIVE_GRAMMAR_TOPICS['To Be (am, is, are)'],
+  'lesson_Levels_A1_Articles (a, an, the)': COMPREHENSIVE_GRAMMAR_TOPICS['Articles (a, an, the)'],
+  'lesson_Levels_A1_Demonstratives (this, that, these, those)': COMPREHENSIVE_GRAMMAR_TOPICS['Demonstratives (this, that, these, those)'],
+  'lesson_Levels_A1_Singular and Plural Nouns': COMPREHENSIVE_GRAMMAR_TOPICS['Singular and Plural Nouns'],
+  'lesson_Levels_A1_Countable & Uncountable Nouns Basics': COMPREHENSIVE_GRAMMAR_TOPICS['Countable & Uncountable Nouns'],
+  'lesson_Levels_A1_Can/Can\'t': COMPREHENSIVE_GRAMMAR_TOPICS['Can/Can\'t'],
+  'lesson_Levels_A1_Prepositions of Place': COMPREHENSIVE_GRAMMAR_TOPICS['Preposition'],
+  'lesson_Levels_A1_Prepositions of Time': COMPREHENSIVE_GRAMMAR_TOPICS['Preposition'],
 
-  'lesson_Levels_A1_To Be (am, is, are)': {
-    title: 'The Verb "To Be" (am, is, are)',
-    explanation: 'The verb "to be" is the most important verb in English. It is used to describe states of being, identity, nationality, age, profession, and characteristics.',
-    structure: {
-      affirmative: 'Subject + am/is/are',
-      negative: 'Subject + am/is/are not',
-      question: 'Am/Is/Are + Subject?'
-    },
-    examples: [
-      'She **is** an expert graphic designer from Germany.',
-      'They **are not** angry; they are simply tired.',
-      '**Are you** excited about starting your new job?',
-      'I **am** twenty-five years old today.',
-      'We **are** proud of your academic achievements.'
-    ]
-  } as LessonContent,
+  'lesson_Levels_A2_Comparative Adjectives': COMPREHENSIVE_GRAMMAR_TOPICS['Comparative Adjectives'],
+  'lesson_Levels_A2_Subject-Verb Agreement Essentials': COMPREHENSIVE_GRAMMAR_TOPICS['Subject-Verb Agreement'],
+  'lesson_Levels_A2_Gerunds vs Infinitives Basics': COMPREHENSIVE_GRAMMAR_TOPICS['Gerunds vs Infinitives'],
+
+  'lesson_Levels_B1_Passive Voice': COMPREHENSIVE_GRAMMAR_TOPICS['Passive Voice'],
+  'lesson_Levels_B1_Reported Speech': COMPREHENSIVE_GRAMMAR_TOPICS['Reported Speech'],
+  'lesson_Levels_B2_Gerunds vs Infinitives': COMPREHENSIVE_GRAMMAR_TOPICS['Gerunds vs Infinitives'],
 
   'lesson_Levels_A1_Present Simple': {
     title: 'A1 Present Simple Tense',
@@ -439,5 +226,18 @@ export function getLocalFallbackLesson(key: string): any | null {
       return PRE_GENERATED_LESSONS[k];
     }
   }
+
+  // Check if this key corresponds to any of the 14 comprehensive English tenses
+  const tenseMatch = getTenseDetailedData(key);
+  if (tenseMatch) {
+    return tenseMatch;
+  }
+
+  // Check if this key corresponds to any of the comprehensive non-tense grammar topics
+  const grammarMatch = getGrammarTopicData(key);
+  if (grammarMatch) {
+    return grammarMatch;
+  }
+
   return null;
 }

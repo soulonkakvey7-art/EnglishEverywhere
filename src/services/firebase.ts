@@ -1,33 +1,80 @@
 import { initializeApp } from "firebase/app";
-import { initializeFirestore, doc, getDoc, setDoc, getDocFromServer } from "firebase/firestore";
+import { getAuth } from "firebase/auth";
+import { getFirestore, doc, getDoc, setDoc, getDocFromServer } from "firebase/firestore";
+import firebaseConfig from "../../firebase-applet-config.json";
 import { getLocalFallbackLesson } from "../data/preGeneratedLessons";
-
-const firebaseConfig = {
-  projectId: "zippy-reflector-fn50x",
-  appId: "1:591037436923:web:82918d956a365bb170b15e",
-  apiKey: "AIzaSyBSm1bG0bKadj6fiyNgZuCewrvG0xXfhOA",
-  authDomain: "zippy-reflector-fn50x.firebaseapp.com",
-  storageBucket: "zippy-reflector-fn50x.firebasestorage.app",
-  messagingSenderId: "591037436923"
-};
 
 const app = initializeApp(firebaseConfig);
 
-// Initialize Firestore with the named database ID and force long polling for iframe connectivity
-export const db = initializeFirestore(app, {
-  experimentalForceLongPolling: true
-}, "ai-studio-englisheverywher-3b1ac224-9e77-4879-9b91-a7cd1d4e5b3e");
+// Initialize Firestore with the named database ID as required by Firebase skill
+export const db = getFirestore(app, firebaseConfig.firestoreDatabaseId);
+export const auth = getAuth(app);
+
+export enum OperationType {
+  CREATE = 'create',
+  UPDATE = 'update',
+  DELETE = 'delete',
+  LIST = 'list',
+  GET = 'get',
+  WRITE = 'write',
+}
+
+export interface FirestoreErrorInfo {
+  error: string;
+  operationType: OperationType;
+  path: string | null;
+  authInfo: {
+    userId?: string | null;
+    email?: string | null;
+    emailVerified?: boolean | null;
+    isAnonymous?: boolean | null;
+    tenantId?: string | null;
+    providerInfo?: {
+      providerId?: string | null;
+      email?: string | null;
+    }[];
+  };
+}
+
+export function handleFirestoreError(error: unknown, operationType: OperationType, path: string | null): FirestoreErrorInfo {
+  const errInfo: FirestoreErrorInfo = {
+    error: error instanceof Error ? error.message : String(error),
+    authInfo: {
+      userId: auth.currentUser?.uid || null,
+      email: auth.currentUser?.email || null,
+      emailVerified: auth.currentUser?.emailVerified || null,
+      isAnonymous: auth.currentUser?.isAnonymous || null,
+      tenantId: auth.currentUser?.tenantId || null,
+      providerInfo: auth.currentUser?.providerData?.map(provider => ({
+        providerId: provider.providerId,
+        email: provider.email,
+      })) || []
+    },
+    operationType,
+    path
+  };
+  console.warn('Firestore Notice: ', JSON.stringify(errInfo));
+  return errInfo;
+}
+
+// Timeout helper to ensure network delays or offline states never stall the UI
+function withTimeout<T>(promise: Promise<T>, timeoutMs = 3500): Promise<T | null> {
+  return Promise.race([
+    promise,
+    new Promise<null>((resolve) => setTimeout(() => resolve(null), timeoutMs))
+  ]);
+}
 
 // Validate connection to Firestore as per SKILL.md guidelines
 async function testConnection() {
   try {
-    await getDocFromServer(doc(db, 'test', 'connection'));
+    await withTimeout(getDocFromServer(doc(db, 'test', 'connection')), 4000);
     console.log("Firebase connection validated successfully.");
   } catch (error) {
     if (error instanceof Error && error.message.includes('the client is offline')) {
       console.warn("Please check your Firebase configuration: client is offline.");
     } else {
-      console.log("Firebase initialized (offline or pending first fetch).");
+      console.log("Firebase initialized in standard mode.");
     }
   }
 }
@@ -45,13 +92,13 @@ export async function getCachedLesson(key: string): Promise<any | null> {
     // Sanitize the key for document ID usage just in case (slash is forbidden in doc IDs)
     const docId = key.replace(/\//g, "_");
     const docRef = doc(db, "cached_lessons", docId);
-    const docSnap = await getDoc(docRef);
-    if (docSnap.exists()) {
+    const docSnap = await withTimeout(getDoc(docRef), 3500);
+    if (docSnap && docSnap.exists()) {
       return docSnap.data().content;
     }
     return null;
   } catch (error) {
-    console.error("Error retrieving cached lesson:", error);
+    handleFirestoreError(error, OperationType.GET, `cached_lessons/${key}`);
     return null;
   }
 }
@@ -80,7 +127,7 @@ export async function saveCachedLesson(
     });
     console.log(`Successfully cached lesson: ${key}`);
   } catch (error) {
-    console.error("Error saving lesson to cache:", error);
+    handleFirestoreError(error, OperationType.WRITE, `cached_lessons/${key}`);
   }
 }
 
@@ -94,8 +141,8 @@ export async function getTranslationsFromDB(words: string[]): Promise<Record<str
       if (!cleanWord) return;
       const docId = cleanWord.toLowerCase().replace(/\//g, "_").replace(/\./g, "_");
       const docRef = doc(db, "dictionary_translations", docId);
-      const snap = await getDoc(docRef);
-      if (snap.exists()) {
+      const snap = await withTimeout(getDoc(docRef), 3000);
+      if (snap && snap.exists()) {
         const data = snap.data();
         if (data && data.khmer) {
           results[cleanWord.toLowerCase()] = data.khmer;
@@ -104,7 +151,7 @@ export async function getTranslationsFromDB(words: string[]): Promise<Record<str
     });
     await Promise.all(promises);
   } catch (error) {
-    console.error("Error getting translations from DB:", error);
+    handleFirestoreError(error, OperationType.GET, "dictionary_translations");
   }
   return results;
 }
@@ -124,7 +171,7 @@ export async function saveTranslationsToDB(translations: Record<string, string>)
     });
     await Promise.all(promises);
   } catch (error) {
-    console.error("Error saving translations to DB:", error);
+    handleFirestoreError(error, OperationType.WRITE, "dictionary_translations");
   }
 }
 
@@ -133,13 +180,13 @@ export async function getTranslationsForLetter(letter: string): Promise<Record<s
   if (!cleanLetter) return {};
   try {
     const docRef = doc(db, "dictionary_letters", cleanLetter);
-    const snap = await getDoc(docRef);
-    if (snap.exists()) {
+    const snap = await withTimeout(getDoc(docRef), 3000);
+    if (snap && snap.exists()) {
       const data = snap.data();
       return data.translations || {};
     }
   } catch (error) {
-    console.error(`Error getting translations for letter ${letter}:`, error);
+    handleFirestoreError(error, OperationType.GET, `dictionary_letters/${cleanLetter}`);
   }
   return {};
 }
@@ -154,7 +201,7 @@ export async function saveTranslationsForLetter(letter: string, translations: Re
       updatedAt: new Date().toISOString()
     }, { merge: true });
   } catch (error) {
-    console.error(`Error saving translations for letter ${letter}:`, error);
+    handleFirestoreError(error, OperationType.WRITE, `dictionary_letters/${cleanLetter}`);
   }
 }
 

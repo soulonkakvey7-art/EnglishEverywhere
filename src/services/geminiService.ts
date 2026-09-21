@@ -42,11 +42,17 @@ export async function generateGrammarLesson(topic: string, level?: string): Prom
   return withRetry(async () => {
     const response = await ai.models.generateContent({
       model: "gemini-3-flash-preview",
-      contents: `Explain the English grammar topic: "${topic}" ${level ? `for level ${level}` : ''}. 
-      Provide a highly detailed, easy-to-understand explanation and at least 15 varied, realistic, and highly comprehensive examples to cover every nuance and aspect of the topic in full detail.
-      IMPORTANT: In each example sentence, wrap the specific word(s) or phrase(s) that demonstrate the grammar topic (e.g., the specific nouns, verbs, or tenses being taught) in double asterisks like **this**.
-      If this topic has clear, standard grammatical forms or sentence structures (like Affirmative, Negative, and Question formulas/forms, e.g., for modals, conditional clauses, pronouns, modifiers, etc.), please provide them in the optional 'structure' object. If the topic does not have standard forms or formulas, do not include the 'structure' field.
-      Also, provide a complete translation of the detailed explanation into Khmer in the 'explanationKhmer' field. For English grammatical terms or words that do not need translation, keep them in English within the Khmer explanation.`,
+      contents: `Explain the English grammar topic: "${topic}" ${level ? `for level ${level}` : ''}.
+      Provide a significantly thorough, in-depth, and comprehensive conceptual breakdown in the 'explanation' field tailored specifically to this topic:
+      1. Core Concept & Underlying Logic: Explain the fundamental nature, purpose, and communicative role of this grammar concept. Why does it exist and how does it work conceptually?
+      2. Classifications, Rules & Patterns: Provide an organized breakdown of its key types, positions, grammatical rules, and syntactic behaviors.
+      3. Everyday Context & Practical Illustrative Examples: Naturally integrate clear, realistic examples directly within the explanatory text to demonstrate how the grammar behaves in real conversations, writing, and professional situations.
+      4. Nuances, Pitfalls & Essential Learning Tips: Point out common mistakes learners often make, why they happen, how to avoid them, and practical memory shortcuts.
+      5. Do NOT force rigid tense formulas or artificial signal word boxes; let the explanation flow naturally and pedagogically according to the unique subject matter.
+      6. Provide at least 12-15 varied, high-quality, and realistic sentences in the 'examples' array to cover all facets of the topic.
+      IMPORTANT: In each example sentence in the 'examples' array, wrap the specific word(s) or phrase(s) demonstrating the grammar rule in double asterisks like **this**.
+      If this topic has standard grammatical sentence structures (like Affirmative, Negative, and Question formulas/forms, e.g., for modals, pronouns, modifiers, etc.), include them in the optional 'structure' object.
+      Also, provide a complete, rich translation and pedagogical explanation of the topic into Khmer in the 'explanationKhmer' field. Keep standard English grammatical terms in English within the Khmer explanation for clarity.`,
       config: {
         responseMimeType: "application/json",
         responseSchema: {
@@ -77,13 +83,17 @@ export async function generateGrammarLesson(topic: string, level?: string): Prom
   });
 }
 
-export async function generateTenseLesson(tense: string): Promise<LessonContent & { structure: { affirmative: string, negative: string, question: string } }> {
+export async function generateTenseLesson(tense: string): Promise<LessonContent & { structure: { affirmative: string, negative: string, question: string, notes?: string } }> {
   return withRetry(async () => {
     const response = await ai.models.generateContent({
       model: "gemini-3-flash-preview",
       contents: `Explain the English tense: "${tense}". 
-      Provide the structure/formula (Affirmative, Negative, Question), deep explanation of usage contexts, and at least 8 varied, high-quality examples for each usage context to ensure excellent, detailed coverage of different scenarios.
-      IMPORTANT: In each example sentence, wrap the verb(s) demonstrating the "${tense}" tense in double asterisks like **this**.
+      Provide a beginner-friendly, deeply comprehensive breakdown with:
+      1. Formula & Sentence Structure showing Positive (+), Negative (-), and Question (?) sentence patterns, along with critical learner notes.
+      2. Usages: Specific situations (when and why to use it) with clear beginner explanations and 2 practical example sentences per usage rule.
+      3. Signal Words & Keywords: All common time markers and adverbs of frequency, plus a helpful learner tip on how to identify the tense, and example sentences.
+      4. At least 6-8 varied, high-quality examples.
+      IMPORTANT: In each example sentence, wrap the verb(s) and keywords demonstrating the tense in double asterisks like **this**.
       Also, provide a complete translation of the detailed explanation into Khmer in the 'explanationKhmer' field. For English grammatical terms or words that do not need translation, keep them in English within the Khmer explanation.`,
       config: {
         responseMimeType: "application/json",
@@ -98,9 +108,40 @@ export async function generateTenseLesson(tense: string): Promise<LessonContent 
               properties: {
                 affirmative: { type: Type.STRING },
                 negative: { type: Type.STRING },
-                question: { type: Type.STRING }
+                question: { type: Type.STRING },
+                notes: { type: Type.STRING }
               },
               required: ["affirmative", "negative", "question"]
+            },
+            usages: {
+              type: Type.ARRAY,
+              items: {
+                type: Type.OBJECT,
+                properties: {
+                  situation: { type: Type.STRING },
+                  description: { type: Type.STRING },
+                  examples: {
+                    type: Type.ARRAY,
+                    items: { type: Type.STRING }
+                  }
+                },
+                required: ["situation", "description", "examples"]
+              }
+            },
+            signalWords: {
+              type: Type.OBJECT,
+              properties: {
+                keywords: {
+                  type: Type.ARRAY,
+                  items: { type: Type.STRING }
+                },
+                tip: { type: Type.STRING },
+                examples: {
+                  type: Type.ARRAY,
+                  items: { type: Type.STRING }
+                }
+              },
+              required: ["keywords", "tip"]
             },
             examples: { 
               type: Type.ARRAY,
@@ -221,7 +262,13 @@ export async function generateIdiomLesson(topic: string): Promise<VocabularyLess
   });
 }
 
-export async function generateQuiz(topic: string, type: 'grammar' | 'vocabulary', level?: string, isOverall?: boolean): Promise<Quiz> {
+export async function generateQuiz(
+  topic: string, 
+  type: 'grammar' | 'vocabulary', 
+  level?: string, 
+  isOverall?: boolean,
+  excludedQuestions?: string[]
+): Promise<Quiz> {
   return withRetry(async () => {
     const isCoreEverywhereOverall = topic === 'General English Proficiency';
     const isMainTopicOrLevelOverall = Boolean(
@@ -232,18 +279,48 @@ export async function generateQuiz(topic: string, type: 'grammar' | 'vocabulary'
       ['Tenses', 'Parts of Speech', 'Modals', 'Sentences', 'Conditionals', 'Passive Voice', 'Relative Clauses', 'Reported Speech', 'Gerunds & Infinitives', 'Articles & Nouns', 'Adjectives & Adverbs', 'Prepositions', 'Advanced Grammar'].includes(topic)
     );
 
-    const numQuestions = isCoreEverywhereOverall ? 50 : (isMainTopicOrLevelOverall ? 20 : 10);
+    // Provide 25 questions for level/main topic tests (or 50 for General English Proficiency), and 15 questions for subtopics
+    const numQuestions = isCoreEverywhereOverall ? 50 : (isMainTopicOrLevelOverall ? 25 : 15);
+
+    // Generate random seed parameters to maximize variety and break common LLM output bias
+    const randomSeed = Math.floor(Math.random() * 1000000);
+    const angles = [
+      'real-world conversational dialogues and practical usage',
+      'common learner pitfalls, subtle distinctions and error identification',
+      'formal/professional and academic sentence contexts',
+      'expressive literary and narrative communication scenarios',
+      'idiomatic, communicative and authentic modern English phrasing',
+      'contrasting similar grammatical forms and nuanced meaning shifts',
+      'sentence completion with realistic contextual clues and diverse subjects'
+    ];
+    // Pick two distinct focal angles randomly
+    const angle1 = angles[Math.floor(Math.random() * angles.length)];
+    const angle2 = angles[Math.floor(Math.random() * angles.length)];
+
+    const exclusionContext = excludedQuestions && excludedQuestions.length > 0
+      ? `\nCRITICAL ANTI-REPETITION REQUIREMENT:
+The user has previously taken tests on this topic and seen the following questions. You MUST NOT repeat, duplicate, or rephrase any of these questions or sentences:
+${excludedQuestions.slice(-30).map((q, idx) => `${idx + 1}. "${q.slice(0, 100)}..."`).join('\n')}
+Generate COMPLETELY FRESH, BRAND-NEW questions with different subjects, vocabulary, verbs, and sentence structures.`
+      : '';
 
     const contents = isCoreEverywhereOverall 
-      ? `Generate a COMPREHENSIVE 50-question randomized, non-repeating quiz covering the ENTIRE spectrum of English grammar and vocabulary (General English Proficiency).
-         The questions should cover a wide array of categories (including tenses, parts of speech, active/passive voice, common vocabulary, idioms, etc.) to provide a complete standalone English proficiency assessment.
-         You MUST generate exactly 50 quiz questions.
+      ? `Generate a COMPREHENSIVE ${numQuestions}-question 100% BRAND NEW, randomized, non-repeating quiz covering the ENTIRE spectrum of English grammar and vocabulary (General English Proficiency).
+         Seed: ${randomSeed}.
+         Focus styles for this session: ${angle1} AND ${angle2}.
+         The questions should cover a wide array of categories (including all tenses, parts of speech, active/passive voice, conditionals, modals, collocations, idioms, advanced prepositions, etc.) to provide an expansive English proficiency assessment.
+         ${exclusionContext}
+         You MUST generate exactly ${numQuestions} quiz questions.
+         Ensure EVERY question tests a different grammar/vocabulary point or distinct vocabulary item. Do not repeat sentence patterns.
          Questions should be multiple choice with exactly 4 options. Include a clear explanation for the correct answer.
          IMPORTANT: In explanations, wrap any example sentences or target words in double asterisks like **this** for highlighting.`
-      : `Generate a ${numQuestions}-question randomized, non-repeating quiz for the English ${type} ${isMainTopicOrLevelOverall ? 'main topic / overall level test' : 'sub-lesson topic'}: "${topic}" ${level ? `at level ${level}` : ''}.
-         The questions should cover various aspects of "${topic}" to provide a thorough test.
+      : `Generate a ${numQuestions}-question 100% BRAND NEW, randomized, non-repeating quiz for the English ${type} ${isMainTopicOrLevelOverall ? 'main topic / overall level test' : 'sub-lesson topic'}: "${topic}" ${level ? `at level ${level}` : ''}.
+         Seed: ${randomSeed}.
+         Focal themes for this specific session: ${angle1} and ${angle2}.
+         ${exclusionContext}
+         The questions should cover deep, diverse aspects of "${topic}" across different angles, sentence contexts, and difficulty nuances so that re-tests always feel fresh, varied, and unrepeated.
          You MUST generate exactly ${numQuestions} quiz questions.
-         Questions should be multiple choice with exactly 4 options. Include a clear explanation for the correct answer.
+         Questions should be multiple choice with exactly 4 distinct, plausible options. Include a clear explanation for the correct answer.
          IMPORTANT: In explanations, wrap any example sentences or target words in double asterisks like **this** for highlighting.`;
 
     const response = await ai.models.generateContent({

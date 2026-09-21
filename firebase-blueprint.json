@@ -84,9 +84,24 @@
         "translations",
         "updatedAt"
       ]
+    },
+    "TestConnection": {
+      "title": "TestConnection",
+      "description": "Test document used to validate Firestore connectivity.",
+      "type": "object",
+      "properties": {
+        "status": {
+          "type": "string",
+          "description": "Connection status"
+        }
+      }
     }
   },
   "firestore": {
+    "test/{testId}": {
+      "schema": "TestConnection",
+      "description": "System health and connection verification path."
+    },
     "cached_lessons/{lessonId}": {
       "schema": "CachedLesson",
       "description": "Collection of cached AI lessons shared across all users."

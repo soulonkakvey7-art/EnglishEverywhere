@@ -57,8 +57,16 @@ import {
   Minimize2,
   Trash2,
   XCircle,
-  ExternalLink
+  ExternalLink,
+  KeyRound,
+  HelpCircle,
+  ChevronDown,
+  ChevronUp,
+  Lightbulb,
+  Info
 } from 'lucide-react';
+import { getTenseDetailedData, buildEnrichedExplanation, buildEnrichedExplanationKhmer } from './data/tensesData';
+import { getGrammarTopicData } from './data/grammarTopicsData';
 import { 
   CEFRLevel, 
   GrammarCategory, 
@@ -99,6 +107,19 @@ import { getLocalCachedLesson, saveLocalCachedLesson, getAllLocalLessons } from 
 import { audioHelper } from './services/audioHelper';
 import jsPDF from 'jspdf';
 import { toPng } from 'html-to-image';
+import {
+  LESSON_VERSION,
+  LESSON_VERSION_KEY,
+  SAVED_LESSONS_KEY,
+  isLessonVersionCurrent,
+  initLessonVersioning,
+  getSavedLessonDirectly,
+  saveLessonToLocalStorage,
+  saveAllLessonsToLocalStorage
+} from './services/lessonVersionService';
+
+// Content versioning constant for lessons cache control
+export { LESSON_VERSION };
 
 const LEVELS: CEFRLevel[] = ['A1', 'A2', 'B1', 'B2', 'C1', 'C2'];
 const PARTS_OF_SPEECH = ['Noun', 'Pronoun', 'Verb', 'Adjective', 'Adverb', 'Preposition', 'Conjunction', 'Interjection'];
@@ -229,43 +250,54 @@ const CEFR_LEVELS: { level: CEFRLevel, topics: string[] }[] = [
   {
     level: 'A1',
     topics: [
-      'Subject Pronouns',
-      'To Be (am, is, are)',
-      'Singular and Plural Nouns',
-      'Articles (a, an, the)',
-      'Demonstratives (this, that, these, those)',
-      'Possessive Adjectives',
-      'Question Words',
-      'Prepositions of Place',
-      'Present Simple',
-      'Prepositions of Time',
-      'Numbers, Days & Months',
-      'Object Pronouns',
-      'Countable & Uncountable Nouns Basics',
-      'Imperatives',
-      'There is/There are',
-      'Have Got / Has Got',
-      'Basic Adjectives/Adverbs',
-      'Can/Can\'t',
-      'Basic Possessive \'s',
-      'Like, Love, Hate + Gerund',
-      'Adjectives for Describing People',
-      'Telling the Time',
-      'Prepositions of Movement (to, into, out of)',
-      'Present Simple Questions & Negatives',
-      'Wh- Questions with To Be and Do',
       'Alphabet & Phonetics Basics',
       'Basic Greeting Phrases & Courtesy',
       'Asking & Giving Personal Details',
-      'Possessive Pronouns Basics (mine, yours, his, hers)',
+      'Subject Pronouns',
+      'To Be (am, is, are)',
       'Yes/No Questions with To Be and Do',
-      'Adverbs of Frequency Basics (always, never, usually)',
-      'Making Simple Suggestions (Let\'s...)',
-      'Ordinal Numbers & Dates',
+      'Singular and Plural Nouns',
       'Plural Noun Rules & Irregular Plurals',
+      'Articles (a, an, the)',
+      'Demonstratives (this, that, these, those)',
+      'Possessive Adjectives',
+      'Possessive Pronouns Basics (mine, yours, his, hers)',
+      'Basic Possessive \'s',
+      'Numbers, Days & Months',
+      'Ordinal Numbers & Dates',
+      'Telling the Time',
+      'Basic Weather & Time Expressions',
+      'There is/There are',
+      'Have Got / Has Got',
+      'Present Simple',
+      'Present Simple Questions & Negatives',
+      'Wh- Questions with To Be and Do',
+      'Question Words',
+      'Adverbs of Frequency Basics (always, never, usually)',
+      'Prepositions of Place',
+      'Prepositions of Time',
+      'Prepositions of Movement (to, into, out of)',
+      'Object Pronouns',
+      'Countable & Uncountable Nouns Basics',
+      'How Much vs How Many Basics',
+      'Basic Adjectives/Adverbs',
+      'Adjectives for Describing People',
+      'Can/Can\'t',
+      'Imperatives',
+      'Making Simple Suggestions (Let\'s...)',
+      'Like, Love, Hate + Gerund',
       'Basic Conjunctions (and, but, or)',
+      'Short Answers with Auxiliaries',
+      'Adverbs of Degree (very, really, quite)',
+      'Expressing Needs (want to, need to)',
+      'Family & Describing Relationships',
       'Pronouns & Determiners Summary',
-      'Basic Weather & Time Expressions'
+      'Basic Daily Routines & Collocations',
+      'Simple Polite Requests with Can and Please',
+      'Basic Opposites & Descriptive Adjectives',
+      'Prepositions of Time: At, In, On',
+      'Frequency Expressions (every day, once a week)',
+      'Basic Directions & Locational Prepositions'
     ]
   },
   {
@@ -273,42 +305,54 @@ const CEFR_LEVELS: { level: CEFRLevel, topics: string[] }[] = [
     topics: [
       'Present Continuous',
       'Present Simple vs. Present Continuous Contrast',
-      'Adverbs of Frequency',
+      'Past Simple Regular and Irregular Verbs',
       'Simple Past',
+      'Past Simple Questions and Negatives',
+      'Past Time Expressions (ago, yesterday, last week)',
       'Past Continuous',
       'Past Simple vs. Past Continuous Contrast',
       'Future with Going To',
       'Future with Will / Shall',
+      'Predictions with Will vs Intentions with Going To',
       'Comparative Adjectives',
       'Superlative Adjectives',
+      'As... As Comparisons',
+      'Comparative and Superlative Adverbs',
+      'Adverbs of Manner',
+      'Adverbs of Frequency',
+      'Adverbs of Place and Time (here, there, soon, already)',
       'Possessive Pronouns',
       'Reflexive Pronouns (myself, yourself)',
-      'Too and Enough',
       'Quantifiers (some, any, much, many)',
-      'Adverbs of Manner',
-      'Infinitives of Purpose',
-      'Modal Verbs for Requests',
-      'Relative Pronouns (who, which, that)',
-      'Gerunds vs Infinitives Basics',
-      'Present Perfect for Experience',
-      'As... As Comparisons',
-      'Subject and Object Questions',
-      'Modals of Ability (can, could, be able to)',
-      'Prepositions of Place & Direction (across, through, past)',
+      'Expressions of Quantity (a lot of, a few, a little)',
+      'Too and Enough',
       'Something, Anyone, Nowhere (Indefinite Pronouns)',
-      'Conjunctions of Contrast and Reason (but, because, although)',
-      'Present Perfect with For and Since',
-      'Past Simple Regular and Irregular Verbs',
-      'Past Simple Questions and Negatives',
-      'Modal Verbs of Obligation (must, have to, don\'t have to)',
-      'Modal Verbs of Advice (should, shouldn\'t)',
-      'Comparative and Superlative Adverbs',
-      'Adverbs of Place and Time (here, there, soon, already)',
-      'Connectors of Sequence (first, next, then, finally)',
-      'Verbs with Direct and Indirect Objects',
+      'Subject and Object Questions',
       'Subject-Verb Agreement Essentials',
+      'Verbs with Direct and Indirect Objects',
+      'Infinitives of Purpose',
+      'Gerunds vs Infinitives Basics',
+      'Modals of Ability (can, could, be able to)',
+      'Could for Past Ability & Polite Inquiries',
+      'Modal Verbs for Requests',
+      'Modal Verbs of Obligation (must, have to, don\'t have to)',
+      'Have to vs Must (Internal vs External Obligation)',
+      'Modal Verbs of Advice (should, shouldn\'t)',
+      'Prepositions of Place & Direction (across, through, past)',
+      'Connectors of Sequence (first, next, then, finally)',
+      'Conjunctions of Contrast and Reason (but, because, although)',
+      'Linking Words of Cause & Effect (so, because, as)',
+      'Relative Pronouns (who, which, that)',
       'Question Tags Basics (isn\'t it?, don\'t you?)',
-      'Expressions of Quantity (a lot of, a few, a little)'
+      'Present Perfect for Experience',
+      'Present Perfect with For and Since',
+      'First Conditional Introduction',
+      'Basic Phrasal Verbs in Daily Life',
+      'Compound Nouns & Noun Combinations',
+      'Expressing Preferences (prefer, would rather, would like)',
+      'So do I / Neither do I (Agreeing & Disagreeing)',
+      'Making, Accepting and Declining Invitations',
+      'Asking for and Giving Directions (turn left, go straight)'
     ]
   },
   {
@@ -316,164 +360,219 @@ const CEFR_LEVELS: { level: CEFRLevel, topics: string[] }[] = [
     topics: [
       'Present Perfect',
       'Present Perfect vs. Past Simple Contrast',
+      'Present Perfect Simple with Already, Just, Yet',
       'Present Perfect Continuous',
+      'Present Perfect Continuous vs Present Perfect Simple',
       'Past Perfect Simple',
+      'Past Perfect vs Past Simple Sequence',
+      'Past Habits with Used To and Would',
+      'Used to',
       'Future Continuous',
+      'Future Perfect Simple Introduction',
+      'Future Tense Review & Contrast',
       'Zero Conditional',
       'First Conditional',
+      'Unless, In Case, As Long As (Conditional Alternatives)',
       'Second Conditional Introduction',
+      'Third Conditional Introduction',
       'Wish & If Only Basics',
+      'Expressing Regret in the Present and Past',
       'Passive Voice Basics',
       'Active vs Passive Voice',
+      'Passive Voice with Two Objects',
+      'Causative Structures (have/get something done)',
       'Modal Verbs for Advice',
       'Modals of Permission & Obligation',
-      'Defining vs Non-Defining Relative Clauses',
-      'Reported Speech Basics',
-      'Colloquial Short Answers',
-      'Question Tags',
-      'So and Such Contrast',
-      'Phrasal Verbs Basics',
-      'Used to',
-      'The Art of Punctuation & Semicolons',
-      'Past Habits with Used To and Would',
+      'Modals of Prohibition & Absence of Obligation (mustn\'t vs don\'t have to)',
       'Modals of Deduction/Possibility in the Present (might, may, must, can\'t)',
-      'Third Conditional Introduction',
-      'Reporting Verbs in Present & Past',
-      'Gerunds as Subjects and Objects',
-      'Future Tense Review & Contrast',
-      'Both, Either, Neither',
-      'Relative Clauses with Where, When, Whose',
-      'Present Perfect Simple with Already, Just, Yet',
-      'Present Perfect Continuous vs Present Perfect Simple',
-      'Past Perfect vs Past Simple Sequence',
-      'Future Perfect Simple Introduction',
       'Modals in the Past (should have, could have)',
+      'Defining vs Non-Defining Relative Clauses',
+      'Relative Clauses with Where, When, Whose',
+      'Reported Speech Basics',
       'Reported Statements and Questions',
-      'Causative Structures (have/get something done)',
+      'Reported Orders, Requests and Advice',
+      'Reporting Verbs in Present & Past',
       'Indirect Questions for Polite Communication',
-      'Phrasal Verbs: Separable vs Inseparable',
+      'Question Tags',
+      'Colloquial Short Answers',
+      'Both, Either, Neither',
+      'Determiners & Quantifiers (each, every, all, both, neither)',
+      'So and Such Contrast',
+      'Gerunds as Subjects and Objects',
+      'Verbs with Gerund or Infinitive with Meaning Changes',
       'Participial Adjectives (-ed vs -ing)',
-      'Determiners & Quantifiers (each, every, all, both, neither)'
+      'Phrasal Verbs Basics',
+      'Phrasal Verbs: Separable vs Inseparable',
+      'Phrasal Verbs with Multiple Meanings',
+      'Prepositional Phrases (in advance, on purpose, by chance)',
+      'Connectors of Purpose (in order to, so that, so as to)',
+      'Contrast Connectors (although, despite, in spite of, even though)',
+      'Time Clauses with When, As soon as, Until, Before, After',
+      'Prefixes and Suffixes for Word Formation',
+      'Expressing Certainty and Probability (definitely, bound to)',
+      'Describing Trends and Changes',
+      'The Art of Punctuation & Semicolons'
     ]
   },
   {
     level: 'B2',
     topics: [
       'Narrative Tenses',
+      'Narrative Tenses in Complex Storytelling',
       'Present and Past Habits (be/get used to)',
+      'Future Continuous vs Future Perfect in Time Framing',
       'Future Perfect & Continuous',
+      'Future Perfect Continuous & Complex Timeframes',
+      'Future in the Past (was going to, would)',
       'Second Conditional',
       'Third Conditional',
       'Mixed Conditionals Introduction',
+      'Mixed Conditionals in Full',
+      'Inverted Conditionals (Had I known, Should you need)',
       'Wish & If Only',
-      'Relative Clauses (Defining & Non-defining)',
+      'Wishes about the Past (Wish + Past Perfect)',
+      'Wishes and Regrets with It\'s time and Would rather',
       'Passive Voice in Full',
       'Passive Voice in Reports',
+      'Impersonal Passive Constructions (It is said that...)',
+      'Complex Passive with Infinitive Complements (He is thought to be...)',
       'Causative Verbs',
+      'Causative Have and Get',
       'Modals of Deduction',
+      'Modals of Deduction in the Past (must have, might have)',
       'Past Modals',
-      'Gerunds and Infinitives',
+      'Nuances of Past Modals (should have, needn\'t have)',
+      'Relative Clauses (Defining & Non-defining)',
       'Relative Clauses with Prepositions',
       'Participle Clauses',
+      'Non-Finite Participle Clauses',
+      'Participle Clauses of Reason, Time and Condition',
+      'Gerunds and Infinitives',
+      'Gerunds and Infinitives with Meaning Changes (stop, try, remember)',
+      'Verbs of Perception with Bare Infinitive vs -ing',
+      'Prepositions Following Verbs and Adjectives',
+      'Prepositions with Abstract Nouns',
       'Phrasal Verbs',
+      'Collocations and Phrasal Verbs in Academic Contexts',
       'Sentence Connectors',
-      'Negative Inversion',
+      'Discourse Connectors for Contrast & Concession (however, whereas, despite)',
+      'Adverbial Clauses of Concession (much as, however much, whatever)',
       'Reporting Verbs',
       'Reported Speech & Indirect Quotes',
-      'Dangling & Misplaced Modifiers',
-      'Cleft Sentences',
-      'Mixed Conditionals in Full',
-      'Future in the Past (was going to, would)',
-      'Prepositions Following Verbs and Adjectives',
-      'Wishes about the Past (Wish + Past Perfect)',
-      'Causative Have and Get',
-      'Inversion after Negative Adverbials Basics',
-      'Non-Finite Participle Clauses',
-      'Narrative Tenses in Complex Storytelling',
-      'Future Perfect Continuous & Complex Timeframes',
-      'Impersonal Passive Constructions (It is said that...)',
-      'Modals of Deduction in the Past (must have, might have)',
-      'Gerunds and Infinitives with Meaning Changes (stop, try, remember)',
-      'Discourse Connectors for Contrast & Concession (however, whereas, despite)',
       'Reported Speech with Complex Reporting Verbs',
+      'Reporting Verbs with Specific Prepositions',
+      'Cleft Sentences',
+      'Cleft Sentences with What and It for Focus',
+      'Negative Inversion',
+      'Inversion after Negative Adverbials Basics',
+      'Inversion after Restrictive Adverbs (Rarely, Seldom, Scarcely)',
       'Subjunctive Basics in Formal Requests',
+      'Subjunctive in Mandative Structures (demand that he be...)',
       'Nominalisation (Nouns from Verbs for Academic Writing)',
-      'Inverted Conditionals (Had I known, Should you need)'
+      'Ellipsis and Substitution in Complex Sentences',
+      'Dangling & Misplaced Modifiers'
     ]
   },
   {
     level: 'C1',
     topics: [
       'Mixed Conditionals',
+      'Advanced Conditionals (but for, had it not been for, should you need)',
       'Inversion in Conditionals',
+      'Inverted Conditional Structures without If',
       'Inversion for Emphasis',
+      'Negative and Limiting Inversion in Rhetorical Styles',
+      'Fronting for Emphasis and Rhetorical Flow',
+      'Fronting with Locative and Directional Inversion',
       'Cleft Sentences',
+      'Advanced Cleft Sentences & Fronting Techniques',
+      'Cleft Structures with All, The reason why, What, The person who',
       'Subjunctive Mood',
+      'Subjunctive Mood in Formal & Legal Registers',
+      'Subjunctive Mood in Fixed Formulas & Resolutions',
       'Diplomatic & Indirect Language',
+      'Diplomatic, Euphemistic & Nuanced Phrasing',
       'Unreal Past',
+      'Unreal Past & Hypothetical Stances',
+      'Hypothesizing & Speculating',
       'Advanced Passive Constructions',
+      'Advanced Passive with Infinitive & Gerund Complements',
+      'Advanced Passive with Reporting Verbs & Perfect Infinitives',
       'Advanced Modals',
+      'Advanced Modal Shades (needn\'t have vs didn\'t need to)',
+      'Nuanced Modality: Speculation on Past Unfulfilled Scenarios',
       'Gerunds and Infinitives after reporting verbs',
       'Advanced Prepositional Relative Clauses',
+      'Nominal Relative Clauses (what, whatever, whoever)',
       'Discourse Markers',
+      'Discourse Markers & Cohesion in Essays',
+      'Discourse Markers for Summarizing, Rephrasing and Conceding',
       'Compound Adjectives',
+      'Preposed Adjectives & Absolute Clauses',
       'Future in the Past',
       'Ellipsis and Substitution',
       'Complex Sentence Structures',
-      'Hypothesizing & Speculating',
-      'Advanced Adverbials & Modifiers',
-      'Parallel Structure in Writing',
-      'Nominal Relative Clauses (what, whatever, whoever)',
-      'Fronting for Emphasis and Rhetorical Flow',
-      'Advanced Conditionals (but for, had it not been for, should you need)',
-      'Register and Voice Shifts',
-      'Metaphorical Extensions & Idiomatic Grammar',
-      'Advanced Punctuation & Rhetorical Transitions',
-      'Preposed Adjectives & Absolute Clauses',
-      'Advanced Cleft Sentences & Fronting Techniques',
-      'Subjunctive Mood in Formal & Legal Registers',
-      'Diplomatic, Euphemistic & Nuanced Phrasing',
-      'Unreal Past & Hypothetical Stances',
-      'Advanced Passive with Infinitive & Gerund Complements',
-      'Advanced Modal Shades (needn\'t have vs didn\'t need to)',
-      'Discourse Markers & Cohesion in Essays',
       'Complex Sentence Subordination & Coordination',
+      'Parenthetical Expressions and Appositive Structures',
+      'Advanced Adverbials & Modifiers',
       'Advanced Adverbial Modifier Collocations',
-      'Register & Tone Shifts across Professional Genres'
+      'Parallel Structure in Writing',
+      'Metaphorical Extensions & Idiomatic Grammar',
+      'Metaphorical and Idiomatic Prepositional Collocations',
+      'Register and Voice Shifts',
+      'Register & Tone Shifts across Professional Genres',
+      'Advanced Punctuation & Rhetorical Transitions',
+      'Subordinating Conjunctions of Condition (provided that, assuming that)',
+      'Cohesion and Coherence through Lexical Chaining'
     ]
   },
   {
     level: 'C2',
     topics: [
       'Sophisticated Inversion & Fronting',
+      'Sophisticated Inversion, Fronting & Topicalization',
+      'Stylistic Fronting, Inversion and Topicalization in Literary Prose',
       'Archaic & Literary Subjunctive',
+      'Archaic and Formal Subjunctive Expressions (Be that as it may, Suffice it to say)',
+      'Subjunctive Mood',
       'Nuanced Ellipsis & Substitution',
+      'Nuanced Ellipsis, Substitution & Structural Compression',
+      'Advanced Ellipsis and Gapping in Symmetrical Clauses',
       'Advanced Modality',
+      'Advanced Epistemic and Deontic Modality',
       'Complex Parenthetical Clauses',
+      'Complex Parenthetical Embedding and Recursive Subordination',
       'Advanced Narrative Techniques',
       'Rhetorical Devices',
-      'Register Shifts',
-      'Syntactic Ambiguity',
-      'Precise Vocabulary',
+      'Rhetorical Schemas: Chiasmus, Antimetabole and Symmetrical Syntax',
+      'Chiasmus and Antimetabole',
+      'Chiasmus, Antimetabole & Symmetrical Syntax',
+      'Polysyndeton & Asyndeton',
+      'Asyndeton and Polysyndeton for Pacing and Rhetorical Emphasis',
+      'Anaphora & Cataphora in Textual Cohesion',
+      'Cataphora, Anaphora and Structural Deixis in Textual Architecture',
+      'Rhetorical Litotes and Double Negatives',
+      'Litotes, Understatement and Irony in High-Register Commentary',
       'Advanced Rhetorical Parallelism',
-      'Advanced Punctuation & Rhetorical Flow',
-      'Subjunctive Mood',
+      'Register Shifts',
+      'High-Register Academic & Literary Syntax',
+      'Syntactic Ambiguity',
+      'Syntactic Ambiguity & Pragmatic Nuance',
+      'Syntactic Ambiguity Resolution in Statutory and Contractual Interpretation',
+      'Precise Vocabulary',
+      'Polysemy, Lexical Precision and Nuanced Verb Selection',
+      'Syntactic Condensation in Literary Registers',
+      'Syntactic Condensation in Legal & Philosophical Texts',
+      'Syntactic Condensation and Nominal Density in Scholarly Writing',
       'Advanced Synthesis and Stylistic Inversion',
       'Idiosyncratic Grammar & Neologisms',
-      'Polysyndeton & Asyndeton',
-      'Anaphora & Cataphora in Textual Cohesion',
-      'Chiasmus and Antimetabole',
-      'Rhetorical Litotes and Double Negatives',
-      'Syntactic Condensation in Literary Registers',
-      'Sophisticated Inversion, Fronting & Topicalization',
-      'Nuanced Ellipsis, Substitution & Structural Compression',
-      'Advanced Epistemic and Deontic Modality',
-      'Syntactic Ambiguity & Pragmatic Nuance',
-      'High-Register Academic & Literary Syntax',
-      'Chiasmus, Antimetabole & Symmetrical Syntax',
-      'Syntactic Condensation in Legal & Philosophical Texts',
       'Hyperbaton & Metric Prose Patterns',
-      'Sarcasm, Irony & Subtle Tone in Complex Discourse'
+      'Hyperbaton, Tmesis and Transposed Word Order',
+      'Sarcasm, Irony & Subtle Tone in Complex Discourse',
+      'Sarcasm, Innuendo, and Subtext Decoupling in Sophisticated Argumentation',
+      'Nuanced Pragmatic Framing: Epistemic Hedging and Stance Markers',
+      'Hypothetical Formulations and Counterfactuals in Legal Jurisprudence',
+      'Advanced Punctuation & Rhetorical Flow'
     ]
   }
 ];
@@ -780,20 +879,36 @@ export default function App() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [contentCache, setContentCache] = useState<Record<string, any>>(() => {
+    return initLessonVersioning();
+  });
+
+  // Keep a persistent history of previously encountered questions per topic to avoid repetition on re-tests
+  const [questionHistory, setQuestionHistory] = useState<Record<string, string[]>>(() => {
     try {
-      const CACHE_VERSION = 'v1.5';
-      const savedVersion = localStorage.getItem('english_everywhere_cache_version');
-      if (savedVersion !== CACHE_VERSION) {
-        localStorage.removeItem('english_everywhere_cache');
-        localStorage.setItem('english_everywhere_cache_version', CACHE_VERSION);
-        return {};
-      }
-      const saved = localStorage.getItem('english_everywhere_cache');
+      const saved = localStorage.getItem('english_everywhere_question_history');
       return saved ? JSON.parse(saved) : {};
     } catch {
       return {};
     }
   });
+
+  const recordSeenQuestions = (topicKey: string, questions: { question: string }[]) => {
+    try {
+      setQuestionHistory(prev => {
+        const existing = prev[topicKey] || [];
+        const newQuestions = questions.map(q => q.question);
+        // Keep up to 60 most recent questions for this topic to maximize variety without bloating storage
+        const combined = Array.from(new Set([...existing, ...newQuestions])).slice(-60);
+        const updated = { ...prev, [topicKey]: combined };
+        try {
+          localStorage.setItem('english_everywhere_question_history', JSON.stringify(updated));
+        } catch {}
+        return updated;
+      });
+    } catch (e) {
+      console.warn('Failed to save question history:', e);
+    }
+  };
 
   const [userProgress, setUserProgress] = useState<UserProgress>(() => {
     try {
@@ -869,6 +984,9 @@ export default function App() {
   useEffect(() => {
     const loadFromIndexedDB = async () => {
       try {
+        if (!isLessonVersionCurrent()) {
+          return;
+        }
         const localCached = await getAllLocalLessons();
         if (localCached && Object.keys(localCached).length > 0) {
           setContentCache(prev => ({
@@ -898,15 +1016,22 @@ export default function App() {
     };
     saveToLocalDb();
 
-    // To prevent localStorage quota errors, we store only lightweight keys in localStorage
+    // Persist lessons and version into localStorage
     try {
+      const lessonsToStore: Record<string, any> = {};
       const lightweightCache: Record<string, any> = {};
       for (const [key, val] of Object.entries(contentCache)) {
-        if (!key.startsWith('lesson_') && !key.startsWith('vocab_') && !key.startsWith('idiom_')) {
+        if (key.startsWith('lesson_') || key.startsWith('vocab_') || key.startsWith('idiom_')) {
+          lessonsToStore[key] = val;
+        } else {
           lightweightCache[key] = val;
         }
       }
+      if (Object.keys(lessonsToStore).length > 0) {
+        saveAllLessonsToLocalStorage(lessonsToStore);
+      }
       localStorage.setItem('english_everywhere_cache', JSON.stringify(lightweightCache));
+      localStorage.setItem(LESSON_VERSION_KEY, LESSON_VERSION);
     } catch (e) {
       console.warn("localStorage sync warning:", e);
     }
@@ -1012,12 +1137,22 @@ export default function App() {
     closeMenu();
     setError(null);
     const cacheKey = `lesson_${category}_${level || ''}_${topic}`;
-    if (!forceRefresh && contentCache[cacheKey]) {
-      setContent(contentCache[cacheKey]);
+
+    // Verify content version when loading lesson
+    if (!isLessonVersionCurrent()) {
+      const refreshed = initLessonVersioning();
+      setContentCache(refreshed);
+    }
+
+    // If version matches, load saved lesson directly from memory or localStorage
+    const savedLesson = !forceRefresh ? (contentCache[cacheKey] || getSavedLessonDirectly(cacheKey)) : null;
+    if (savedLesson) {
+      setContent(savedLesson);
       setView({ type: 'grammar_lesson', topic, category, level });
       markLessonComplete(cacheKey);
       return;
     }
+
     setIsLoading(true);
     try {
       let res = null;
@@ -1036,6 +1171,8 @@ export default function App() {
           content: res
         });
       }
+      // Save directly to localStorage with version key
+      saveLessonToLocalStorage(cacheKey, res);
       setContentCache(prev => ({ ...prev, [cacheKey]: res }));
       setContent(res);
       setView({ type: 'grammar_lesson', topic, category, level });
@@ -1052,12 +1189,22 @@ export default function App() {
     closeMenu();
     setError(null);
     const cacheKey = `vocab_${topic}`;
-    if (!forceRefresh && contentCache[cacheKey]) {
-      setContent(contentCache[cacheKey]);
+
+    // Verify content version when loading vocabulary lesson
+    if (!isLessonVersionCurrent()) {
+      const refreshed = initLessonVersioning();
+      setContentCache(refreshed);
+    }
+
+    // If version matches, load saved lesson directly from memory or localStorage
+    const savedLesson = !forceRefresh ? (contentCache[cacheKey] || getSavedLessonDirectly(cacheKey)) : null;
+    if (savedLesson) {
+      setContent(savedLesson);
       setView({ type: 'vocabulary_lesson', topic });
       markLessonComplete(cacheKey);
       return;
     }
+
     setIsLoading(true);
     try {
       let res = null;
@@ -1074,6 +1221,8 @@ export default function App() {
           content: res
         });
       }
+      // Save directly to localStorage with version key
+      saveLessonToLocalStorage(cacheKey, res);
       setContentCache(prev => ({ ...prev, [cacheKey]: res }));
       setContent(res);
       setView({ type: 'vocabulary_lesson', topic });
@@ -1108,6 +1257,7 @@ export default function App() {
           content: res
         });
       }
+      saveLessonToLocalStorage(cacheKey, res);
       setContentCache(prev => ({ ...prev, [cacheKey]: res }));
       setContent(res);
       setView({ type: 'idiom_topics', category });
@@ -1123,12 +1273,22 @@ export default function App() {
     closeMenu();
     setError(null);
     const cacheKey = `idiom_${topic}`;
-    if (!forceRefresh && contentCache[cacheKey]) {
-      setContent(contentCache[cacheKey]);
+
+    // Verify content version when loading idiom lesson
+    if (!isLessonVersionCurrent()) {
+      const refreshed = initLessonVersioning();
+      setContentCache(refreshed);
+    }
+
+    // If version matches, load saved lesson directly from memory or localStorage
+    const savedLesson = !forceRefresh ? (contentCache[cacheKey] || getSavedLessonDirectly(cacheKey)) : null;
+    if (savedLesson) {
+      setContent(savedLesson);
       setView({ type: 'vocabulary_lesson', topic: topic + ' (Idioms)', category } as any);
       markLessonComplete(cacheKey);
       return;
     }
+
     setIsLoading(true);
     try {
       let res = null;
@@ -1146,6 +1306,8 @@ export default function App() {
           content: res
         });
       }
+      // Save directly to localStorage with version key
+      saveLessonToLocalStorage(cacheKey, res);
       setContentCache(prev => ({ ...prev, [cacheKey]: res }));
       setContent(res);
       setView({ type: 'vocabulary_lesson', topic: topic + ' (Idioms)', category } as any);
@@ -1173,8 +1335,16 @@ export default function App() {
     setError(null);
     setIsLoading(true);
     try {
+      const topicKey = `${type}_${topic}_${level || ''}_${isOverall ? 'overall' : ''}`;
+      const excluded = questionHistory[topicKey] || [];
+      
       // Always generate fresh, unique quiz questions from the AI to avoid repeating identical questions.
-      const res = await generateQuiz(topic, type, level, isOverall);
+      const res = await generateQuiz(topic, type, level, isOverall, excluded);
+      
+      if (res && Array.isArray(res.questions) && res.questions.length > 0) {
+        recordSeenQuestions(topicKey, res.questions);
+      }
+
       setContent(res);
       setView({ type: type === 'grammar' ? 'grammar_test' : 'vocabulary_test', topic, category: category!, level, isOverall } as any);
     } catch (err) { 
@@ -1274,7 +1444,12 @@ export default function App() {
   const loadDictionaryTest = () => {
     closeMenu();
     setError(null);
-    const testQuiz = generateDictionaryTest();
+    const topicKey = 'dictionary_overall_test';
+    const excluded = questionHistory[topicKey] || [];
+    const testQuiz = generateDictionaryTest(excluded);
+    if (testQuiz && Array.isArray(testQuiz.questions) && testQuiz.questions.length > 0) {
+      recordSeenQuestions(topicKey, testQuiz.questions);
+    }
     setContent(testQuiz);
     setView({ type: 'dictionary_test' });
   };
@@ -1627,6 +1802,8 @@ export default function App() {
                 <GrammarLessonView 
                   data={content} 
                   category={view.category}
+                  topic={view.topic}
+                  speak={speak}
                   onBack={() => {
                     setIsReadingMode(false);
                     if (view.category === 'Levels') loadGrammarTopics(view.level!);
@@ -5095,21 +5272,25 @@ const loadFonts = async (): Promise<{ interReg: string; interBold: string; siemr
 function GrammarLessonView({ 
   data, 
   category, 
+  topic,
   onBack, 
   onTakeTest, 
   onTakeDrills, 
   onRefresh,
   isReadingMode,
-  setIsReadingMode
+  setIsReadingMode,
+  speak
 }: { 
   data: any, 
   category: GrammarCategory, 
+  topic?: string,
   onBack: () => void, 
   onTakeTest: () => void, 
   onTakeDrills: () => void, 
   onRefresh?: () => void,
   isReadingMode?: boolean,
-  setIsReadingMode?: (val: boolean) => void
+  setIsReadingMode?: (val: boolean) => void,
+  speak?: (t: string) => void
 }) {
   const [showIframeNotice, setShowIframeNotice] = useState(false);
   const [isDownloading, setIsDownloading] = useState(false);
@@ -5119,13 +5300,66 @@ function GrammarLessonView({
   const [previewPdfUrl, setPreviewPdfUrl] = useState<string | null>(null);
   const [isGeneratingPreview, setIsGeneratingPreview] = useState(false);
 
+  // Auto-enrich tense lessons with comprehensive structure, usages, and signal words in the explanation text
+  const activeTenseData = React.useMemo(() => {
+    return getTenseDetailedData(topic || data?.title || '') || null;
+  }, [data, topic]);
+
+  // Auto-enrich non-tense grammar topics with in-depth conceptual breakdown
+  const activeGrammarData = React.useMemo(() => {
+    return getGrammarTopicData(topic || data?.title || '') || null;
+  }, [data, topic]);
+
+  const displayData = React.useMemo(() => {
+    let base = data;
+
+    if (activeTenseData) {
+      base = {
+        ...data,
+        structure: data.structure || activeTenseData.structure,
+        usages: data.usages || activeTenseData.usages,
+        signalWords: data.signalWords || activeTenseData.signalWords,
+        explanation: activeTenseData.explanation || data.explanation,
+        explanationKhmer: activeTenseData.explanationKhmer || data.explanationKhmer,
+        examples: (activeTenseData.examples && activeTenseData.examples.length >= 10)
+          ? activeTenseData.examples
+          : (data.examples && data.examples.length >= 10 ? data.examples : (activeTenseData.examples || data.examples))
+      };
+    } else if (activeGrammarData) {
+      base = {
+        ...data,
+        structure: data.structure || activeGrammarData.structure,
+        explanation: activeGrammarData.explanation || data.explanation,
+        explanationKhmer: activeGrammarData.explanationKhmer || data.explanationKhmer,
+        examples: (activeGrammarData.examples && activeGrammarData.examples.length >= 10)
+          ? activeGrammarData.examples
+          : (data.examples && data.examples.length >= 10 ? data.examples : (activeGrammarData.examples || data.examples))
+      };
+    }
+
+    if (base?.usages && base?.signalWords && !base.explanation?.includes('WHEN AND WHY TO USE THIS TENSE (USAGES):')) {
+      return {
+        ...base,
+        explanation: buildEnrichedExplanation(base),
+        explanationKhmer: buildEnrichedExplanationKhmer(base)
+      };
+    }
+    return base;
+  }, [data, activeTenseData, activeGrammarData]);
+
+  const handleSpeak = (text: string) => {
+    if (speak) {
+      speak(text.replace(/\*\*/g, ''));
+    }
+  };
+
   const buildPDF = async (): Promise<jsPDF | null> => {
     try {
       const fonts = await loadFonts();
 
       const pdf = new jsPDF('p', 'mm', 'a4');
       pdf.setProperties({
-        title: `${data.title} - Study Guide`,
+        title: `${displayData.title} - Study Guide`,
         subject: `${category ? category.toUpperCase() : 'GRAMMAR'} Lesson Study Guide`,
         author: 'English Everywhere',
         creator: 'English Everywhere Platform',
@@ -5151,7 +5385,6 @@ function GrammarLessonView({
       }
 
       // Fonts have been loaded from cache/fallbacks and registered above.
-
 
       // Helper function to draw page header
       const drawPageHeader = () => {
@@ -5211,14 +5444,14 @@ function GrammarLessonView({
 
       // 1. Title section
       setInterFont('bold', 22, [17, 24, 39]); // Deep dark gray
-      const titleLines = pdf.splitTextToSize(data.title, 170);
+      const titleLines = pdf.splitTextToSize(displayData.title, 170);
       titleLines.forEach((line: string) => {
         checkPageOverflow(8);
         pdf.text(line, 20, y);
         y += 8;
       });
 
-      const matchedKey = getMatchingFixedKey(data.title);
+      const matchedKey = getMatchingFixedKey(displayData.title);
       if (matchedKey) {
         const khmerTranslation = KHMER_TRANSLATIONS[matchedKey];
         y += 2;
@@ -5233,17 +5466,17 @@ function GrammarLessonView({
       y += 6;
 
       // 2. Grammar Structures Section
-      if (data.structure && (data.structure.affirmative || data.structure.negative || data.structure.question)) {
+      if (displayData.structure && (displayData.structure.affirmative || displayData.structure.negative || displayData.structure.question)) {
         const formulas = [
-          { label: 'AFFIRMATIVE FORMULA', value: data.structure.affirmative },
-          { label: 'NEGATIVE FORMULA', value: data.structure.negative },
-          { label: 'QUESTION FORMULA', value: data.structure.question }
+          { label: 'POSITIVE (+) FORMULA', value: displayData.structure.affirmative, color: [16, 185, 129] as [number, number, number] },
+          { label: 'NEGATIVE (-) FORMULA', value: displayData.structure.negative, color: [225, 29, 72] as [number, number, number] },
+          { label: 'QUESTION (?) FORMULA', value: displayData.structure.question, color: [79, 70, 229] as [number, number, number] }
         ].filter(f => f.value);
 
         if (formulas.length > 0) {
           checkPageOverflow(10);
           setInterFont('bold', 10, [67, 56, 202]); // Indigo-700
-          pdf.text('GRAMMAR STRUCTURES', 20, y);
+          pdf.text('FORMULA & SENTENCE STRUCTURE', 20, y);
           y += 6;
 
           for (const form of formulas) {
@@ -5262,7 +5495,7 @@ function GrammarLessonView({
             pdf.roundedRect(20, y, 170, cardHeight, 3, 3, 'FD');
 
             // Label
-            setInterFont('bold', 8, [79, 70, 229]); // Indigo-600
+            setInterFont('bold', 8, form.color);
             pdf.text(form.label, 26, y + 6);
 
             // Value lines
@@ -5275,6 +5508,24 @@ function GrammarLessonView({
 
             y += cardHeight + 4;
           }
+
+          if (displayData.structure.notes) {
+            const noteLines = pdf.splitTextToSize(`Rule Tip: ${displayData.structure.notes}`, 158);
+            const noteHeight = (noteLines.length * 4.5) + 8;
+            checkPageOverflow(noteHeight + 4);
+            pdf.setFillColor(254, 243, 199); // amber-100
+            pdf.setDrawColor(253, 230, 138); // amber-200
+            pdf.setLineWidth(0.4);
+            pdf.roundedRect(20, y, 170, noteHeight, 3, 3, 'FD');
+            setInterFont('normal', 9.5, [146, 64, 14]); // amber-800
+            let noteY = y + 6;
+            noteLines.forEach((line: string) => {
+              pdf.text(line, 26, noteY);
+              noteY += 4.5;
+            });
+            y += noteHeight + 4;
+          }
+
           y += 2;
         }
       }
@@ -5293,7 +5544,7 @@ function GrammarLessonView({
       pdf.text('Detailed Explanation', 24, y);
       y += 8;
 
-      const expParas = data.explanation.split('\n\n');
+      const expParas = displayData.explanation.split('\n\n');
       for (const para of expParas) {
         if (!para.trim()) continue;
         setInterFont('normal', 10.5, [55, 65, 81]); // gray-700
@@ -5309,8 +5560,8 @@ function GrammarLessonView({
       }
       y += 4;
 
-      // 4. Khmer Explanation Section
-      if (data.explanationKhmer) {
+      // 6. Khmer Explanation Section
+      if (displayData.explanationKhmer) {
         checkPageOverflow(12);
         pdf.setDrawColor(243, 244, 246);
         pdf.line(20, y, 190, y);
@@ -5328,7 +5579,7 @@ function GrammarLessonView({
         pdf.text(' (Explanation in Khmer)', 24 + subHeaderWidth, y);
         y += 8;
 
-        const khmerParas = data.explanationKhmer.split('\n\n');
+        const khmerParas = displayData.explanationKhmer.split('\n\n');
         for (const para of khmerParas) {
           if (!para.trim()) continue;
           setSiemreapFont(11, [55, 65, 81]); // gray-700
@@ -5345,8 +5596,8 @@ function GrammarLessonView({
         y += 4;
       }
 
-      // 5. Usage Examples Section
-      if (data.examples && data.examples.length > 0) {
+      // 7. Usage Examples Section
+      if (displayData.examples && displayData.examples.length > 0) {
         checkPageOverflow(12);
         pdf.setDrawColor(243, 244, 246);
         pdf.line(20, y, 190, y);
@@ -5360,8 +5611,8 @@ function GrammarLessonView({
         pdf.text('Usage Examples', 24, y);
         y += 8;
 
-        for (let i = 0; i < data.examples.length; i++) {
-          const ex = data.examples[i];
+        for (let i = 0; i < displayData.examples.length; i++) {
+          const ex = displayData.examples[i];
           if (!ex.trim()) continue;
 
           const containsKhmer = /[\u1780-\u17ff]/.test(ex);
@@ -5664,17 +5915,18 @@ function GrammarLessonView({
       )}
       
       {/* Printable Area Wrapper */}
-      <div ref={lessonRef} className="printable-lesson space-y-8 sm:space-y-12 bg-white dark:bg-transparent rounded-3xl p-1">
+      <div ref={lessonRef} className="printable-lesson space-y-8 sm:space-y-10 bg-white dark:bg-transparent rounded-3xl p-1">
+        {/* Title Header */}
         <div className={`space-y-4 ${isReadingMode ? 'max-w-3xl mx-auto text-center' : ''}`}>
           <h1 className={`font-black tracking-tight ${isReadingMode ? 'text-xl sm:text-3xl md:text-4xl text-gray-900 dark:text-white border-b border-gray-100 dark:border-zinc-800 pb-4 sm:pb-6' : 'text-xl md:text-2xl lg:text-3xl'}`}>
-            {formatTitleWithKhmer(data.title, isReadingMode ? "text-xl sm:text-3xl md:text-4xl font-black tracking-tight" : "text-xl md:text-2xl lg:text-3xl font-black tracking-tight", true)}
+            {formatTitleWithKhmer(displayData.title, isReadingMode ? "text-xl sm:text-3xl md:text-4xl font-black tracking-tight" : "text-xl md:text-2xl lg:text-3xl font-black tracking-tight", true)}
           </h1>
-          {data.structure && (
+          {displayData.structure && (
             <div className={`grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4 pt-2 sm:pt-4 ${isReadingMode ? 'max-w-2xl mx-auto' : ''}`}>
                {['affirmative', 'negative', 'question'].map(key => (
                  <div key={key} className="bg-gray-50 dark:bg-zinc-900/50 px-4 py-3 rounded-2xl border border-gray-100 dark:border-zinc-800/80 text-left">
                    <p className="text-[10px] font-bold uppercase tracking-widest text-indigo-500 mb-1">{key}</p>
-                   <p className="font-mono text-xs md:text-sm text-gray-800 dark:text-gray-200 font-semibold">{(data.structure as any)[key]}</p>
+                   <p className="font-mono text-xs md:text-sm text-gray-800 dark:text-gray-200 font-semibold">{(displayData.structure as any)[key]}</p>
                  </div>
                ))}
             </div>
@@ -5683,6 +5935,8 @@ function GrammarLessonView({
 
         <div className={isReadingMode ? "max-w-3xl mx-auto space-y-8 sm:space-y-12" : "grid grid-cols-1 md:grid-cols-3 gap-12"}>
           <div className={isReadingMode ? "space-y-8 sm:space-y-12" : "md:col-span-2 space-y-8"}>
+            
+            {/* Detailed Explanation Section */}
             <section className="space-y-4">
               <h3 className="text-base md:text-lg font-bold flex items-center gap-2">
                 <div className="w-1.5 h-6 bg-[#1A1A1A] dark:bg-white rounded-full" /> Detailed Explanation
@@ -5692,40 +5946,56 @@ function GrammarLessonView({
                   ? readerFontSize === 'sm' ? 'text-sm font-serif space-y-4 leading-normal sm:leading-relaxed' : readerFontSize === 'lg' ? 'text-lg sm:text-xl font-serif space-y-8 leading-loose' : 'text-base sm:text-lg font-serif space-y-6 sm:leading-loose' 
                   : 'text-xs md:text-sm space-y-4'
               }`}>
-                {data.explanation}
+                {displayData.explanation}
               </div>
 
-              {data.explanationKhmer && (
+              {displayData.explanationKhmer && (
                 <div className="mt-6 pt-6 sm:mt-8 sm:pt-8 border-t border-gray-100 dark:border-zinc-800 space-y-4">
                   <h3 className="text-base md:text-lg font-bold font-khmer flex items-center gap-2 text-indigo-600 dark:text-indigo-400">
                     <div className="w-1.5 h-6 bg-indigo-500 rounded-full" /> ការពន្យល់ជាភាសាខ្មែរ (Explanation in Khmer)
                   </h3>
                   <div className={`text-gray-700 dark:text-gray-300 font-khmer leading-relaxed whitespace-pre-wrap ${
                     isReadingMode 
-                      ? readerFontSize === 'sm' ? 'text-sm space-y-4' : readerFontSize === 'lg' ? 'text-lg sm:text-xl space-y-8' : 'text-base sm:text-lg space-y-6'
+                      ? readerFontSize === 'sm' ? 'text-sm font-serif space-y-4 leading-normal sm:leading-relaxed' : readerFontSize === 'lg' ? 'text-lg sm:text-xl font-serif space-y-8 leading-loose' : 'text-base sm:text-lg font-serif space-y-6 sm:leading-loose' 
                       : 'text-xs md:text-sm'
                   }`}>
-                    {data.explanationKhmer}
+                    {displayData.explanationKhmer}
                   </div>
                 </div>
               )}
             </section>
 
-            <section className="space-y-4">
-               <h3 className="text-base md:text-lg font-bold flex items-center gap-2">
-                 <div className="w-1.5 h-6 bg-emerald-500 rounded-full" /> Usage Examples
-               </h3>
-               <div className="space-y-3">
-                 {data.examples.map((ex: string, i: number) => (
-                   <div key={i} className="p-3.5 sm:p-4 bg-emerald-50/50 dark:bg-emerald-950/10 border border-emerald-100/60 dark:border-emerald-900/30 rounded-2xl font-medium text-xs sm:text-sm md:text-base relative group leading-relaxed">
-                     <span className="absolute -left-2 -top-2 bg-emerald-500 text-white w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-bold shadow-xs">
-                       {i + 1}
-                     </span>
-                     <ExampleText text={ex} />
-                   </div>
-                 ))}
-               </div>
-            </section>
+            {/* Usage Examples Section */}
+            {displayData.examples && displayData.examples.length > 0 && (
+              <section className="space-y-4">
+                <h3 className="text-base md:text-lg font-bold flex items-center gap-2">
+                  <div className="w-1.5 h-6 bg-emerald-500 rounded-full" /> Usage Examples
+                </h3>
+                <div className="space-y-3">
+                  {displayData.examples.map((ex: string, i: number) => (
+                    <div key={i} className="p-3.5 sm:p-4 bg-emerald-50/50 dark:bg-emerald-950/10 border border-emerald-100/60 dark:border-emerald-900/30 rounded-2xl font-medium text-xs sm:text-sm md:text-base relative group leading-relaxed flex items-center justify-between gap-3">
+                      <div className="flex items-center gap-3">
+                        <span className="bg-emerald-500 text-white w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-bold shadow-xs shrink-0">
+                          {i + 1}
+                        </span>
+                        <ExampleText text={ex} />
+                      </div>
+                      {speak && (
+                        <button
+                          type="button"
+                          onClick={() => handleSpeak(ex)}
+                          className="p-1.5 text-gray-400 hover:text-emerald-600 dark:hover:text-emerald-400 hover:bg-emerald-100/60 dark:hover:bg-emerald-950/40 rounded-lg transition-colors shrink-0"
+                          title="Listen"
+                          aria-label="Listen"
+                        >
+                          <Volume2 size={16} />
+                        </button>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              </section>
+            )}
           </div>
 
           {!isReadingMode && (

@@ -51,7 +51,7 @@ export function searchWords(query: string, limit = 5): WordSuggestion[] {
     .slice(0, limit);
 }
 
-export function generateDictionaryTest(): Quiz {
+export function generateDictionaryTest(excludedQuestions?: string[]): Quiz {
   const allEntries: { word: string; definition: string; partOfSpeech: string; synonyms?: string[]; antonyms?: string[]; variant?: string; isIrregular?: boolean; origin?: string; example: string }[] = [];
   
   Object.keys(DICTIONARY_DATA).forEach((letter) => {
@@ -73,7 +73,12 @@ export function generateDictionaryTest(): Quiz {
   };
 
   const questions: QuizQuestion[] = [];
-  const shuffledEntries = shuffle(allEntries);
+  // If excludedQuestions is provided, prioritize entries whose word hasn't appeared recently
+  const excludedLower = new Set((excludedQuestions || []).map(q => q.toLowerCase()));
+  const unseenEntries = allEntries.filter(e => !Array.from(excludedLower).some(ex => ex.includes(e.word.toLowerCase())));
+  const poolEntries = unseenEntries.length >= 25 ? unseenEntries : allEntries;
+
+  const shuffledEntries = shuffle(poolEntries);
   const usedWords = new Set<string>();
 
   const irregularVerbs = shuffledEntries.filter(e => e.isIrregular && e.variant);

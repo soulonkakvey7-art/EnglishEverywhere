@@ -22,6 +22,18 @@ export interface GrammarTopic {
   category: GrammarCategory;
 }
 
+export interface TenseUsageItem {
+  situation: string;
+  description: string;
+  examples: string[];
+}
+
+export interface TenseSignalWords {
+  keywords: string[];
+  tip: string;
+  examples?: string[];
+}
+
 export interface LessonContent {
   title: string;
   explanation: string;
@@ -31,7 +43,10 @@ export interface LessonContent {
     affirmative: string;
     negative: string;
     question: string;
+    notes?: string;
   };
+  usages?: TenseUsageItem[];
+  signalWords?: TenseSignalWords;
 }
 
 export interface VocabularyWord {

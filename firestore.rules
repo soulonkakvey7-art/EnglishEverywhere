@@ -6,6 +6,10 @@ service cloud.firestore {
       allow read, write: if false;
     }
 
+    match /test/{testId} {
+      allow read: if true;
+    }
+
     match /cached_lessons/{lessonId} {
       allow read: if true;
       allow create, update: if isValidId(lessonId) && isValidCachedLesson(request.resource.data);
