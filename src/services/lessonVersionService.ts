@@ -1,13 +1,14 @@
 import { PRE_GENERATED_LESSONS, getLocalFallbackLesson } from '../data/preGeneratedLessons';
 import { clearAllLocalLessons, saveLocalCachedLesson } from './localDb';
 
-export const LESSON_VERSION = '2.1';
+export const LESSON_VERSION = '2.2';
 export const LESSON_VERSION_KEY = 'app_lesson_version';
 export const SAVED_LESSONS_KEY = 'app_saved_lessons';
 
 /**
  * Validates that cached lesson content corresponds to the expected topic in the cache key.
- * Protects against accidental mismatched fallbacks (e.g. Mixed Conditionals mapped to Conditional Sentences).
+ * Protects against accidental mismatched fallbacks (e.g. Mixed Conditionals mapped to Conditional Sentences,
+ * or Superlative Adjectives mapped to generic Adjective).
  */
 export function isLessonContentMatchingTopic(cacheKey: string, lessonContent: any): boolean {
   if (!lessonContent || typeof lessonContent !== 'object') return false;
@@ -16,8 +17,7 @@ export function isLessonContentMatchingTopic(cacheKey: string, lessonContent: an
 
   const keyLower = cacheKey.toLowerCase();
 
-  // Strict check: if key is for a specific conditional (mixed, zero, first, second, third, inverted),
-  // it MUST NOT have the generic title "Conditional Sentences"
+  // 1. Strict check: Conditionals
   const isSpecificConditionalKey = 
     keyLower.includes('mixed') ||
     keyLower.includes('zero') ||
@@ -27,6 +27,54 @@ export function isLessonContentMatchingTopic(cacheKey: string, lessonContent: an
     keyLower.includes('invert');
 
   if (isSpecificConditionalKey && (title === 'conditional sentences' || title === 'conditionals sentences' || title === 'conditional sentence')) {
+    return false;
+  }
+
+  // 2. Strict check: Superlative topic must not have a generic Adjective title
+  if (keyLower.includes('superlative') && !title.includes('superlative')) {
+    return false;
+  }
+
+  // 3. Strict check: Comparative topic must not have a generic Adjective title
+  if (keyLower.includes('comparative') && !title.includes('comparative')) {
+    return false;
+  }
+
+  // 4. Strict check: Topics with specific grammar modifiers must NEVER have a bare 8-parts-of-speech title
+  const barePartsOfSpeechTitles = [
+    'noun', 'nouns', 'noun (nouns)', 
+    'pronoun', 'pronouns', 'pronoun (pronouns)',
+    'verb', 'verbs', 'verb (verbs)',
+    'adjective', 'adjectives', 'adjective (adjectives)',
+    'adverb', 'adverbs', 'adverb (adverbs)',
+    'preposition', 'prepositions', 'preposition (prepositions)',
+    'conjunction', 'conjunctions', 'conjunction (conjunctions)',
+    'interjection', 'interjections', 'interjection (interjections)'
+  ];
+
+  const hasSpecificQualifier = 
+    keyLower.includes('superlative') ||
+    keyLower.includes('comparative') ||
+    keyLower.includes('phrasal') ||
+    keyLower.includes('modal') ||
+    keyLower.includes('reflexive') ||
+    keyLower.includes('possessive') ||
+    keyLower.includes('demonstrative') ||
+    keyLower.includes('indefinite') ||
+    keyLower.includes('countable') ||
+    keyLower.includes('uncountable') ||
+    keyLower.includes('compound') ||
+    keyLower.includes('irregular') ||
+    keyLower.includes('passive') ||
+    keyLower.includes('reported') ||
+    keyLower.includes('inversion') ||
+    keyLower.includes('gerund') ||
+    keyLower.includes('infinitive') ||
+    keyLower.includes('clause') ||
+    keyLower.includes('manner') ||
+    keyLower.includes('frequency');
+
+  if (hasSpecificQualifier && barePartsOfSpeechTitles.includes(title)) {
     return false;
   }
 

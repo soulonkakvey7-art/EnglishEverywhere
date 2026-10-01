@@ -1551,6 +1551,152 @@ Inherited directly from Latin, these comparative adjectives are inherently compa
   },
 
   // ==========================================
+  // 15B. SUPERLATIVE ADJECTIVES
+  // ==========================================
+  'Superlative Adjectives': {
+    title: 'Superlative Adjectives',
+    explanation: `WHAT IS A SUPERLATIVE ADJECTIVE?
+A superlative adjective expresses the extreme, supreme, or ultimate degree of a quality (the absolute highest or lowest extent) among THREE OR MORE people, places, things, ideas, or entities. While comparative adjectives contrast exactly two items ("City A is larger than City B"), superlative adjectives rank one item against an entire group, category, or universe ("City A is the largest city in the nation").
+
+WHY THE DEFINITE ARTICLE 'THE' IS MANDATORY:
+Because a superlative denotes a unique entity standing alone at the absolute pinnacle or extreme boundary of a category, English almost always requires the definite article 'the' before the superlative form ("the tallest building", "the most talented student", "the most efficient process").
+
+SYSTEMATIC RULES FOR FORMING SUPERLATIVE ADJECTIVES:
+
+1. ONE-SYLLABLE ADJECTIVES:
+   • Standard Inflection: Prepend 'the' and append -est to the base adjective.
+     - tall -> the tallest
+     - cold -> the coldest
+     - dark -> the darkest
+     - fast -> the fastest
+   • Silent -E Endings: Prepend 'the' and append -st.
+     - simple -> the simplest
+     - wide -> the widest
+     - late -> the latest
+     - brave -> the bravest
+   • Consonant-Vowel-Consonant (CVC Doubling Rule): When a single-syllable adjective terminates in a single vowel followed by a single consonant (excluding w, x, y), double the final consonant before appending -est:
+     - big -> the biggest
+     - hot -> the hottest
+     - wet -> the wettest
+     - slim -> the slimmest
+     - fit -> the fittest
+
+2. TWO-SYLLABLE ADJECTIVES ENDING IN -Y:
+   • Replace the final 'y' with 'i' and append -est:
+     - happy -> the happiest
+     - easy -> the easiest
+     - heavy -> the heaviest
+     - friendly -> the friendliest
+     - early -> the earliest
+     - busy -> the busiest
+
+3. MULTI-SYLLABLE ADJECTIVES (TWO OR MORE SYLLABLES):
+   • Superior Superlative: Use 'the most' + base adjective. Never add -est.
+     - creative -> the most creative
+     - beautiful -> the most beautiful
+     - expensive -> the most expensive
+     - intelligent -> the most intelligent
+     - complicated -> the most complicated
+   • Inferior Superlative (Least): Use 'the least' + base adjective.
+     - expensive -> the least expensive (cheapest)
+     - demanding -> the least demanding
+     - hazardous -> the least hazardous
+
+4. IRREGULAR SUPERLATIVES (HISTORICAL ROOT CHANGES):
+   These core irregular forms must be memorized:
+   • Good / Well -> The Best (NEVER "the goodest" or "the most best")
+   • Bad / Ill -> The Worst (NEVER "the baddest" or "the most worst")
+   • Far -> The Farthest (measurable geographic distance) / The Furthest (figurative extent or depth)
+   • Little (amount) -> The Least
+   • Much / Many -> The Most
+   • Old -> The Oldest (general age, objects, structures) vs. The Eldest (restricted to seniority within family members: "the eldest sibling")
+
+5. CONTEXTUAL PREPOSITIONS: 'IN' VS 'OF':
+   A crucial grammatical nuance that learners frequently confuse:
+   • Use 'IN' for singular collective units, locations, physical spaces, cities, countries, and groups:
+     - the tallest skyscraper in Phnom Penh
+     - the smartest student in the classroom
+     - the longest river in the world
+     - the best restaurant in town
+   • Use 'OF' for plural groups, specific time frames, or numbered sets of entities:
+     - the fastest runner of all eight competitors
+     - the happiest day of my life
+     - the most difficult of the three exams
+     - the best season of the year
+
+6. ADVANCED SUPERLATIVE PATTERNS:
+   • Superlatives with the Present Perfect:
+     - "This is the most exquisite meal I have ever tasted."
+     - "She is the most dedicated researcher we have ever employed."
+   • Superlatives with Ordinal Numbers:
+     - "Siem Reap is the second most visited province in Cambodia."
+     - "It is the third largest economy in the world."
+   • Superlatives with Emphatic Modifiers:
+     - by far: "He is by far the most talented candidate."
+     - easily: "This is easily the best investment opportunity."
+     - arguably: "It is arguably the most influential novel of the century."
+
+7. COMMON PITFALLS & HOW TO AVOID THEM:
+   ❌ Double Superlatives: Saying *"most tallest"* or *"most fastest"* is a serious error. Use only "the tallest" or "the fastest".
+   ❌ Omitting 'The': Saying *"She is fastest runner"* is incorrect. Say "She is the fastest runner".
+   ❌ Using comparative when 3+ entities are involved: Saying *"He is the taller of the three"* is incorrect. Say "He is the tallest of the three".
+   ❌ Misusing prepositions: Saying *"the best player of our team"* is incorrect; say "the best player in our team / on our team".`,
+    explanationKhmer: `តួនាទី និងក្បួនវេយ្យាករណ៍ស៊ីជម្រៅនៃគុណនាមកម្រិតបំផុត (Superlative Adjectives)៖
+Superlative Adjectives ត្រូវបានប្រើដើម្បីបង្ហាញពីគុណភាព ឬលក្ខណៈខ្ពស់បំផុត (ឬទាបបំផុត) នៃមនុស្ស ទីកន្លែង វត្ថុ ឬគំនិត ដោយប្រៀបធៀបក្នុងចំណោមរបស់ ចាប់ពី ៣ ឡើងទៅ ឬក្នុងក្រុមទាំងមូល។ ក្នុងភាសាអង់គ្លេស គុណនាមកម្រិតបំផុតស្ទើរតែតែងតែតម្រូវឱ្យមានពាក្យ "the" នៅពីមុខជានិច្ច ("the best", "the tallest")។
+
+វិធានវេយ្យាករណ៍នៃការបង្កើត Superlatives៖
+
+១. គុណនាម ១ ព្យាង្គ (ONE-SYLLABLE ADJECTIVES)៖
+• ទូទៅ៖ ថែម the + គុណនាម + est (tall -> the tallest, cold -> the coldest)។
+• បញ្ចប់ដោយ silent -e៖ ថែមតែ -st (simple -> the simplest, wide -> the widest)។
+• ក្បួន CVC (ព្យញ្ជនៈ-ស្រៈ-ព្យញ្ជនៈ)៖ ត្រូវត្រួតព្យញ្ជនៈចុងមួយជាន់ទៀត មុននឹងថែម -est (big -> the biggest, hot -> the hottest, wet -> the wettest)។
+
+២. គុណនាម ២ ព្យាង្គបញ្ចប់ដោយ -Y៖
+• ប្តូរអក្សរ "y" ទៅជា "i" រួចថែម -est (happy -> the happiest, easy -> the easiest, heavy -> the heaviest)។
+
+៣. គុណនាម ២ ព្យាង្គឡើងទៅ (MULTI-SYLLABLE ADJECTIVES)៖
+• កម្រិតខ្ពស់បំផុត៖ ប្រើ the most + គុណនាមដើម (the most beautiful, the most expensive, the most important)។ ដាច់ខាតកុំថែម -est!
+• កម្រិតទាបបំផុត៖ ប្រើ the least + គុណនាមដើម (the least expensive = ថោកបំផុត)។
+
+៤. គុណនាមមិនទៀងទាត់ (IRREGULAR FORMS)៖
+• good / well -> the best (ល្អបំផុត)
+• bad / ill -> the worst (អាក្រក់បំផុត)
+• far -> the farthest / the furthest (ឆ្ងាយបំផុត)
+• little -> the least (តិចបំផុត)
+• many / much -> the most (ច្រើនបំផុត)
+• old -> the oldest (ចាស់បំផុត/បុរាណបំផុត) ឬ the eldest (បងច្បងគេក្នុងគ្រួសារ)។
+
+៥. ការប្រើ preposition "IN" និង "OF"៖
+• ប្រើ "IN" ជាមួយទីកន្លែង ទីក្រុង ប្រទេស ពិភពលោក ឬក្រុមឯកវចនៈ៖ "in the world", "in the classroom", "in Phnom Penh"។
+• ប្រើ "OF" ជាមួយពេលវេលា ឬក្រុមពហុវចនៈ៖ "of all time", "of my life", "of the three candidates"។
+
+៦. កំហុសទូទៅដែលត្រូវជៀសវាង៖
+• មិនត្រូវប្រើ the most ត្រួតជាមួយ -est ឡើយ (❌ the most tallest -> ✔️ the tallest)។
+• មិនត្រូវភ្លេចពាក្យ "the" ឡើយ (❌ He is fastest -> ✔️ He is the fastest)។`,
+    structure: {
+      affirmative: 'Subject + Verb + the + Superlative Adjective (+ Noun) + (in / of + Context)',
+      negative: 'Subject + Verb (negative) + the + Superlative Adjective (+ Noun)',
+      question: 'Verb / Auxiliary + Subject + the + Superlative Adjective (+ Noun)?'
+    },
+    examples: [
+      'Mount Everest is **the highest mountain in the world**.',
+      'She is arguably **the most talented software engineer** in our department.',
+      'This was **the worst financial crisis** of the modern century.',
+      'He was **the fastest runner of all eight competitors** in the Olympic sprint.',
+      'Jupiter is **the largest planet in our solar system**.',
+      'That was **the easiest examination** we have encountered this semester.',
+      'Yesterday was officially **the hottest day of the entire summer**.',
+      'Tokyo remains one of **the most populous cities** on Earth.',
+      'This is **the most fascinating historical novel** I have ever read.',
+      'He is **the eldest brother** among the three siblings.',
+      'Is this **the quickest route to the airport** during peak rush hour?',
+      'She chose **the least expensive option** from the catering catalog.',
+      'The blue whale is recognized as **the largest animal** that has ever lived.',
+      'They purchased **the newest and most energy-efficient vehicle** available.'
+    ]
+  },
+
+  // ==========================================
   // 16. MODAL VERBS: CAN, COULD, MUST, SHOULD
   // ==========================================
   'Can/Can\'t': {
@@ -2507,6 +2653,12 @@ Inverted Conditionals គឺជាទម្រង់វេយ្យាករណ�
   }
 };
 
+// Aliases for Comparatives and Superlatives
+COMPREHENSIVE_GRAMMAR_TOPICS['Superlative Adjective'] = COMPREHENSIVE_GRAMMAR_TOPICS['Superlative Adjectives'];
+COMPREHENSIVE_GRAMMAR_TOPICS['Superlatives'] = COMPREHENSIVE_GRAMMAR_TOPICS['Superlative Adjectives'];
+COMPREHENSIVE_GRAMMAR_TOPICS['Comparative Adjective'] = COMPREHENSIVE_GRAMMAR_TOPICS['Comparative Adjectives'];
+COMPREHENSIVE_GRAMMAR_TOPICS['Comparatives'] = COMPREHENSIVE_GRAMMAR_TOPICS['Comparative Adjectives'];
+
 /**
  * Searches the comprehensive grammar topics by exact key, case-insensitive match,
  * or cleaned title (removing levels, labels, prefixes).
@@ -2520,31 +2672,48 @@ export function getGrammarTopicData(topicOrKey: string): LessonContent | null {
     return COMPREHENSIVE_GRAMMAR_TOPICS[clean];
   }
 
-  // 2. Extract core topic from cache keys like 'lesson_Levels_C1_Mixed Conditionals' or 'lesson_PartsOfSpeech__Noun'
+  // 2. Extract core topic from cache keys like 'lesson_Levels_C1_Mixed Conditionals', 'lesson_Levels_A2_Superlative Adjectives', or 'lesson_PartsOfSpeech__Noun'
   const keyParts = clean.split('_');
   const lastPart = keyParts[keyParts.length - 1]?.trim();
   if (lastPart && COMPREHENSIVE_GRAMMAR_TOPICS[lastPart]) {
     return COMPREHENSIVE_GRAMMAR_TOPICS[lastPart];
   }
 
-  // 3. Case-insensitive match
+  // 3. Case-insensitive exact match
   const lower = clean.toLowerCase();
-  for (const key of Object.keys(COMPREHENSIVE_GRAMMAR_TOPICS)) {
+  for (const [key, data] of Object.entries(COMPREHENSIVE_GRAMMAR_TOPICS)) {
     if (key.toLowerCase() === lower) {
-      return COMPREHENSIVE_GRAMMAR_TOPICS[key];
+      return data;
     }
   }
 
   if (lastPart) {
     const lastPartLower = lastPart.toLowerCase();
-    for (const key of Object.keys(COMPREHENSIVE_GRAMMAR_TOPICS)) {
+    for (const [key, data] of Object.entries(COMPREHENSIVE_GRAMMAR_TOPICS)) {
       if (key.toLowerCase() === lastPartLower) {
-        return COMPREHENSIVE_GRAMMAR_TOPICS[key];
+        return data;
       }
     }
   }
 
-  // 4. Targeted smart alias mapping for conditionals and advanced grammar
+  // 4. Targeted smart alias mapping
+  // A. Superlatives (Adjectives)
+  if (
+    lower.includes('superlative') && 
+    (lower.includes('adjective') || lower.endsWith('superlatives') || lower.endsWith('superlative'))
+  ) {
+    return COMPREHENSIVE_GRAMMAR_TOPICS['Superlative Adjectives'];
+  }
+
+  // B. Comparatives (Adjectives)
+  if (
+    lower.includes('comparative') && 
+    (lower.includes('adjective') || lower.endsWith('comparatives') || lower.endsWith('comparative'))
+  ) {
+    return COMPREHENSIVE_GRAMMAR_TOPICS['Comparative Adjectives'];
+  }
+
+  // C. Conditionals
   if (lower.includes('mixed conditional')) {
     return COMPREHENSIVE_GRAMMAR_TOPICS['Mixed Conditionals'];
   }
@@ -2571,17 +2740,41 @@ export function getGrammarTopicData(topicOrKey: string): LessonContent | null {
     return COMPREHENSIVE_GRAMMAR_TOPICS['Inverted Conditionals'];
   }
 
-  // 5. Normalized topic matching (e.g., 'Nouns' -> 'Noun', 'Pronouns' -> 'Pronoun')
-  const singularCandidates = [
-    clean.replace(/s$/i, ''),
-    clean.replace(/\b(basics|topic|lesson|grammar)\b/gi, '').trim()
-  ];
-  for (const candidate of singularCandidates) {
-    if (!candidate) continue;
-    for (const key of Object.keys(COMPREHENSIVE_GRAMMAR_TOPICS)) {
-      if (key.toLowerCase() === candidate.toLowerCase() || candidate.toLowerCase().includes(key.toLowerCase())) {
-        return COMPREHENSIVE_GRAMMAR_TOPICS[key];
+  // 5. Parts of speech matching: ONLY if candidate is strictly and solely that base part of speech!
+  // Prevents "Superlative Adjectives", "Modal Verbs", "Phrasal Verbs", "Compound Nouns" from matching generic "Adjective", "Verb", "Noun"!
+  const basePartsOfSpeech = ['noun', 'pronoun', 'verb', 'adjective', 'adverb', 'preposition', 'conjunction', 'interjection'];
+  const testCandidate = (lastPart || clean).toLowerCase().replace(/s$/i, '').trim();
+
+  for (const pos of basePartsOfSpeech) {
+    if (testCandidate === pos) {
+      for (const [key, data] of Object.entries(COMPREHENSIVE_GRAMMAR_TOPICS)) {
+        if (key.toLowerCase() === pos) {
+          return data;
+        }
       }
+    }
+  }
+
+  // 6. Normalized exact match (singularizing or removing common stopwords, NEVER broad substring matching)
+  const normalizedCandidate = (lastPart || clean)
+    .replace(/^the\s+/i, '')
+    .replace(/s$/i, '')
+    .replace(/\b(basics|topic|lesson|grammar|introduction|essentials)\b/gi, '')
+    .trim()
+    .toLowerCase();
+
+  for (const [key, data] of Object.entries(COMPREHENSIVE_GRAMMAR_TOPICS)) {
+    const keyNorm = key
+      .replace(/^the\s+/i, '')
+      .replace(/s$/i, '')
+      .trim()
+      .toLowerCase();
+
+    // NEVER allow a generic part of speech to match a compound phrase
+    if (basePartsOfSpeech.includes(keyNorm)) continue;
+
+    if (keyNorm === normalizedCandidate) {
+      return data;
     }
   }
 

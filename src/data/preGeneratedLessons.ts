@@ -47,10 +47,13 @@ export const PRE_GENERATED_LESSONS: Record<string, LessonContent | VocabularyLes
   'lesson_Levels_A1_Singular and Plural Nouns': COMPREHENSIVE_GRAMMAR_TOPICS['Singular and Plural Nouns'],
   'lesson_Levels_A1_Countable & Uncountable Nouns Basics': COMPREHENSIVE_GRAMMAR_TOPICS['Countable & Uncountable Nouns'],
   'lesson_Levels_A1_Can/Can\'t': COMPREHENSIVE_GRAMMAR_TOPICS['Can/Can\'t'],
-  'lesson_Levels_A1_Prepositions of Place': COMPREHENSIVE_GRAMMAR_TOPICS['Preposition'],
-  'lesson_Levels_A1_Prepositions of Time': COMPREHENSIVE_GRAMMAR_TOPICS['Preposition'],
-
   'lesson_Levels_A2_Comparative Adjectives': COMPREHENSIVE_GRAMMAR_TOPICS['Comparative Adjectives'],
+  'Comparative Adjectives': COMPREHENSIVE_GRAMMAR_TOPICS['Comparative Adjectives'],
+  'lesson_Levels_A2_Superlative Adjectives': COMPREHENSIVE_GRAMMAR_TOPICS['Superlative Adjectives'],
+  'lesson_Levels_A2_Superlative Adjective': COMPREHENSIVE_GRAMMAR_TOPICS['Superlative Adjectives'],
+  'Superlative Adjectives': COMPREHENSIVE_GRAMMAR_TOPICS['Superlative Adjectives'],
+  'Superlative Adjective': COMPREHENSIVE_GRAMMAR_TOPICS['Superlative Adjectives'],
+  'Superlatives': COMPREHENSIVE_GRAMMAR_TOPICS['Superlative Adjectives'],
   'lesson_Levels_A2_Subject-Verb Agreement Essentials': COMPREHENSIVE_GRAMMAR_TOPICS['Subject-Verb Agreement'],
   'lesson_Levels_A2_Gerunds vs Infinitives Basics': COMPREHENSIVE_GRAMMAR_TOPICS['Gerunds vs Infinitives'],
 
