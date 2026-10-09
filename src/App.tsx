@@ -105,6 +105,8 @@ import {
 import { getCachedLesson, saveCachedLesson } from './services/firebase';
 import { getLocalCachedLesson, saveLocalCachedLesson, getAllLocalLessons } from './services/localDb';
 import { audioHelper } from './services/audioHelper';
+import { balanceQuizOptions, getOptionLetter } from './utils/quizUtils';
+import { getCuratedOverallTest, getCuratedLevelTest, getCuratedPartsOfSpeechTest, getCuratedTensesTest } from './data/overallTestBank';
 import jsPDF from 'jspdf';
 import { toPng } from 'html-to-image';
 import {
@@ -1351,18 +1353,31 @@ export default function App() {
       const topicKey = `${type}_${topic}_${level || ''}_${isOverall ? 'overall' : ''}`;
       const excluded = questionHistory[topicKey] || [];
       
-      // Always generate fresh, unique quiz questions from the AI to avoid repeating identical questions.
-      const res = await generateQuiz(topic, type, level, isOverall, excluded);
+      // Always generate fresh, unique quiz questions with balanced options
+      let res = await generateQuiz(topic, type, level, isOverall, excluded);
       
       if (res && Array.isArray(res.questions) && res.questions.length > 0) {
+        // Enforce that answer letters rotate and options are cleanly balanced
+        res = {
+          ...res,
+          questions: balanceQuizOptions(res.questions)
+        };
         recordSeenQuestions(topicKey, res.questions);
       }
 
       setContent(res);
       setView({ type: type === 'grammar' ? 'grammar_test' : 'vocabulary_test', topic, category: category!, level, isOverall } as any);
     } catch (err) { 
-      console.error(err);
-      setError("Quiz generation failed. Please wait a moment and try again.");
+      console.warn("Quiz generation encountered error, serving curated test bank:", err);
+      const fallback = (topic.toLowerCase().includes('parts of speech') || category === 'PartsOfSpeech')
+        ? getCuratedPartsOfSpeechTest()
+        : (topic.toLowerCase().includes('tense') || category === 'Tenses')
+        ? getCuratedTensesTest()
+        : (isOverall && !level)
+        ? getCuratedOverallTest()
+        : (level ? getCuratedLevelTest(level) : getCuratedOverallTest());
+      setContent(fallback);
+      setView({ type: type === 'grammar' ? 'grammar_test' : 'vocabulary_test', topic, category: category!, level, isOverall } as any);
     } finally {
       setIsLoading(false);
     }
@@ -4911,9 +4926,10 @@ function HomeView({ onStart, onOverallTest, progress, onJumpToLesson }: { onStar
           </button>
           <button 
             onClick={onOverallTest}
+            title="Comprehensive 50-Question Test covering All Levels (A1–C2) with balanced difficulty"
             className="px-6 py-4 md:px-10 md:py-5 bg-white border-2 border-gray-100 text-[#1A1A1A] rounded-2xl font-bold text-base md:text-lg hover:border-[#1A1A1A] transition-all flex items-center justify-center gap-2"
           >
-            <BrainCircuit size={18} md:size={20} /> Overall Test
+            <BrainCircuit size={18} md:size={20} /> Overall Test (All Levels A1–C2)
           </button>
         </div>
       </section>
@@ -5030,7 +5046,7 @@ function LevelsGrid({ onSelect, onOverallTest, progress, contentCache }: { onSel
                 onClick={() => onOverallTest(level)}
                 className="p-4 bg-gray-50 border-t border-gray-100 font-bold text-xs uppercase tracking-widest text-[#1A1A1A] hover:bg-[#1A1A1A] hover:text-white transition-all flex items-center justify-center gap-2"
               >
-                <BrainCircuit size={14} /> Overall {level} Test
+                <BrainCircuit size={14} /> Overall {level} Test (All Lessons)
               </button>
             </div>
           );
@@ -6733,6 +6749,9 @@ function IdiomTopicsView({ category, topics, onBack, onSelectTopic }: { category
 }
 
 function QuizView({ data, onBack, onComplete, onRetake }: { data: Quiz, onBack: () => void, onComplete?: (score: number) => void, onRetake?: () => void }) {
+  const [quizQuestions, setQuizQuestions] = useState<QuizQuestion[]>(() => {
+    return (data && Array.isArray(data.questions)) ? balanceQuizOptions(data.questions) : [];
+  });
   const [currentIndex, setCurrentIndex] = useState(0);
   const [selectedOption, setSelectedOption] = useState<string | null>(null);
   const [isAnswered, setIsAnswered] = useState(false);
@@ -6744,6 +6763,13 @@ function QuizView({ data, onBack, onComplete, onRetake }: { data: Quiz, onBack: 
   const [analysisError, setAnalysisError] = useState<string | null>(null);
   const [isMuted, setIsMuted] = useState(audioHelper.getMuted());
 
+  // Update questions whenever incoming data changes
+  useEffect(() => {
+    if (data && Array.isArray(data.questions)) {
+      setQuizQuestions(balanceQuizOptions(data.questions));
+    }
+  }, [data]);
+
   useEffect(() => {
     audioHelper.playBGM();
     return () => {
@@ -6752,23 +6778,23 @@ function QuizView({ data, onBack, onComplete, onRetake }: { data: Quiz, onBack: 
   }, []);
 
   useEffect(() => {
-    if (showResult && onComplete && data && data.questions && data.questions.length > 0) {
-       onComplete(Math.round((score / data.questions.length) * 100));
+    if (showResult && onComplete && quizQuestions && quizQuestions.length > 0) {
+       onComplete(Math.round((score / quizQuestions.length) * 100));
     }
   }, [showResult]);
 
   useEffect(() => {
-    if (showResult && data && data.questions && data.questions.length > 0) {
+    if (showResult && quizQuestions && quizQuestions.length > 0) {
       const triggerAnalysis = async () => {
         setIsAnalyzing(true);
         setAnalysisError(null);
         try {
           const res = await analyzeQuizPerformance(
             data.title,
-            data.questions,
+            quizQuestions,
             userAnswers,
             score,
-            data.questions.length
+            quizQuestions.length
           );
           setAnalysis(res);
         } catch (error) {
@@ -6783,7 +6809,7 @@ function QuizView({ data, onBack, onComplete, onRetake }: { data: Quiz, onBack: 
     }
   }, [showResult]);
 
-  if (!data || !data.questions || !Array.isArray(data.questions) || data.questions.length === 0) {
+  if (!quizQuestions || quizQuestions.length === 0) {
     return (
       <div className="p-12 text-center text-gray-500 font-medium space-y-4">
         <p>This test matches an invalid, custom, or loading curriculum structure. Please return back to the learning menu.</p>
@@ -6792,7 +6818,7 @@ function QuizView({ data, onBack, onComplete, onRetake }: { data: Quiz, onBack: 
     );
   }
 
-  const currentQuestion = data.questions[currentIndex];
+  const currentQuestion = quizQuestions[currentIndex];
 
   const handleSelect = (option: string) => {
     if (isAnswered) return;
@@ -6809,7 +6835,7 @@ function QuizView({ data, onBack, onComplete, onRetake }: { data: Quiz, onBack: 
   };
 
   const next = () => {
-    if (currentIndex < data.questions.length - 1) {
+    if (currentIndex < quizQuestions.length - 1) {
       setCurrentIndex(c => c + 1);
       setSelectedOption(null);
       setIsAnswered(false);
@@ -6819,7 +6845,7 @@ function QuizView({ data, onBack, onComplete, onRetake }: { data: Quiz, onBack: 
   };
 
   if (showResult) {
-    const percentage = (score / data.questions.length) * 100;
+    const percentage = Math.round((score / quizQuestions.length) * 100);
     return (
       <div className="max-w-2xl mx-auto text-center space-y-12 pt-12">
         <div className="space-y-6">
@@ -6828,7 +6854,7 @@ function QuizView({ data, onBack, onComplete, onRetake }: { data: Quiz, onBack: 
               <span className="text-2xl md:text-5xl font-black">{score}</span>
             </div>
             <div className="absolute -bottom-2 left-1/2 -translate-x-1/2 bg-white px-3 md:px-4 py-1 border border-gray-200 rounded-full text-[10px] md:text-base font-bold shadow-md">
-              /{data.questions.length}
+              /{quizQuestions.length}
             </div>
           </div>
           <h2 className="text-lg md:text-2xl font-bold">
@@ -6847,7 +6873,8 @@ function QuizView({ data, onBack, onComplete, onRetake }: { data: Quiz, onBack: 
           {onRetake && (
             <button 
               onClick={() => {
-                // reset internal state before calling onRetake
+                // reset internal state and re-balance options with fresh random letters
+                setQuizQuestions(balanceQuizOptions(data.questions));
                 setCurrentIndex(0);
                 setSelectedOption(null);
                 setIsAnswered(false);
@@ -6891,7 +6918,7 @@ function QuizView({ data, onBack, onComplete, onRetake }: { data: Quiz, onBack: 
                 onClick={() => {
                   setAnalysisError(null);
                   setIsAnalyzing(true);
-                  analyzeQuizPerformance(data.title, data.questions, userAnswers, score, data.questions.length)
+                  analyzeQuizPerformance(data.title, quizQuestions, userAnswers, score, quizQuestions.length)
                     .then(res => setAnalysis(res))
                     .catch(err => {
                       console.error(err);
@@ -6966,12 +6993,39 @@ function QuizView({ data, onBack, onComplete, onRetake }: { data: Quiz, onBack: 
              Answer Review
           </h3>
           <div className="space-y-4 text-left">
-            {data.questions.map((q, i) => {
+            {quizQuestions.map((q, i) => {
               const userAnswer = userAnswers.find(ua => ua.questionIndex === i);
               const isCorrect = userAnswer?.isCorrect;
+
+              const correctIdx = q.options.findIndex(opt => opt === q.correctAnswer);
+              const correctLetter = correctIdx !== -1 ? getOptionLetter(correctIdx) : '';
+
+              const userIdx = userAnswer ? q.options.findIndex(opt => opt === userAnswer.selected) : -1;
+              const userLetter = userIdx !== -1 ? getOptionLetter(userIdx) : '';
+
               return (
                 <div key={i} className={`p-6 bg-white dark:bg-zinc-900/40 border ${isCorrect === false ? 'border-red-100 dark:border-red-950/30' : 'border-gray-100 dark:border-zinc-800'} rounded-2xl shadow-sm space-y-3`}>
-                  <p className="font-bold flex gap-3"><span className="text-gray-400">{i+1}.</span> <ExampleText text={q.question} /></p>
+                  <div className="flex items-center justify-between gap-2 flex-wrap">
+                    <p className="font-bold flex gap-3"><span className="text-gray-400">{i+1}.</span> <ExampleText text={q.question} /></p>
+                    {(q.level || q.difficulty) && (
+                      <div className="flex items-center gap-1.5 text-[11px] font-bold">
+                        {q.level && (
+                          <span className="px-2 py-0.5 rounded-full bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300">
+                            Level {q.level}
+                          </span>
+                        )}
+                        {q.difficulty && (
+                          <span className={`px-2 py-0.5 rounded-full ${
+                            q.difficulty === 'Easy' ? 'bg-blue-50 text-blue-700 dark:bg-blue-950/40 dark:text-blue-300' :
+                            q.difficulty === 'Medium' ? 'bg-amber-50 text-amber-700 dark:bg-amber-950/40 dark:text-amber-300' :
+                            'bg-purple-50 text-purple-700 dark:bg-purple-950/40 dark:text-purple-300'
+                          }`}>
+                            {q.difficulty}
+                          </span>
+                        )}
+                      </div>
+                    )}
+                  </div>
                   
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-2">
                     {/* Your Answer */}
@@ -6987,13 +7041,13 @@ function QuizView({ data, onBack, onComplete, onRetake }: { data: Quiz, onBack: 
                       ) : (
                         <XCircle size={16} className="shrink-0 text-red-500" />
                       )}
-                      <span>Your Answer: {userAnswer ? userAnswer.selected : "Not answered"}</span>
+                      <span>Your Answer: {userLetter ? `(${userLetter}) ` : ''}{userAnswer ? userAnswer.selected : "Not answered"}</span>
                     </div>
 
                     {/* Correct Answer */}
                     <div className="flex items-center gap-2 text-emerald-700 bg-emerald-50 dark:bg-emerald-950/20 dark:text-emerald-400 px-3 py-2.5 rounded-xl text-sm font-bold">
                       <CheckCircle2 size={16} className="shrink-0 text-emerald-500" />
-                      <span>Correct Answer: {q.correctAnswer}</span>
+                      <span>Correct Answer: {correctLetter ? `(${correctLetter}) ` : ''}{q.correctAnswer}</span>
                     </div>
                   </div>
 
@@ -7015,12 +7069,12 @@ function QuizView({ data, onBack, onComplete, onRetake }: { data: Quiz, onBack: 
     <div className="max-w-3xl mx-auto space-y-12">
       <div className="flex items-center justify-between">
         <div className="space-y-1 flex-1 mr-4">
-          <p className="text-sm font-bold uppercase tracking-widest text-emerald-600">Question {currentIndex + 1} of {data.questions.length}</p>
+          <p className="text-sm font-bold uppercase tracking-widest text-emerald-600">Question {currentIndex + 1} of {quizQuestions.length}</p>
           <div className="w-full h-1 bg-gray-100 rounded-full overflow-hidden">
             <motion.div 
               className="h-full bg-emerald-500" 
               initial={{ width: 0 }}
-              animate={{ width: `${((currentIndex + 1) / data.questions.length) * 100}%` }}
+              animate={{ width: `${((currentIndex + 1) / quizQuestions.length) * 100}%` }}
             />
           </div>
         </div>
@@ -7041,10 +7095,31 @@ function QuizView({ data, onBack, onComplete, onRetake }: { data: Quiz, onBack: 
       </div>
 
       <div className="space-y-8">
-        <h2 className="text-xl md:text-3xl font-bold leading-tight"><ExampleText text={currentQuestion.question} /></h2>
+        <div className="space-y-3">
+          {(currentQuestion.level || currentQuestion.difficulty) && (
+            <div className="flex items-center gap-2 flex-wrap">
+              {currentQuestion.level && (
+                <span className="text-xs font-bold uppercase tracking-wider px-3 py-1 rounded-full bg-emerald-100 text-emerald-800 dark:bg-emerald-950/40 dark:text-emerald-300">
+                  Level {currentQuestion.level}
+                </span>
+              )}
+              {currentQuestion.difficulty && (
+                <span className={`text-xs font-bold uppercase tracking-wider px-3 py-1 rounded-full ${
+                  currentQuestion.difficulty === 'Easy' ? 'bg-blue-100 text-blue-800 dark:bg-blue-950/40 dark:text-blue-300' :
+                  currentQuestion.difficulty === 'Medium' ? 'bg-amber-100 text-amber-800 dark:bg-amber-950/40 dark:text-amber-300' :
+                  'bg-purple-100 text-purple-800 dark:bg-purple-950/40 dark:text-purple-300'
+                }`}>
+                  {currentQuestion.difficulty}
+                </span>
+              )}
+            </div>
+          )}
+          <h2 className="text-xl md:text-3xl font-bold leading-tight"><ExampleText text={currentQuestion.question} /></h2>
+        </div>
         
         <div className="grid grid-cols-1 gap-3 md:gap-4">
-          {currentQuestion.options.map(option => {
+          {currentQuestion.options.map((option, optIdx) => {
+            const letter = getOptionLetter(optIdx);
             let state = 'default';
             if (isAnswered) {
               if (option === currentQuestion.correctAnswer) state = 'correct';
@@ -7057,18 +7132,26 @@ function QuizView({ data, onBack, onComplete, onRetake }: { data: Quiz, onBack: 
                 key={option}
                 onClick={() => handleSelect(option)}
                 disabled={isAnswered}
-                className={`p-5 md:p-6 text-left text-base md:text-lg font-medium border-2 rounded-2xl md:rounded-3xl transition-all relative ${
-                  state === 'default' ? 'bg-white border-gray-100 hover:border-[#1A1A1A] hover:shadow-md' :
-                  state === 'correct' ? 'bg-emerald-50 border-emerald-500 text-emerald-900 shadow-sm md:shadow-lg md:scale-[1.02]' :
-                  state === 'wrong' ? 'bg-red-50 border-red-500 text-red-900' :
-                  'bg-gray-50 border-gray-100 opacity-50'
+                className={`p-5 md:p-6 text-left text-base md:text-lg font-medium border-2 rounded-2xl md:rounded-3xl transition-all relative flex items-center gap-3.5 group ${
+                  state === 'default' ? 'bg-white dark:bg-zinc-900 border-gray-100 dark:border-zinc-800 hover:border-[#1A1A1A] dark:hover:border-zinc-600 hover:shadow-md' :
+                  state === 'correct' ? 'bg-emerald-50 dark:bg-emerald-950/20 border-emerald-500 text-emerald-900 dark:text-emerald-200 shadow-sm md:shadow-lg md:scale-[1.01]' :
+                  state === 'wrong' ? 'bg-red-50 dark:bg-red-950/20 border-red-500 text-red-900 dark:text-red-200' :
+                  'bg-gray-50 dark:bg-zinc-900/40 border-gray-100 dark:border-zinc-800 opacity-50'
                 }`}
               >
-                <span className="pr-8">{option}</span>
+                <span className={`w-8 h-8 rounded-xl font-bold flex items-center justify-center text-sm shrink-0 border transition-all ${
+                  state === 'correct' ? 'bg-emerald-500 text-white border-emerald-500 shadow-xs' :
+                  state === 'wrong' ? 'bg-red-500 text-white border-red-500 shadow-xs' :
+                  state === 'muted' ? 'bg-gray-100 dark:bg-zinc-800 text-gray-400 border-gray-200 dark:border-zinc-700' :
+                  'bg-gray-100 dark:bg-zinc-800 text-gray-700 dark:text-zinc-200 border-gray-200 dark:border-zinc-700 group-hover:bg-[#1A1A1A] group-hover:text-white dark:group-hover:bg-zinc-100 dark:group-hover:text-zinc-900'
+                }`}>
+                  {letter}
+                </span>
+                <span className="pr-8 flex-1">{option}</span>
                 {state === 'correct' && <CheckCircle2 className="absolute right-4 md:right-6 top-1/2 -translate-y-1/2 text-emerald-500" size={20} />}
                 {state === 'wrong' && <AlertCircle className="absolute right-4 md:right-6 top-1/2 -translate-y-1/2 text-red-500" size={20} />}
               </button>
-            )
+            );
           })}
         </div>
       </div>
@@ -7088,7 +7171,7 @@ function QuizView({ data, onBack, onComplete, onRetake }: { data: Quiz, onBack: 
               onClick={next}
               className="w-full py-4 bg-[#1A1A1A] text-white rounded-2xl font-bold text-lg hover:scale-[1.01] active:scale-[0.99] transition-all flex items-center justify-center gap-3"
             >
-              {currentIndex < data.questions.length - 1 ? 'Next Question' : 'Finish Quiz'} <ChevronRight size={20} />
+              {currentIndex < quizQuestions.length - 1 ? 'Next Question' : 'Finish Quiz'} <ChevronRight size={20} />
             </button>
           </motion.div>
         )}

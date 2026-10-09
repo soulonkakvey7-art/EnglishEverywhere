@@ -69,6 +69,8 @@ export interface QuizQuestion {
   options: string[];
   correctAnswer: string;
   explanation: string;
+  level?: CEFRLevel;
+  difficulty?: 'Easy' | 'Medium' | 'Hard';
 }
 
 export interface Quiz {

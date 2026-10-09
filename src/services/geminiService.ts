@@ -1,5 +1,7 @@
 import { GoogleGenAI, Type } from "@google/genai";
 import { LessonContent, VocabularyLesson, Quiz, CEFRLevel, DrillSet, DictionaryEntry, DictionaryLetterSet, TranslationResult, QuizAnalysisResult } from "../types";
+import { balanceQuizOptions } from "../utils/quizUtils";
+import { getCuratedOverallTest, getCuratedLevelTest } from "../data/overallTestBank";
 
 const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
 
@@ -269,96 +271,222 @@ export async function generateQuiz(
   isOverall?: boolean,
   excludedQuestions?: string[]
 ): Promise<Quiz> {
-  return withRetry(async () => {
-    const isCoreEverywhereOverall = topic === 'General English Proficiency';
-    const isMainTopicOrLevelOverall = Boolean(
-      isOverall || 
-      isCoreEverywhereOverall || 
-      topic.toLowerCase().startsWith('overall') || 
-      ['A1', 'A2', 'B1', 'B2', 'C1', 'C2', 'CEFR Levels', 'All Levels'].includes(topic) ||
-      ['Tenses', 'Parts of Speech', 'Modals', 'Sentences', 'Conditionals', 'Passive Voice', 'Relative Clauses', 'Reported Speech', 'Gerunds & Infinitives', 'Articles & Nouns', 'Adjectives & Adverbs', 'Prepositions', 'Advanced Grammar'].includes(topic)
-    );
+  const isPartsOfSpeechOverall = topic.toLowerCase().includes('parts of speech');
+  const isTensesOverall = topic.toLowerCase().includes('tense');
+  const isCoreEverywhereOverall = (topic === 'General English Proficiency' || (Boolean(isOverall) && !level)) && !isPartsOfSpeechOverall && !isTensesOverall;
+  const isLevelOverall = Boolean(level && (isOverall || topic.toLowerCase().includes('overall')));
+  const isMainTopicOrLevelOverall = Boolean(
+    isOverall || 
+    isCoreEverywhereOverall || 
+    isLevelOverall ||
+    isPartsOfSpeechOverall ||
+    isTensesOverall ||
+    topic.toLowerCase().startsWith('overall') || 
+    ['A1', 'A2', 'B1', 'B2', 'C1', 'C2', 'CEFR Levels', 'All Levels'].includes(topic) ||
+    ['Tenses', 'Parts of Speech', 'Modals', 'Sentences', 'Conditionals', 'Passive Voice', 'Relative Clauses', 'Reported Speech', 'Gerunds & Infinitives', 'Articles & Nouns', 'Adjectives & Adverbs', 'Prepositions', 'Advanced Grammar'].includes(topic)
+  );
 
-    // Provide 25 questions for level/main topic tests (or 50 for General English Proficiency), and 15 questions for subtopics
-    const numQuestions = isCoreEverywhereOverall ? 50 : (isMainTopicOrLevelOverall ? 25 : 15);
+  try {
+    return await withRetry(async () => {
+      // 50 questions for general proficiency overall test, 24 for domain/level overall tests, 15 for individual subtopics
+      const numQuestions = isCoreEverywhereOverall ? 50 : (isMainTopicOrLevelOverall ? 24 : 15);
 
-    // Generate random seed parameters to maximize variety and break common LLM output bias
-    const randomSeed = Math.floor(Math.random() * 1000000);
-    const angles = [
-      'real-world conversational dialogues and practical usage',
-      'common learner pitfalls, subtle distinctions and error identification',
-      'formal/professional and academic sentence contexts',
-      'expressive literary and narrative communication scenarios',
-      'idiomatic, communicative and authentic modern English phrasing',
-      'contrasting similar grammatical forms and nuanced meaning shifts',
-      'sentence completion with realistic contextual clues and diverse subjects'
-    ];
-    // Pick two distinct focal angles randomly
-    const angle1 = angles[Math.floor(Math.random() * angles.length)];
-    const angle2 = angles[Math.floor(Math.random() * angles.length)];
+      const randomSeed = Math.floor(Math.random() * 1000000);
+      const angles = [
+        'real-world conversational dialogues and practical usage',
+        'common learner pitfalls, subtle distinctions and error identification',
+        'formal/professional and academic sentence contexts',
+        'expressive literary and narrative communication scenarios',
+        'idiomatic, communicative and authentic modern English phrasing',
+        'contrasting similar grammatical forms and nuanced meaning shifts',
+        'sentence completion with realistic contextual clues and diverse subjects'
+      ];
+      const angle1 = angles[Math.floor(Math.random() * angles.length)];
+      const angle2 = angles[Math.floor(Math.random() * angles.length)];
 
-    const exclusionContext = excludedQuestions && excludedQuestions.length > 0
-      ? `\nCRITICAL ANTI-REPETITION REQUIREMENT:
+      const exclusionContext = excludedQuestions && excludedQuestions.length > 0
+        ? `\nCRITICAL ANTI-REPETITION REQUIREMENT:
 The user has previously taken tests on this topic and seen the following questions. You MUST NOT repeat, duplicate, or rephrase any of these questions or sentences:
 ${excludedQuestions.slice(-30).map((q, idx) => `${idx + 1}. "${q.slice(0, 100)}..."`).join('\n')}
 Generate COMPLETELY FRESH, BRAND-NEW questions with different subjects, vocabulary, verbs, and sentence structures.`
-      : '';
+        : '';
 
-    const contents = isCoreEverywhereOverall 
-      ? `Generate a COMPREHENSIVE ${numQuestions}-question 100% BRAND NEW, randomized, non-repeating quiz covering the ENTIRE spectrum of English grammar and vocabulary (General English Proficiency).
-         Seed: ${randomSeed}.
-         Focus styles for this session: ${angle1} AND ${angle2}.
-         The questions should cover a wide array of categories (including all tenses, parts of speech, active/passive voice, conditionals, modals, collocations, idioms, advanced prepositions, etc.) to provide an expansive English proficiency assessment.
-         ${exclusionContext}
-         You MUST generate exactly ${numQuestions} quiz questions.
-         Ensure EVERY question tests a different grammar/vocabulary point or distinct vocabulary item. Do not repeat sentence patterns.
-         Questions should be multiple choice with exactly 4 options. Include a clear explanation for the correct answer.
-         IMPORTANT: In explanations, wrap any example sentences or target words in double asterisks like **this** for highlighting.`
-      : `Generate a ${numQuestions}-question 100% BRAND NEW, randomized, non-repeating quiz for the English ${type} ${isMainTopicOrLevelOverall ? 'main topic / overall level test' : 'sub-lesson topic'}: "${topic}" ${level ? `at level ${level}` : ''}.
-         Seed: ${randomSeed}.
-         Focal themes for this specific session: ${angle1} and ${angle2}.
-         ${exclusionContext}
-         The questions should cover deep, diverse aspects of "${topic}" across different angles, sentence contexts, and difficulty nuances so that re-tests always feel fresh, varied, and unrepeated.
-         You MUST generate exactly ${numQuestions} quiz questions.
-         Questions should be multiple choice with exactly 4 distinct, plausible options. Include a clear explanation for the correct answer.
-         IMPORTANT: In explanations, wrap any example sentences or target words in double asterisks like **this** for highlighting.`;
+      let contents = '';
 
-    const response = await ai.models.generateContent({
-      model: "gemini-3-flash-preview",
-      contents,
-      config: {
-        responseMimeType: "application/json",
-        responseSchema: {
-          type: Type.OBJECT,
-          properties: {
-            title: { type: Type.STRING },
-            questions: {
-              type: Type.ARRAY,
-              items: {
-                type: Type.OBJECT,
-                properties: {
-                  question: { type: Type.STRING },
-                  options: { 
-                    type: Type.ARRAY,
-                    items: { type: Type.STRING }
-                  },
-                  correctAnswer: { type: Type.STRING },
-                  explanation: { type: Type.STRING }
-                },
-                required: ["question", "options", "correctAnswer", "explanation"]
-              }
-            }
-          },
-          required: ["title", "questions"]
-        }
+      if (isCoreEverywhereOverall) {
+        contents = `Generate a COMPREHENSIVE exactly 50-question Overall English Proficiency Test covering EVERY CEFR LEVEL of English (A1, A2, B1, B2, C1, C2) and ALL core grammar lessons.
+Seed: ${randomSeed}.
+Session Focus: ${angle1} AND ${angle2}.
+
+CRITICAL MANDATORY DOMAIN COVERAGE (The 50 questions MUST thoroughly include ALL three pillars):
+1. PARTS OF SPEECH:
+   - Nouns (countable/uncountable, irregular plurals, collective & compound nouns)
+   - Pronouns (subject, object, possessive, demonstrative, reflexive, relative)
+   - Verbs (regular/irregular, to be, auxiliary, causative, phrasal verbs)
+   - Adjectives (comparatives, superlatives, order of adjectives)
+   - Adverbs (manner, frequency, degree)
+   - Prepositions (time, place, direction, dependent prepositions)
+   - Conjunctions (coordinating, subordinating, contrast, correlative)
+   - Interjections (exclamations expressing pain, joy, surprise, or relief, e.g. Ouch, Hooray, Phew, Alas)
+2. ENGLISH TENSES:
+   - Present Simple, Present Continuous, Present Perfect, Present Perfect Continuous
+   - Past Simple, Past Continuous, Past Perfect, Past Perfect Continuous
+   - Future Simple, Future with 'going to', Future Continuous, Future Perfect, Future Perfect Continuous
+3. THE OTHERS (COMPLEX & ADVANCED STRUCTURES):
+   - Conditionals (Zero, First, Second, Third, Mixed, and Inverted Conditionals)
+   - Voice: Passive voice, Impersonal/Reporting passives, and Causatives
+   - Reported Speech & Indirect Questions
+   - Modals of ability, permission, obligation, deduction, and subtle epistemic probability
+   - Gerunds vs. Infinitives and dependent verb patterns
+   - Defining and Non-defining Relative Clauses, Participle Clauses
+   - Advanced Syntax: Cleft sentences, Negative & restrictive inversion, Mandative & formulaic subjunctives, Unreal past (I wish, It is high time), Ellipsis/gapping, and Stylistic fronting
+
+CRITICAL PROGRESSIVE DIFFICULTY (50 Questions across A1 to C2 — NOT always easy and NOT always hard):
+- Questions 1 to 8: CEFR A1 (Easy) - Foundations: Verb 'to be', subject pronouns, articles (a/an/the), basic prepositions of place/time (in/on/at), present simple habits, singular/plural nouns, common questions, basic interjections.
+- Questions 9 to 16: CEFR A2 (Easy-Medium) - Elementary: Past simple regular & irregular, comparative & superlative adjectives, present continuous, quantifiers (much/many/a few), modals of ability (can/could), future with 'going to', zero conditional, reflexive pronouns.
+- Questions 17 to 25: CEFR B1 (Medium) - Intermediate: Present perfect vs past simple, first and second conditionals, defining relative clauses, passive voice basics, used to, gerunds after prepositions, future continuous, modals of deduction (must have).
+- Questions 26 to 34: CEFR B2 (Medium-Hard) - Upper-intermediate: Third conditional, past perfect continuous, future perfect & future perfect continuous, past modals of deduction, participle clauses, causatives, essential phrasal verbs, indirect questions, wish + past perfect.
+- Questions 35 to 42: CEFR C1 (Hard) - Advanced structures: Negative inversion (Seldom/Never/No sooner), inverted conditionals without 'if' (Had I known / Should you need / Were they to), mandative subjunctive, cleft sentences, mixed conditionals, unreal past (It is high time), correlative conjunction parallelism.
+- Questions 43 to 50: CEFR C2 (Mastery / Expert) - High-register mastery: Stylistic fronting & locative inversion, formulaic/archaic subjunctive (Be that as it may / Come what may / lest), subtle epistemic modality, ellipsis & gapping, rhetorical parallel syntax, litotes, chiasmus.
+
+CRITICAL ANSWER ROTATION REQUIREMENT (Letters MUST ALWAYS change):
+- For each question, provide exactly 4 distinct, plausible options.
+- The letter of the correct answer MUST rotate and change from question to question. It must NEVER always be A, NEVER always be B, NEVER always be C, and NEVER always be D.
+- Rotate the correct answer position dynamically across options A, B, C, and D.
+- Do NOT hardcode letter prefixes like "A)" or "B)" in the option texts; provide clean option text.
+- Provide a clear explanation wrapping target words or example sentences in double asterisks like **this**.
+${exclusionContext}`;
+      } else if (isPartsOfSpeechOverall) {
+        contents = `Generate a COMPREHENSIVE exactly 24-question Overall Test for ENGLISH PARTS OF SPEECH.
+Seed: ${randomSeed}.
+Session Focus: ${angle1} and ${angle2}.
+
+COVERAGE REQUIREMENT:
+The test MUST cover ALL 8 Parts of Speech:
+1. Nouns (countable/uncountable, irregular plurals, collective nouns, abstract nouns)
+2. Pronouns (subject, object, possessive, demonstrative, reflexive, relative)
+3. Verbs (action, linking, auxiliary, phrasal, causative)
+4. Adjectives (comparatives, superlatives, order of adjectives)
+5. Adverbs (manner, frequency, degree)
+6. Prepositions (time, place, direction, dependent prepositions)
+7. Conjunctions (coordinating, subordinating, correlative)
+8. Interjections (exclamations expressing pain, joy, surprise, relief, e.g. Ouch, Hooray, Phew, Alas)
+
+DIFFICULTY REQUIREMENT:
+Provide balanced difficulty: 8 Easy questions, 8 Medium questions, 8 Hard questions across diverse CEFR levels.
+
+ANSWER ROTATION REQUIREMENT:
+- Exactly 4 distinct options per question.
+- The correct answer position MUST rotate dynamically across choices A, B, C, and D (never always A, B, C, or D).
+- Do NOT prefix options with letters.
+- Wrap target words in double asterisks like **this** in explanations.
+${exclusionContext}`;
+      } else if (isTensesOverall) {
+        contents = `Generate a COMPREHENSIVE exactly 24-question Overall Test for ENGLISH TENSES.
+Seed: ${randomSeed}.
+Session Focus: ${angle1} and ${angle2}.
+
+COVERAGE REQUIREMENT:
+The test MUST cover ALL 12 English Tenses and key temporal aspects:
+- Present Simple & Present Continuous
+- Present Perfect & Present Perfect Continuous
+- Past Simple & Past Continuous
+- Past Perfect & Past Perfect Continuous
+- Future Simple & Future with 'going to'
+- Future Continuous, Future Perfect, and Future Perfect Continuous
+- Conditionals & temporal time markers (since, for, by the time, while)
+
+DIFFICULTY REQUIREMENT:
+Balanced distribution: 8 Easy questions, 8 Medium questions, 8 Hard questions.
+
+ANSWER ROTATION REQUIREMENT:
+- Exactly 4 distinct options per question.
+- The correct answer letter MUST rotate across A, B, C, and D (never always A, B, C, or D).
+- Clean option texts without prefixes.
+- Highlight target explanations with **double asterisks**.
+${exclusionContext}`;
+      } else if (isLevelOverall && level) {
+        contents = `Generate a COMPREHENSIVE ${numQuestions}-question Overall Test for CEFR ${level} English covering ALL lessons and grammatical topics of level ${level}.
+Seed: ${randomSeed}.
+Session Focus: ${angle1} and ${angle2}.
+
+DIFFICULTY REQUIREMENT:
+The test must NOT be always easy and NOT be always hard! Provide a balanced distribution:
+- Approximately one-third Easy foundational questions for level ${level}
+- Approximately one-third Medium core questions for level ${level}
+- Approximately one-third Hard nuanced/tricky questions for level ${level}
+
+ANSWER ROTATION REQUIREMENT:
+- Exactly 4 distinct options per question.
+- The correct answer position MUST rotate and vary across options A, B, C, and D (never always A, never always B, never always C, or D).
+- Do NOT prefix options with letters like "A)" or "B)".
+- Wrap key terms in explanations with double asterisks like **this**.
+${exclusionContext}`;
+      } else {
+        contents = `Generate a ${numQuestions}-question 100% BRAND NEW, randomized, non-repeating quiz for the English ${type} ${isMainTopicOrLevelOverall ? 'main topic / overall test' : 'sub-lesson topic'}: "${topic}" ${level ? `at level ${level}` : ''}.
+Seed: ${randomSeed}.
+Session Focus: ${angle1} and ${angle2}.
+DIFFICULTY REQUIREMENT: Provide varied difficulty ranging from foundational to nuanced (not always easy and not always hard).
+ANSWER ROTATION REQUIREMENT: Exactly 4 distinct options. The correct answer MUST vary across choices A, B, C, and D (not always A, B, C, or D).
+${exclusionContext}
+You MUST generate exactly ${numQuestions} quiz questions. Include a clear explanation for the correct answer with **highlighted** examples.`;
       }
+
+      const response = await ai.models.generateContent({
+        model: "gemini-3-flash-preview",
+        contents,
+        config: {
+          responseMimeType: "application/json",
+          responseSchema: {
+            type: Type.OBJECT,
+            properties: {
+              title: { type: Type.STRING },
+              questions: {
+                type: Type.ARRAY,
+                items: {
+                  type: Type.OBJECT,
+                  properties: {
+                    question: { type: Type.STRING },
+                    options: { 
+                      type: Type.ARRAY,
+                      items: { type: Type.STRING }
+                    },
+                    correctAnswer: { type: Type.STRING },
+                    explanation: { type: Type.STRING },
+                    level: { type: Type.STRING },
+                    difficulty: { type: Type.STRING }
+                  },
+                  required: ["question", "options", "correctAnswer", "explanation"]
+                }
+              }
+            },
+            required: ["title", "questions"]
+          }
+        }
+      });
+
+      const quizData = JSON.parse(response.text);
+      if (quizData && Array.isArray(quizData.questions) && quizData.questions.length > 0) {
+        if (quizData.questions.length > numQuestions) {
+          quizData.questions = quizData.questions.slice(0, numQuestions);
+        }
+        // Balance options so the correct answer letter ALWAYS changes and is evenly distributed across A, B, C, D
+        quizData.questions = balanceQuizOptions(quizData.questions);
+        return quizData;
+      }
+      throw new Error("Invalid quiz structure received from AI model");
     });
-    const quizData = JSON.parse(response.text);
-    if (quizData && Array.isArray(quizData.questions) && quizData.questions.length > numQuestions) {
-      quizData.questions = quizData.questions.slice(0, numQuestions);
+  } catch (err) {
+    console.warn("AI quiz generation error, using curated comprehensive fallback test bank:", err);
+    // Reliable fallback so users never hit a broken screen
+    if (isCoreEverywhereOverall) {
+      return getCuratedOverallTest();
+    } else if (level && ['A1', 'A2', 'B1', 'B2', 'C1', 'C2'].includes(level)) {
+      return getCuratedLevelTest(level as CEFRLevel);
     }
-    return quizData;
-  });
+    // Return standard curated overall test as safe fallback
+    return getCuratedOverallTest();
+  }
 }
 
 export async function generateGrammarDrills(topic: string, level?: string): Promise<DrillSet> {

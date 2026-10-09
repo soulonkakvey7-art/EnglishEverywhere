@@ -1,5 +1,6 @@
 import { DICTIONARY_DATA } from "../dictionaryData";
 import { Quiz, QuizQuestion } from "../types";
+import { balanceQuizOptions } from "../utils/quizUtils";
 
 export interface WordSuggestion {
   word: string;
@@ -258,6 +259,6 @@ export function generateDictionaryTest(excludedQuestions?: string[]): Quiz {
 
   return {
     title: "Essential Dictionary Overall Test",
-    questions: shuffle(questions)
+    questions: balanceQuizOptions(questions)
   };
 }
