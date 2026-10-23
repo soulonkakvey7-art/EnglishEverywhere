@@ -6771,11 +6771,15 @@ function QuizView({ data, onBack, onComplete, onRetake }: { data: Quiz, onBack: 
   }, [data]);
 
   useEffect(() => {
-    audioHelper.playBGM();
+    if (showResult) {
+      audioHelper.stopBGM();
+    } else {
+      audioHelper.playBGM();
+    }
     return () => {
       audioHelper.stopBGM();
     };
-  }, []);
+  }, [showResult]);
 
   useEffect(() => {
     if (showResult && onComplete && quizQuestions && quizQuestions.length > 0) {
@@ -7734,11 +7738,15 @@ function DrillView({ data, onBack, onComplete }: { data: DrillSet, onBack: () =>
   const [isMuted, setIsMuted] = useState(audioHelper.getMuted());
 
   useEffect(() => {
-    audioHelper.playBGM();
+    if (finished) {
+      audioHelper.stopBGM();
+    } else {
+      audioHelper.playBGM();
+    }
     return () => {
       audioHelper.stopBGM();
     };
-  }, []);
+  }, [finished]);
 
   const hasDrills = data && data.drills && Array.isArray(data.drills) && data.drills.length > 0;
   const currentDrill = hasDrills ? data.drills[currentIndex] : null;

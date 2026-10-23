@@ -1,30 +1,16 @@
-// Audio helper using the standard Web Audio API for highly reliable,
-// zero-latency, CORS-free, and offline-compatible sound effects and ambient BGM.
-
 class AudioHelper {
   private isMuted: boolean = false;
   private audioCtx: AudioContext | null = null;
-  private isBgmPlaying: boolean = false;
-  private bgmIntervalId: any = null;
-  private activeBgmNodes: { osc: OscillatorNode; gain: GainNode }[] = [];
-  private currentChordIdx: number = 0;
-
-  // Lush, calm seventh and ninth chords for a beautiful, relaxing zen-like background pad
-  private chords: number[][] = [
-    // Chord 1: Cmaj9 (C3, G3, B3, D4, E4)
-    [130.81, 196.00, 246.94, 293.66, 329.63],
-    // Chord 2: Fmaj9 (F2, C3, A3, C4, E4)
-    [87.31, 130.81, 220.00, 261.63, 329.63],
-    // Chord 3: Am9 (A2, E3, C4, G4, B4)
-    [110.00, 164.81, 261.63, 392.00, 493.88],
-    // Chord 4: G6/9 (G2, D3, B3, E4, A4)
-    [98.00, 146.83, 246.94, 329.63, 440.00]
-  ];
+  private bgmAudio: HTMLAudioElement | null = null;
+  private bgmSrc: string = '/test-bgm.mp3';
+  private isSessionActive: boolean = false;
+  private playPromise: Promise<void> | null = null;
+  private unlockListenerAttached: boolean = false;
 
   constructor() {
     try {
-      const saved = localStorage.getItem('english_everywhere_audio_muted');
-      this.isMuted = saved === 'true';
+      const savedMute = localStorage.getItem('english_everywhere_audio_muted');
+      this.isMuted = savedMute === 'true';
     } catch {
       this.isMuted = false;
     }
@@ -49,91 +35,113 @@ class AudioHelper {
     }
   }
 
+  private initBgmAudio(): HTMLAudioElement | null {
+    if (typeof window === 'undefined') return null;
+    if (!this.bgmAudio) {
+      try {
+        this.bgmAudio = new Audio(this.bgmSrc);
+        this.bgmAudio.loop = true;
+        this.bgmAudio.volume = 0.35;
+        this.bgmAudio.preload = 'auto';
+        this.bgmAudio.muted = this.isMuted;
+      } catch (err) {
+        console.warn('Could not initialize background audio:', err);
+        return null;
+      }
+    }
+    return this.bgmAudio;
+  }
+
+  private attachAutoplayUnlock() {
+    if (this.unlockListenerAttached || typeof window === 'undefined') return;
+    this.unlockListenerAttached = true;
+
+    const unlock = () => {
+      if (this.isSessionActive && !this.isMuted && this.bgmAudio) {
+        this.bgmAudio.play().catch(() => {});
+      }
+      if (this.audioCtx && this.audioCtx.state === 'suspended') {
+        this.audioCtx.resume().catch(() => {});
+      }
+      window.removeEventListener('click', unlock);
+      window.removeEventListener('pointerdown', unlock);
+      window.removeEventListener('touchstart', unlock);
+      window.removeEventListener('keydown', unlock);
+      this.unlockListenerAttached = false;
+    };
+
+    window.addEventListener('click', unlock, { once: true, passive: true });
+    window.addEventListener('pointerdown', unlock, { once: true, passive: true });
+    window.addEventListener('touchstart', unlock, { once: true, passive: true });
+    window.addEventListener('keydown', unlock, { once: true, passive: true });
+  }
+
   public playBGM() {
-    this.isBgmPlaying = true;
-    this.initAudioContext();
+    this.isSessionActive = true;
+    const audio = this.initBgmAudio();
+    if (!audio) return;
+
+    audio.loop = true;
+    audio.muted = this.isMuted;
 
     if (this.isMuted) return;
 
-    // If already looping, don't start multiple loops
-    if (this.bgmIntervalId) return;
-
-    // Play the first chord immediately
-    this.triggerNextBgmChord();
-
-    // Trigger a new chord every 5.5 seconds (overlapping slightly for a seamless ambient pad)
-    this.bgmIntervalId = setInterval(() => {
-      this.triggerNextBgmChord();
-    }, 5500);
-  }
-
-  private triggerNextBgmChord() {
-    if (!this.isBgmPlaying || this.isMuted) return;
-    this.initAudioContext();
-    if (!this.audioCtx) return;
-
-    const now = this.audioCtx.currentTime;
-    const notes = this.chords[this.currentChordIdx];
-    this.currentChordIdx = (this.currentChordIdx + 1) % this.chords.length;
-
-    const currentChordNodes: { osc: OscillatorNode; gain: GainNode }[] = [];
-
-    notes.forEach((freq, idx) => {
-      if (!this.audioCtx) return;
-
-      const osc = this.audioCtx.createOscillator();
-      const gain = this.audioCtx.createGain();
-
-      // We're using sine waves for a pure, flute-like peaceful tone
-      osc.type = 'sine';
-      osc.frequency.setValueAtTime(freq, now);
-
-      // Add a slight detune to give the pad a rich, warm, organic chorus effect
-      osc.detune.setValueAtTime((idx % 2 === 0 ? 5 : -5), now);
-
-      // Beautiful long fade-in and slow fade-out envelope:
-      // Overlap notes smoothly to create a dense, cinematic texture
-      gain.gain.setValueAtTime(0, now);
-      // Fade in over 2.5 seconds
-      gain.gain.linearRampToValueAtTime(0.015, now + 2.5); // extremely soft volume to sit nicely in the background
-      // Maintain volume
-      gain.gain.setValueAtTime(0.015, now + 4.0);
-      // Fade out slowly over 2.5 seconds
-      gain.gain.exponentialRampToValueAtTime(0.0001, now + 6.5);
-
-      osc.connect(gain);
-      gain.connect(this.audioCtx.destination);
-
-      osc.start(now);
-      osc.stop(now + 7.0);
-
-      currentChordNodes.push({ osc, gain });
-    });
-
-    this.activeBgmNodes.push(...currentChordNodes);
-
-    // Housekeeping: remove old nodes from tracking after they stop playing
-    setTimeout(() => {
-      this.activeBgmNodes = this.activeBgmNodes.filter(node => !currentChordNodes.includes(node));
-    }, 7500);
+    this.playPromise = audio.play();
+    if (this.playPromise !== undefined) {
+      this.playPromise.catch((err: any) => {
+        // Autoplay policies may prevent immediate playback before user gesture
+        console.warn('BGM playback deferred until user interaction:', err);
+        this.attachAutoplayUnlock();
+      });
+    }
   }
 
   public stopBGM() {
-    this.isBgmPlaying = false;
-    if (this.bgmIntervalId) {
-      clearInterval(this.bgmIntervalId);
-      this.bgmIntervalId = null;
+    this.isSessionActive = false;
+    if (this.bgmAudio) {
+      if (this.playPromise) {
+        this.playPromise
+          .then(() => {
+            if (!this.isSessionActive && this.bgmAudio) {
+              this.bgmAudio.pause();
+              this.bgmAudio.currentTime = 0;
+            }
+          })
+          .catch(() => {
+            if (this.bgmAudio) {
+              this.bgmAudio.pause();
+              this.bgmAudio.currentTime = 0;
+            }
+          });
+      } else {
+        try {
+          this.bgmAudio.pause();
+          this.bgmAudio.currentTime = 0;
+        } catch (err) {
+          console.warn('Error stopping BGM:', err);
+        }
+      }
     }
+  }
 
-    // Stop and disconnect all active BGM voices immediately
-    this.activeBgmNodes.forEach(({ osc, gain }) => {
-      try {
-        osc.stop();
-        osc.disconnect();
-        gain.disconnect();
-      } catch {}
-    });
-    this.activeBgmNodes = [];
+  public pauseBGM() {
+    if (this.bgmAudio) {
+      if (this.playPromise) {
+        this.playPromise
+          .then(() => {
+            if (this.bgmAudio) this.bgmAudio.pause();
+          })
+          .catch(() => {
+            if (this.bgmAudio) this.bgmAudio.pause();
+          });
+      } else {
+        try {
+          this.bgmAudio.pause();
+        } catch (err) {
+          console.warn('Error pausing BGM:', err);
+        }
+      }
+    }
   }
 
   public setMute(muted: boolean) {
@@ -142,30 +150,41 @@ class AudioHelper {
       localStorage.setItem('english_everywhere_audio_muted', String(muted));
     } catch {}
 
+    if (this.bgmAudio) {
+      this.bgmAudio.muted = muted;
+    }
+
     if (muted) {
-      // Fade out background voices and stop interval
-      this.stopBgmIntervalOnly();
+      if (this.bgmAudio) {
+        if (this.playPromise) {
+          this.playPromise
+            .then(() => {
+              if (this.isMuted && this.bgmAudio) {
+                this.bgmAudio.pause();
+              }
+            })
+            .catch(() => {});
+        } else {
+          try {
+            this.bgmAudio.pause();
+          } catch {}
+        }
+      }
     } else {
-      // Resume background music if practice is ongoing
-      if (this.isBgmPlaying) {
-        this.playBGM();
+      if (this.isSessionActive) {
+        const audio = this.initBgmAudio();
+        if (audio) {
+          audio.muted = false;
+          this.playPromise = audio.play();
+          if (this.playPromise !== undefined) {
+            this.playPromise.catch(err => {
+              console.warn('BGM resume prevented:', err);
+              this.attachAutoplayUnlock();
+            });
+          }
+        }
       }
     }
-  }
-
-  private stopBgmIntervalOnly() {
-    if (this.bgmIntervalId) {
-      clearInterval(this.bgmIntervalId);
-      this.bgmIntervalId = null;
-    }
-    this.activeBgmNodes.forEach(({ osc, gain }) => {
-      try {
-        osc.stop();
-        osc.disconnect();
-        gain.disconnect();
-      } catch {}
-    });
-    this.activeBgmNodes = [];
   }
 
   public getMuted(): boolean {
